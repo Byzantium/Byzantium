@@ -1,86 +1,79 @@
-#!/usr/bin/env python
-# from https://github.com/samuel/python-powerdns
-
-import logging
 import sys
-import traceback
 
-logger = logging.getLogger('pdns')
+msg = '%s\t%s\t%s\t%s\t%s\t%s\n' # type	qname	qclass	qtype	id	remote-ip-address
 
-class DNSQuery(object):
-    def __init__(self, qname, qclass, qtype, id, remote_ip, local_ip=None):
-        self.qname = qname
-        self.qclass = qclass
-        self.qtype = qtype
-        self.id = id
-        self.remote_ip = remote_ip
-        self.local_ip = local_ip
+def output(data):
 
-    def __str__(self):
-        return "Q\t%s\t%s\t%s\t%s\t%s\t%s" % (self.qname, self.qclass, self.qtype, self.id, self.remote_ip, self.local_ip or '')
+	sys.stdout.write(data)
 
-class DNSAnswer(object):
-    def __init__(self, qname, qclass, qtype, ttl, id, content):
-        self.qname = qname
-        self.qclass = qclass
-        self.qtype = qtype
-        self.ttl = ttl
-        self.id = id
-        self.content = content
+def input():
 
-    def __str__(self):
-        return "DATA\t%s\t%s\t%s\t%d\t%s\t%s" % (self.qname, self.qclass, self.qtype, self.ttl, self.id, self.content)
+	return sys.stdin.readline()
 
-class PowerDNSBackend(object):
-    def __init__(self, backend):
-        self.backend = backend
+class PDNS:
 
-    def run(self):
-        greeted = False
-        while True:
-            line = self.read()
-            if line is None:
-                break
+	def __init__(self)
 
-            if not greeted:
-                if line != 'HELO\t1':
-                    logger.error("Didn't receive HELO as expected.")
-                    self.write('FAIL')
-                    self.read()
-                    break
-                self.write('OK')
-                greeted = True
-            else:
-                query = line.split('\t')
-                _type = query[0]
-                response = None
-                try:
-                    if _type == "PING":
-                        logger.info("PING")
-                    elif _type == 'Q':
-                        q = DNSQuery(*query[1:])
-                        # logger.info(str(q))
-                        response = self.backend.query(q)
-                    elif _type == 'AXFR':
-                        # logger.info("AXFR")
-                        response = self.backend.axfr(*query) or []
-                    if response:
-                        self.write("\n".join(str(x) for x in response))
-                    self.write("END")
-                except Exception, exc:
-                    logger.error("Failed query: %r\n%s" % (query, traceback.format_exc()))
-                    self.write("FAIL")
+		self.gothelo = False
 
-    def read(self):
-        line = sys.stdin.readline()
-        if not line:
-            logger.debug("Lost connection")
-            return None
-        line = line.strip()
-        logger.debug("RECV: %s" % line)
-        return line
+		while True:
 
-    def write(self, line):
-        logger.debug("SEND: %s" % line)
-        sys.stdout.write(line + "\n")
-        sys.stdout.flush()
+			line = input()
+
+			if self.gothelo and not line in (None, ''):
+
+				output(self.handleinput(line))
+
+			elif line == 'HELO\t1\n':
+
+				output('OK\t\n')
+
+				self.gothelo = True
+
+			else:
+
+				return 1
+
+	def handleinput(line):
+
+		line = line.split('\t')
+
+		if line[0] == 'Q':
+
+			return self.lookup(line)
+
+		elif line[0] == 'AXFR':
+
+			return self.axfr(line)
+
+		elif line[0] == 'PING':
+
+			pass
+
+		elif line[0] == 'DATA':
+
+			self.store(line)
+
+		elif line[0] == 'END':
+
+			pass
+
+		elif line[0] == 'FAIL':
+
+			pass
+
+		else:
+
+			return 'FAIL\t\n'
+
+	def store(self,line):
+
+		pass
+
+	def lookup(self,line):
+
+		pass
+
+	def axfr(self,line):
+
+		pass
