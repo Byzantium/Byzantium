@@ -14,6 +14,10 @@ class PDNS:
 
 	def __init__(self)
 
+		self.db = records.Database('/etc/resolv.db')
+
+		self.isaxfr = False
+
 		self.gothelo = False
 
 		while True:
@@ -68,12 +72,22 @@ class PDNS:
 
 	def store(self,line):
 
-		pass
+		getmac(line[6])
+
+		self.db.add({'ip': line[6],'name': line[1],'mac': macaddr,'type': line[3]})
 
 	def lookup(self,line):
 
-		pass
+		self.db.check("type='%s', name='%s'")
 
 	def axfr(self,line):
 
-		pass
+		output = ''
+
+		self.db.check()
+
+		for i in self.db:
+
+			output += msg % ('DATA',i['name'],'IN',i['type'],str(i['ttl']),'1'+i['ip'])
+
+		return output
