@@ -12,7 +12,7 @@ def input():
 
 class PDNS:
 
-	def __init__(self)
+	def __init__(self):
 
 		self.db = records.Database('/etc/resolv.db')
 
