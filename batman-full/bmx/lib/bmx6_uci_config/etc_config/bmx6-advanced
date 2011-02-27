@@ -1,0 +1,77 @@
+# bmx_uci_config plugin depends on the UCI (universial configuration interface)
+# from http://downloads.openwrt.org/sources/uci-0.7.3.tar.gz
+# to compile first install uci: 
+#	wget http://downloads.openwrt.org/sources/uci-0.7.3.tar.gz
+#	tar xzvf uci-0.7.3.tar.gz; cd uci-0.7.3; make; sudo make install
+#
+#
+# the default location for this config file is /etc/config/bmx
+# from where it would be loaded automatically during initialization of bmxd.
+# Use bmxd -f /etc/config/another-bmx-config to load an alternative config file.
+# and bmxd -f 0 to disable all config-file functionality.
+#
+# You may also start bmxd as you always did (e.g. bmxd --neta -o 1000 ath0:bmx)
+# and then use bmxd -c show-config and bmxd -c show-config > /etc/config/bmx
+# to generate the config file you need. Afterwards a simple $ bmxd should do it.
+#
+# With uci comes a bunch of new configuration possibilities:
+# The bmxd can be configured on-the-fly from bmxd or uci.
+# To configure from bmxd simply type: bmxd -c ogm_interval=500  or: bmxd -co500
+# To configure from uci: uci set bmx.general.ogm_interval=500
+#	followed by: kill -HUP $(cat /var/run/pid) or: bmxd -c reload-config
+# To permanently store the changes: uci commit bmx
+# And to revert them: uci revert bmx
+# For more possibilities check out openWrt, UCI, and bmxd -X
+
+
+# the following example substitutes the now deprecated --neta option
+#
+config 'bmx6' 'general'
+#       option 'runtime_dir' '/var/run/bmx6'
+	option 'base_port' '6240'
+
+
+# bmxd always tries to load bmx6_config.so from /usr/lib/
+# Therefore, there is no obligation to request this explicitly.
+# An alternative library-path can be set with the environment variable BMX6_LIB_PATH
+# E.g. BMX6_LIB_PATH=/usr/src/bmx6/lib will check the given directory for plugins
+config 'plugin'
+	option 'plugin' 'bmx6_config.so'
+
+
+# other plugin must be requested explicitly:
+# config 'plugin'
+# 	option 'plugin' 'bmx6_howto_plugin.so'
+
+
+# it is allways a good idea to use an alias on your loopback interface 
+# as the primary interface because the loopback interface is probably 
+# the most stable you have on your system and then you are always 
+# reachable under your primary IP. E.g.:
+# ifconfig lo:bmx 6.6.1.1 netmask 255.255.0.0
+config 'dev'
+	option 'dev' 'lo:bmx'
+
+
+# Of course, a real interface is necessary
+# to link up with the rest of the world.
+# However, all non-primary interfaces may be added and removed on the fly.
+config 'dev'
+	option 'dev' 'ath0:bmx'
+
+
+# In openWrt interfaces are usually configured in /etc/config/network
+# to avoid redundancy it is also possible to resolve values from there. E.g.:
+#
+#config 'dev'
+# 	option 'dev' 'ref:network.lan0_bmx.ifname'
+
+
+
+
+
+# unicast host-network announcements (HNAs) may look like this:
+# config 'unicast_hna'
+#       option 'unicast_hna' '106.1.2.4/32'
+
+

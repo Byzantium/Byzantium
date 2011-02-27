@@ -1,0 +1,185 @@
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/batman/!svn/ver/1897/trunk/bmx
+END
+plugin.c
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/batman/!svn/ver/1896/trunk/bmx/plugin.c
+END
+tools.c
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/batman/!svn/ver/1896/trunk/bmx/tools.c
+END
+schedule.h
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/batman/!svn/ver/1896/trunk/bmx/schedule.h
+END
+plugin.h
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/batman/!svn/ver/1896/trunk/bmx/plugin.h
+END
+iid.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/iid.c
+END
+dump.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/batman/!svn/ver/1896/trunk/bmx/dump.c
+END
+tools.h
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/batman/!svn/ver/1896/trunk/bmx/tools.h
+END
+hna.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/hna.c
+END
+metrics.c
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/batman/!svn/ver/1896/trunk/bmx/metrics.c
+END
+ip.c
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/batman/!svn/ver/1896/trunk/bmx/ip.c
+END
+dump.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/batman/!svn/ver/1896/trunk/bmx/dump.h
+END
+iid.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/iid.h
+END
+hna.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/hna.h
+END
+metrics.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/batman/!svn/ver/1896/trunk/bmx/metrics.h
+END
+list.c
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/batman/!svn/ver/1896/trunk/bmx/list.c
+END
+ip.h
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/batman/!svn/ver/1896/trunk/bmx/ip.h
+END
+HOWTO
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1897/trunk/bmx/HOWTO
+END
+control.c
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/batman/!svn/ver/1896/trunk/bmx/control.c
+END
+list.h
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/batman/!svn/ver/1896/trunk/bmx/list.h
+END
+avl.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/avl.c
+END
+allocate.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/batman/!svn/ver/1896/trunk/bmx/allocate.c
+END
+control.h
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/batman/!svn/ver/1896/trunk/bmx/control.h
+END
+bmx.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/bmx.c
+END
+msg.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/msg.c
+END
+avl.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/avl.h
+END
+allocate.h
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/batman/!svn/ver/1896/trunk/bmx/allocate.h
+END
+bmx.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/bmx.h
+END
+msg.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1896/trunk/bmx/msg.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/batman/!svn/ver/1896/trunk/bmx/Makefile
+END
+schedule.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/batman/!svn/ver/1896/trunk/bmx/schedule.c
+END

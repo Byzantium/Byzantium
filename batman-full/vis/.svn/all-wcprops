@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 35
+/svn/batman/!svn/ver/1798/trunk/vis
+END
+udp_server.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/batman/!svn/ver/1292/trunk/vis/udp_server.c
+END
+list-batman.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/batman/!svn/ver/423/trunk/vis/list-batman.h
+END
+vis.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1798/trunk/vis/vis.c
+END
+hash.c
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/285/trunk/vis/hash.c
+END
+allocate.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/batman/!svn/ver/1292/trunk/vis/allocate.c
+END
+vis.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/1798/trunk/vis/vis.h
+END
+hash.h
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/batman/!svn/ver/285/trunk/vis/hash.h
+END
+vis-types.h
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/batman/!svn/ver/1292/trunk/vis/vis-types.h
+END
+allocate.h
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/batman/!svn/ver/1292/trunk/vis/allocate.h
+END
+list-batman.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/batman/!svn/ver/423/trunk/vis/list-batman.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/svn/batman/!svn/ver/1292/trunk/vis/Makefile
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/batman/!svn/ver/1295/trunk/vis/README
+END

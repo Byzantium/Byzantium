@@ -1,0 +1,14 @@
+# this config file should be stored in /etc/config/bmx6
+# for more options check the bmx-advanced configuration example and bmx6 -X
+#
+# bmx_uci_config plugin depends on the UCI (universial configuration interface)
+# from http://downloads.openwrt.org/sources/uci-0.7.3.tar.gz
+# to compile first install uci: 
+#	wget http://downloads.openwrt.org/sources/uci-0.7.3.tar.gz
+#	tar xzvf uci-0.7.3.tar.gz; cd uci-0.7.3; make; sudo make install
+#
+
+config 'bmx6' 'general'
+
+config 'dev'
+	option 'dev' 'ath0'

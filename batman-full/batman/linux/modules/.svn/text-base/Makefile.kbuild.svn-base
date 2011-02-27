@@ -1,0 +1,20 @@
+ifeq ($(MAKING_MODULES),1)
+-include $(TOPDIR)/Rules.make
+endif
+
+LINUX26:=2.6
+EXTRA_CFLAGS +=-DREVISION_VERSION=\"\ rv$(REVISION)\"
+
+ifeq ($(strip $(findstring $(LINUX26),$(LINUX_VERSION))),$(LINUX26))
+
+obj-m += batgat.o
+batgat-objs := gateway.o hash.o
+
+else
+
+modules: batgat.o
+
+batgat.o: gateway24.o hash.o
+	$(LD) -r $^ -o $@
+
+endif

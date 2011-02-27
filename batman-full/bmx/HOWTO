@@ -1,0 +1,178 @@
+#!/bin/sh -e
+
+
+#    Preamble
+#    ==========================================================================
+#
+#    This HOWTO provides a short hands-on introduction in how BMX6 can
+#    be used for setting up a small wireless mesh network.
+#
+#    Since I am often asked to quickly help configuring somebodies notebook
+#    for joining the local mesh we have in our neighborhood, I decided to make 
+#    this HOWTO a documented shell script which can be read but also be adapted
+#    and executed.
+#
+#    This scripts assumes that you have a Linux Debian-based system !!! If not, 
+#    some of its commands (especially those for installing some basic Debian
+#    packets) will likely fail. But it should be easy to modify the script by
+#    substituting problematic commands as needed.
+#
+#
+#    First, in order to make this HOWTO executable, its mode must be changed.
+#    E.g.:
+#
+#    $ chmod u+x HOWTO
+#
+#    However, before really executing it, one MUST look over this HOWTO to
+#    get an idea what this is all about and to understand the information
+#    needed to configure your bmx6 daemon for being fully compatible with the
+#    wireless network settings used within your local community mesh.
+#
+#    WARNING:
+#    Some commands in this script are executed with sudo and may
+#    destroy your computer and data !!!! Use it at your own risk!
+#
+#    The following environment variables are needed throughout this script.
+#    Each of them will be discussed in the remainder.
+
+
+BMX6_BUILD_DIR="$HOME/bmx6/"
+BMX6_DOWNLOAD_SITE="http://downloads.bmx6.net/bmx6/src"
+BMX6_DOWNLOAD_NAME="bmx6-current"
+
+BMX6_IF0_NAME="wlan0"
+BMX6_PORT="14305"
+
+BMX6_IF0_ADDR="10.230.255.244"  #This MUST be individual for each node!!!!!
+BMX6_IF0_MASK="255.255.0.0"
+BMX6_IF0_CHANNEL="10"
+BMX6_IF0_ESSID="ch10.freifunk.net"
+BMX6_IF0_BSSID="02:ca:ff:ee:ba:be"
+
+
+
+
+# The following commands ensure that you have installed the Debian packages to
+# download, compile, and configure the bmx6 daemon:
+
+if [ ! $(which ip       ) ]; then apt-get install iproute         ; fi
+if [ ! $(which iwconfig ) ]; then apt-get install wireless-tools  ; fi
+if [ ! $(which gcc      ) ]; then apt-get install build-essential ; fi
+if [ ! $(which make     ) ]; then apt-get install build-essential ; fi
+
+
+
+
+
+
+#    Downloading, compiling, and installing the latest BMX6 sources
+#    ==========================================================================
+#
+
+mkdir -p $BMX6_BUILD_DIR
+cd $BMX6_BUILD_DIR
+wget -O $BMX6_DOWNLOAD_NAME.tgz $BMX6_DOWNLOAD_SITE/$BMX6_DOWNLOAD_NAME.tgz
+tar xzvf $BMX6_DOWNLOAD_NAME.tgz
+cd $BMX6_DOWNLOAD_NAME
+
+make all
+# make install
+
+
+./bmx6 -v
+
+
+#    Network Configuration
+#    ==========================================================================
+#
+#
+#    Choosing Network Interface Name:        
+#    ==========================================================================
+#    see above: BMX6_IF0_NAME
+#
+#    One or several network interfaces are needed to let the bmx6 daemon
+#    communicate with others. This can be wireless and/or wired interfaces.
+#
+#    The ip command can be used to show a full list of available physical
+#    interfaces available on your system.
+#    For example, on my system a simple >$ ip link show < returns the following:
+#
+#    $ sudo ip link show
+#    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
+#        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+#    3: wlan0: <BROADCAST,MULTICAST> mtu 1500 qdisc mq state DOWN qlen 1000
+#        link/ether 00:25:d3:7a:01:11 brd ff:ff:ff:ff:ff:ff
+#    11: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
+#        link/ether 90:e6:ba:45:69:e6 brd ff:ff:ff:ff:ff:ff
+#
+#
+#    Alternatively, the iwconfig command will list the wireless interfaces:
+#
+#    $ sudo iwconfig
+#    lo        no wireless extensions.
+#
+#    wlan0     IEEE 802.11bgn  ESSID:"MY-PC_Netzwerk"
+#              Mode:Managed  Frequency:2.412 GHz  Access Point: Not-Associated
+#              Tx-Power=14 dBm
+#              Retry  long limit:7   RTS thr:off   Fragment thr:off
+#              Power Management:on
+#
+#    eth0      no wireless extensions.
+#
+#
+#    Assuming wlan0 should be the interface for meshing, the variable:
+#    BMX6_IF0_NAME must be set respectively.
+
+
+#    Configure Mesh Community Settings
+#    ====================================================================
+#    see above: BMX6_IF0_ADDR, BMX6_IF0_ADDR, BMX6_IF0_MASK,
+#    BMX6_IF0_CHANNEL, BMX6_IF0_ESSID BMX6_IF0_BSSID BMX6_PORT
+
+#    If you only want to test BMX6 in a private network, most of the
+#    following default parameters should be fine.
+#    If you want the daemon to cooperate with an existing local mesh 
+#    community, check their proposed configuration and behavior
+#    guidelines!
+#
+#    TODO:...
+
+
+# Sometimes wireless mode can only be configured if the interface is down. So lets pull it down:
+sudo ifconfig $BMX6_IF0_NAME down
+
+# Apply wireless settings (while interface is off):
+sudo iwconfig $BMX6_IF0_NAME mode ad-hoc channel $BMX6_IF0_CHANNEL essid $BMX6_IF0_ESSID ap $BMX6_IF0_BSSID
+
+# Apply network address and prefix and pull interface up again:
+sudo ifconfig $BMX6_IF0_NAME $BMX6_IF0_ADDR netmask $BMX6_IF0_MASK
+
+# Apply wireless settings again (while interface is up):
+sudo iwconfig $BMX6_IF0_NAME mode ad-hoc channel $BMX6_IF0_CHANNEL essid $BMX6_IF0_ESSID ap $BMX6_IF0_BSSID
+
+
+
+#    Starting the bmx6 daemon
+#    ==========================================================================
+
+sudo ./bmx6 dev=$BMX6_IF0_NAME
+
+
+
+#    Watching the bmx6 daemon
+#    ==========================================================================
+
+sudo ./bmx6 -c status
+
+sudo ./bmx6 -c status links originators
+
+#./bmx6 -l -c -d8
+
+ip rule
+
+ip route ls table 144
+ip route ls table 145
+
+#killall bmx6
+
+./bmx6 -H

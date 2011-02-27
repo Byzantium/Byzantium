@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/batman/!svn/ver/1244/trunk/batman/bsd
+END
+route.c
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/batman/!svn/ver/1189/trunk/batman/bsd/route.c
+END
+kernel.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/batman/!svn/ver/1189/trunk/batman/bsd/kernel.c
+END
+compat.c
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/batman/!svn/ver/533/trunk/batman/bsd/compat.c
+END
+tun.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/batman/!svn/ver/1244/trunk/batman/bsd/tun.c
+END

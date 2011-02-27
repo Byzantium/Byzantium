@@ -1,0 +1,281 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/batman/!svn/ver/1952/trunk/batman-adv
+END
+gateway_client.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1949/trunk/batman-adv/gateway_client.c
+END
+vis.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/batman/!svn/ver/1952/trunk/batman-adv/vis.c
+END
+bat_sysfs.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/batman/!svn/ver/1926/trunk/batman-adv/bat_sysfs.h
+END
+gateway_client.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1926/trunk/batman-adv/gateway_client.h
+END
+Makefile.kbuild
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/batman/!svn/ver/1926/trunk/batman-adv/Makefile.kbuild
+END
+bat_debugfs.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/batman/!svn/ver/1926/trunk/batman-adv/bat_debugfs.c
+END
+CHANGELOG
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/batman/!svn/ver/1927/trunk/batman-adv/CHANGELOG
+END
+unicast.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/batman/!svn/ver/1952/trunk/batman-adv/unicast.c
+END
+vis.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/batman/!svn/ver/1926/trunk/batman-adv/vis.h
+END
+sysfs-class-net-mesh
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/batman/!svn/ver/1870/trunk/batman-adv/sysfs-class-net-mesh
+END
+types.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/batman/!svn/ver/1952/trunk/batman-adv/types.h
+END
+bat_debugfs.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/batman/!svn/ver/1926/trunk/batman-adv/bat_debugfs.h
+END
+unicast.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/batman/!svn/ver/1952/trunk/batman-adv/unicast.h
+END
+packet.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/batman/!svn/ver/1926/trunk/batman-adv/packet.h
+END
+bitarray.c
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/batman/!svn/ver/1926/trunk/batman-adv/bitarray.c
+END
+bitarray.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/batman/!svn/ver/1926/trunk/batman-adv/bitarray.h
+END
+hash.c
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/batman/!svn/ver/1948/trunk/batman-adv/hash.c
+END
+translation-table.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/batman/!svn/ver/1949/trunk/batman-adv/translation-table.c
+END
+hash.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/batman/!svn/ver/1948/trunk/batman-adv/hash.h
+END
+translation-table.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/batman/!svn/ver/1931/trunk/batman-adv/translation-table.h
+END
+send.c
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/batman/!svn/ver/1952/trunk/batman-adv/send.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/batman/!svn/ver/1926/trunk/batman-adv/Makefile
+END
+bat_printk.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/batman/!svn/ver/1855/trunk/batman-adv/bat_printk.c
+END
+send.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/batman/!svn/ver/1952/trunk/batman-adv/send.h
+END
+icmp_socket.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/batman/!svn/ver/1949/trunk/batman-adv/icmp_socket.c
+END
+icmp_socket.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/batman/!svn/ver/1931/trunk/batman-adv/icmp_socket.h
+END
+gateway_common.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1926/trunk/batman-adv/gateway_common.c
+END
+soft-interface.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1952/trunk/batman-adv/soft-interface.c
+END
+hard-interface.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1952/trunk/batman-adv/hard-interface.c
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/batman/!svn/ver/1927/trunk/batman-adv/README
+END
+originator.c
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/batman/!svn/ver/1952/trunk/batman-adv/originator.c
+END
+gateway_common.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1926/trunk/batman-adv/gateway_common.h
+END
+soft-interface.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1952/trunk/batman-adv/soft-interface.h
+END
+hard-interface.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1952/trunk/batman-adv/hard-interface.h
+END
+originator.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/batman/!svn/ver/1952/trunk/batman-adv/originator.h
+END
+main.c
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/batman/!svn/ver/1952/trunk/batman-adv/main.c
+END
+sysfs-class-net-batman-adv
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/batman/!svn/ver/1828/trunk/batman-adv/sysfs-class-net-batman-adv
+END
+routing.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/batman/!svn/ver/1952/trunk/batman-adv/routing.c
+END
+aggregation.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/batman/!svn/ver/1952/trunk/batman-adv/aggregation.c
+END
+ring_buffer.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/batman/!svn/ver/1926/trunk/batman-adv/ring_buffer.c
+END
+compat.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/batman/!svn/ver/1948/trunk/batman-adv/compat.h
+END
+main.h
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/batman/!svn/ver/1951/trunk/batman-adv/main.h
+END
+aggregation.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/batman/!svn/ver/1952/trunk/batman-adv/aggregation.h
+END
+routing.h
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/batman/!svn/ver/1952/trunk/batman-adv/routing.h
+END
+ring_buffer.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/batman/!svn/ver/1926/trunk/batman-adv/ring_buffer.h
+END
+bat_sysfs.c
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/batman/!svn/ver/1952/trunk/batman-adv/bat_sysfs.c
+END

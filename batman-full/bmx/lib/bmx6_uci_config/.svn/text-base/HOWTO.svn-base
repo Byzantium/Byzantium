@@ -1,0 +1,15 @@
+2009-08-10 - bmx6_config plugin for openWrt universial configuraton interface (UCI)
+
+- plugin for dynamic interaction with uci 
+  ( http://downloads.openwrt.org/sources/uci-0.7.3.tar.gz )
+
+- to compile first install uci: 
+	wget http://downloads.openwrt.org/sources/uci-0.7.3.tar.gz
+	tar xzvf uci-0.7.3.tar.gz; cd uci-0.7.3; make; sudo make install
+
+- default configuration backend is: /etc/config/bmx6
+
+- see lib/bmx6_config/etc_config for a simple (bmx)
+  and an advanced (bmx-advanced) example
+
+

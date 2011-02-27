@@ -1,0 +1,76 @@
+
+Getting started with the batman daemon
+======================================
+
+Make sure you have no firewall running that is blocking UDP
+port 4305 (originator messages), port 4306 (gateway traffic).
+Port 4307 has to be open for incoming UDP traffic if you run the
+B.A.T.M.A.N. visualization server.
+
+First the network interfaces supposed to participate
+in the batman mesh must be configured properly. You either run it on top
+of any "normal" network interface (WiFi, Ethernet, etc) or on an alias
+interface. In normal scenarios the alias interface is not needed unless
+you want to test / verify / benchmark B.A.T.M.A.N.
+
+Alias interface example: Assuming you have an already configured
+interface eth1 with the IP address of 104.1.12.123/8 and want to run
+batman in parallel on the same physical interface but with a
+105.1.12.123/8 IP/netmask.
+
+$ ifconfig eth1:bat 105.1.12.123 netmask 255.0.0.0 broadcast 105.255.255.255
+$ batmand -d 3 eth1:bat
+
+This will configure an alias interface on top of eth1 named eth1:bat and start
+the batman daemon with debug level 3 on that alias interface. As soon as
+another running batmand (with the same netmask and broadcast address) is
+connected to that link (or within the range of the wireless link)
+both batman daemons should see each other and indicate this in the debug output.
+
+The daemon started with debug level 3 can be terminated with ctrl-c.
+If no debuglevel is given at startup, using
+
+$ batmand eth1:bat
+
+the daemon will immediateley fork to the background (as is the usual behavior
+of a daemon). However you can always connect to the main daemon (running
+in background) by launching a client-batmand process with the
+-c and -d <number> option, where the number represents the desired
+debug-level. The following command will connect to a running batmand
+process providing debug-level 1 informations.
+
+$ batmand -c -d 1 # shows a list of other nodes in the mesh
+
+$ batmand -c -d 2 # shows a list of nodes offering internet GW access
+
+$ route -n # shows your current routing table as modified by batmand
+
+For a full list of supported debug-levels and other startup options see
+
+$ batmand -h # providing a brief summary of options and
+
+$ batmand -H # for a more detailed list of options
+
+Use ctrl-c to terminate a process running in foreground and
+
+$ killall batmand
+
+to terminate the main batmand daemon running in background.
+
+If you want to use one of the batman-internet gateways showed with
+debug-level 2 launch the main batmand using:
+
+$ batmand -r 3 eth1:bat # to automatically select a reasonable GW
+
+$ batmand -r 3 -p <ip-of-batmand-gw-node> eth1:bat # to set a preferred GW
+
+In case of success this will setup a tunnel to a (preferred) batman-gw-node
+and configure the routing table that all packets matching the default route
+are forwarded (tunneled) respectively.
+More information is available using the -h and -H options and in the manpage.
+
+
+Happy routing!
+
+The B.A.T.M.A.N. contributors
+

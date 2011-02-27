@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/batman/!svn/ver/1335/trunk/batman/linux/modules
+END
+compat26.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/batman/!svn/ver/1181/trunk/batman/linux/modules/compat26.h
+END
+gateway.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/batman/!svn/ver/1335/trunk/batman/linux/modules/gateway.c
+END
+mod_batman.c
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/batman/!svn/ver/1181/trunk/batman/linux/modules/mod_batman.c
+END
+hash.c
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1290/trunk/batman/linux/modules/hash.c
+END
+Makefile.kbuild
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/batman/!svn/ver/1046/trunk/batman/linux/modules/Makefile.kbuild
+END
+gateway.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/batman/!svn/ver/1335/trunk/batman/linux/modules/gateway.h
+END
+gateway24.c
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/batman/!svn/ver/1181/trunk/batman/linux/modules/gateway24.c
+END
+hash.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/batman/!svn/ver/1181/trunk/batman/linux/modules/hash.h
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/batman/!svn/ver/1261/trunk/batman/linux/modules/Makefile
+END
+gateway24.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/batman/!svn/ver/1181/trunk/batman/linux/modules/gateway24.h
+END

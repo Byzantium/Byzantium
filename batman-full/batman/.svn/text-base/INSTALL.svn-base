@@ -1,0 +1,56 @@
+
+###################################
+B.A.T.M.A.N. Installation and Usage
+###################################
+
+Compiling from source
+=====================
+
+Pre-requirements
+---------------
+
+You need the usual compile environment and the libpthread-library
+and the kernel module "tun". Both should already be installed on
+your machine, if you use a PC with Linux. On embedded devices
+both may not be installed in order to save space. GNU Make is needed
+for compilation (currently BSD Make is not cooperating).
+
+The *BSD and Mac OS operating systems are currently unmaintained,
+make targets are still available but will most probably not work.
+If you're interested in porting and maintaining B.A.T.M.A.N. for
+these systems, please contact us. We would appreciate your help.
+
+Compiling
+---------
+
+You don't necessarily need to compile. May be your distribution
+or our download store offers precompiled packages. Check
+http://www.open-mesh.net/wiki/Download to get an overview.
+
+Download and compile the latest stable sources from the download
+section http://www.open-mesh.net/wiki/Download by executing eg.:
+
+$ wget http://downloads.open-mesh.net/batman/releases/batman-0.3.2/batman-0.3.2.tar.gz
+$ tar xzvf batman-0.3.2.tar.gz
+$ cd batmand-0.3.2
+$ make
+
+After the compilation process is finished you'll find a executable
+file called 'batmand'. This executable is quite big because it is
+not stripped. Don't strip it if you want to help us finding a bug
+in the daemon. Strip it by executing:
+
+$ strip batmand
+
+Install by executing (as root):
+
+$ make install
+
+Or start it right from the directory where you compiled it by
+issuing:
+
+./batmand
+
+See the README file for "getting started" instructions or consult the
+manpage to get an overview about the command line options.
+
