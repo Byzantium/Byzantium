@@ -1,0 +1,23 @@
+pristine:0000003012-b5cfdc8ed7abc89587bf265136909aeae661eae4d7ca0229ec4e306929f71241
+Starting with inventory:
+0000003686-5dff3d13368854b13b3d42128e2f7bc839d09ec3caef70102c841d2d3382d088
+[TAG babeld-1.1.0
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20110130070248
+ Ignore-this: 1ee5b4de89c1a1e32b65d47260a3481b
+] 
+hash: 0000002400-63e5549aa1c6ec0b3302e9185c67d6fb1378ea7e9721505169cadcae8cc21093
+[Move debugging message around.
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20110202160918
+ Ignore-this: 48d5825002275addf0bc8ae4ceb4407d
+] 
+hash: 0000000453-bb84239e14e61ca08d69d4780d19a0774ae3f8e030cd905ad7d6f6d2aac7136a
+[Fix typo in debugging message.
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20110202161353
+ Ignore-this: c5dd24debe34e8bd23b80380e3dc4fe5
+] 
+hash: 0000000266-dc0103ea7be54fee88e803edb274cd3f4c13abc77a5c655b86eaec50d2baeec1
+[Tweak README for compatibility with markdown.
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20110219221421
+ Ignore-this: 77988449d7ca3aefcc0e99e9d35f732a
+] 
+hash: 0000002980-3d499f0843ba3604618386cf67c306a2959be55d8b133d86305e0fc8612cd846

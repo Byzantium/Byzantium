@@ -1,0 +1,336 @@
+.TH BABELD 8
+.SH NAME
+babeld \- ad-hoc network routing daemon
+.SH SYNOPSIS
+.B babeld
+.IR option ...
+[
+.B \-\-
+]
+.IR interface ...
+.SH DESCRIPTION
+Babel is a loop-avoiding distance-vector routing protocol roughly
+based on DSDV and AODV, but with provisions for link cost estimation
+and redistribution of routes from other routing protocols.
+
+While it is optimised for wireless mesh networks, Babel will also work
+efficiently on wired networks.
+.SH OPTIONS
+.TP
+.BI \-m " multicast-address"
+Specify the link-local multicast address to be used by the protocol.
+The default is
+.BR ff02:0:0:0:0:0:1:6 .
+.TP
+.BI \-p " port"
+Specify the UDP port number to be used by the protocol.  The default is
+.BR 6697 .
+.TP
+.BI \-S " state-file"
+Set the name of the file used for preserving long-term information
+between invocations of the
+.B babeld
+daemon.  If this file is deleted, the daemon will run in passive mode
+for 3 minutes when it is next started (see
+.B -P
+below), and other hosts might initially ignore it.  The default is
+.BR /var/lib/babel-state .
+.TP
+.BI \-h " hello-interval"
+Specify the interval in seconds at which scheduled hello packets are
+sent on wireless interfaces.  The default is 4 seconds.
+.TP
+.BI \-H " wired-hello-interval"
+Specify the interval in seconds at which scheduled hello packets are
+sent on wired interfaces.  The default is 20 seconds.
+.TP
+.BI \-i " idle-hello-interval"
+Enable detection of idle networks (networks on which we haven't received
+a hello packet in the last 5 minutes) and specify the interval in seconds
+at which scheduled hello packets are sent on idle interfaces.  This
+functionality is experimental, don't use it unless you know what you are
+doing.
+.TP
+.BI \-k " priority"
+Specify the priority value used when installing routes into the kernel.
+The default is 0.
+.TP
+.BI \-A " priority"
+Allow duplicating external routes when their kernel priority is at least
+.IR priority .
+Do not use this option unless you know what you are doing, as it can cause
+persistent route flapping.
+.TP
+.B \-l
+Use IFF_RUNNING (carrier sense) when determining interface availability.
+.TP
+.B \-w
+Don't optimise wired links, assume all interfaces are wireless unless
+explicitly overridden in the configuration file.
+.TP
+.B \-s
+Do not perform split-horizon processing on wired interfaces.
+Split-horizon is not performed on wireless interfaces.
+.TP
+.B \-P
+Run in parasitic (passive) mode.  The daemon will only announce
+redistributed routes.
+.TP
+.BI \-d " level"
+Debug level.  A value of 1 requests a routing table dump at every
+iteration through the daemon's main loop.  A value of 2 additionally
+requests tracing every message sent or received.  A value of
+3 additionally dumps all interactions with the OS kernel.  The default
+is 0.
+.TP
+.BI \-g " port"
+Listen for connections from a front-end on port
+.IR port .
+.TP
+.BI \-t " table"
+Use the given kernel routing table for routes inserted by
+.BR babeld .
+.TP
+.BI \-T " table"
+Export routes from the given kernel routing table.
+.TP
+.BI \-c " filename"
+Specify the name of the configuration file.  The default is
+.BR /etc/babeld.conf .
+.TP
+.BI \-C " statement"
+Specify a configuration statement directly on the command line.
+.TP
+.B \-D
+Daemonise at startup.
+.TP
+.BI \-L " logfile"
+Specify a file to log random ``how do you do?'' messages to.  This
+defaults to standard error if not daemonising, and to
+.B /var/log/babeld.log
+otherwise.
+.TP
+.BI \-I " pidfile"
+Specify a file to write our process id to.  The default is
+.BR /var/run/babeld.pid .
+.TP
+.IR interface ...
+The list of interfaces on which the protocol should operate.
+.SH CONFIGURATION FILE FORMAT
+The configuration file is a sequence of lines each of which specifies
+either an interface or a filtering rule.  Blank lines are ignored.  Comments
+are introduced with an octothorp
+.RB `` # ''
+and terminate at the end of the line.
+.SS Interface configuration
+An interface is configured by a single line with the following format:
+.IP
+.B interface
+.I name
+.RI [ parameter ...]
+.PP
+.I Name
+is the name of the interface (something like
+.BR eth0 ).
+
+Each
+.I parameter
+specifies a parameter of the given interface.  It can be one of:
+.TP
+.BR wired " {" true | false | auto }
+This specifies whether to enable optimisations specific to wired interfaces.
+By default, this is determined automatically unless the
+.B \-w
+command-line flag was specified.
+.TP
+.BR link\-quality " {" true | false | auto }
+This specifies whether link quality estimation should be performed on this
+interface.  The default is to perform link quality estimation on wireless
+interfaces but not on wired interfaces.
+.TP
+.BR split\-horizon " {" true | false | auto }
+This specifies whether to perform split-horizon processing on this
+interface.  The default is to never perform split-horizon processing on
+wireless interfaces; on wired interfaces, the default depends on the
+.B \-s
+flag.
+.TP
+.BI rxcost " cost"
+This defines the cost of receiving frames on the given interface under
+ideal conditions (no packet loss); how this relates to the actual cost used
+for computing metrics of routes going through this interface depends on
+whether link quality estimation is being done.  The default is 96 for wired
+interfaces, and 256 for wireless ones.
+.TP
+.BI hello\-interval " interval"
+This defines the interval between hello packets sent on this interface.
+The default is specified with the
+.B \-h
+and
+.B \-H
+command-line flags.
+.TP
+.BI update\-interval " interval"
+This defines the interval between full routing table dumps sent on this
+interface; since Babel uses triggered updates and doesn't count to
+infinity, this can be set to a fairly large value, unless significant
+packet loss is expected.  The default is four times the hello interval.
+.SS Filtering rules
+A filtering rule is defined by a single line with the following format:
+.IP
+.I filter
+.IR selector ...
+.I action
+.PP
+.I Filter
+specifies the filter to which this entry will be added, and can be one of
+.BR in ,
+.BR out ,
+or
+.BR redistribute .
+
+Each
+.I selector
+specifies the conditions under which the given statement matches.  It
+can be one of
+.TP
+.BI ip " prefix"
+This entry only applies to routes in the given prefix.
+.TP
+.BI eq " plen"
+This entry only applies to routes with a prefix length equal to
+.BR plen .
+.TP
+.BI le " plen"
+This entry only applies to routes with a prefix length less or equal to
+.BR plen .
+.TP
+.BI ge " plen"
+This entry only applies to routes with a prefix length greater or equal to
+.BR plen .
+.TP
+.BI neigh " address"
+This entry only applies to routes learned from a neighbour with
+link-local address
+.IR address .
+.TP
+.BI id " id"
+This entry only applies to routes originated by a router with router-id
+.IR id .
+.TP
+.BI proto " p"
+This entry only applies to kernel routes with kernel protocol number
+.IR p .
+If neither
+.B proto
+nor
+.B local
+is specified, this entry applies to all non-local kernel routes with
+a protocol different from "boot".
+.TP
+.B local
+This entry only applies to local addresses.
+.TP
+.BI if " interface"
+For an input filter, this specifies the interface over which the route
+is learned.  For an output filter, this specifies the interface over
+which this route is advertised.  For a redistribute statement, this
+specifies the interface over which the route forwards packets.
+.PP
+.I Action
+specifies the action to be taken when this entry matches.  It can have
+one of the following values:
+.TP
+.B allow
+Allow this route, without changing its metric (or setting its metric
+to 0 in case of a redistribute filter).
+.TP
+.B deny
+Ignore this route.
+.TP
+.BI metric " value"
+For an input or output filter, allow this route after increasing its metric by
+.IR value .
+For a redistribute filter, redistribute this route with metric
+.IR value .
+.PP
+If
+.I action
+is not specified, it defaults to
+.BR allow .
+
+By default,
+.B babeld
+redistributes all local addresses, and no other routes.  In order to
+make sure that only the routes you specify are redistributed, you
+should include the line
+.IP
+redistribute local deny
+.PP
+as the last line in your configuration file.
+.SH EXAMPLES
+You can participate in a Babel network by simply running
+.IP
+# babeld wlan0
+.PP
+where
+.B wlan0
+is the name of your wireless interface.
+
+In order to gateway between multiple interfaces, just list them all on
+the command line:
+.IP
+# babeld wlan0 eth0 sit1
+.PP
+On an access point, you'll probably want to redistribute some external
+routes into Babel:
+.IP
+# babeld \\
+    \-C 'redistribute metric 256' \\
+    wlan0
+.PP
+or, if you want to constrain the routes that you redistribute,
+.IP
+# babeld \\
+    \-C 'redistribute proto 11 ip ::/0 le 64 metric 256' \\
+    \-C 'redistribute proto 11 ip 0.0.0.0/0 le 24 metric 256' \\
+    wlan0
+.SH FILES
+.TP
+.B /etc/babeld.conf
+The default location of the configuration file.
+.TP
+.B /var/lib/babel\-state
+The default location of the file storing long-term state.
+.TP
+.B /var/run/babeld.pid
+The default location of the pid file.
+.TP
+.B /var/log/babeld.log
+The default location of the log file.
+.SH SIGNALS
+.TP
+.B SIGUSR1
+Dump Babel's routing tables to standard output or to the log file.
+.TP
+.B SIGUSR2
+Check interfaces and kernel routes right now, then reopen the log file.
+.SH SECURITY
+Babel is a completely insecure protocol: any attacker able to inject
+IP packets with a link-local source address can disrupt the protocol's
+operation.  This is no different from unsecured neighbour discovery or ARP.
+
+Since Babel uses link-local IPv6 packets only, there is no need to update
+firewalls to allow forwarding of Babel protocol packets.  If local
+filtering is being done, UDP datagrams to the port used by the protocol
+should be allowed.  As Babel uses unicast packets in some cases, it is not
+enough to just allow packets destined to Babel's multicast address.
+.SH BUGS
+Plenty.  This is experimental software, run at your own risk.
+.SH SEE ALSO
+.BR routed (8),
+.BR route6d (8),
+.BR zebra (8),
+.BR ahcpd (8).
+.SH AUTHOR
+Juliusz Chroboczek.

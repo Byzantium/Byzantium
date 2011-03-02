@@ -1,0 +1,100 @@
+pristine:0000001930-1f8f8fd36e9ae441b0311b5816ca0d272d05a3ce9bc70a9ec72f13ca3e0eb570
+Starting with inventory:
+0000013707-371b36bbc990ab09d8f48ff298962d3bdd92940b13ff594d220242fb1d07a734
+[TAG ahcpd-0.51
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20100129024259
+ Ignore-this: e74094c82ab84fc53f56196b3f307946
+] 
+hash: 0000008811-6625396916a4465f0ee0c3edab01eed171cb3fb5b52fd057a7d05196aeda50e5
+[Flawed logic in timeval_minus
+Gabriel Kerneis <kerneis@pps.jussieu.fr>**20100129151817
+ Ignore-this: 194479a57a6f5d29bfaa8b5c987ab462
+] 
+hash: 0000000231-98d1ec27ff401f912872bdf9b551b034ddf21b378c9850c0b9bd64355211a944
+[Typo in usage message
+Gabriel Kerneis <kerneis@pps.jussieu.fr>**20100203093706
+ Ignore-this: 4954387e500b067453c2d667cb8b74cf
+] 
+hash: 0000000235-0cbe84b564c77803e31b51f5a5338ae59f6543afa3b5ccab4523616128e081ff
+[Man page enhancements
+Gabriel Kerneis <kerneis@pps.jussieu.fr>**20100203093738
+ Ignore-this: 9984266c6b8591b83674afc9c43dcf81
+ Document default values and limits, fix typo and copy/paste mistakes.
+] 
+hash: 0000000943-8ba9a21b07ffd6ab65b264d1ced7cea4cd6f7dd7c4d35902c4e89621d2d2f47b
+[Document lease-dir, remove spurious word
+Gabriel Kerneis <kerneis@pps.jussieu.fr>**20100217124636
+ Ignore-this: c53e774c4144c10b685236a340c65143
+] 
+hash: 0000000615-61c1e164a290f29ed36741a1fcaf5564c514e485198ed39e6e3460e793278b4f
+[Rename babel to babeld in man page
+Gabriel Kerneis <kerneis@pps.jussieu.fr>**20100223124749
+ Ignore-this: 25b99cb11d6b4e7a62a9bcc2e9e9a0e0
+] 
+hash: 0000000348-398d83ef3e80d7361b4208ed398a57b91aa963e5f2fb0e5540e86007ce0b428a
+[Fix typo -- ignore autoconf prefixes for plen > 64.
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20100719222527
+ Ignore-this: e41c8d5c48799352c86b9dbd2882fe04
+ Thanks to Gabriel Kerneis.
+] 
+hash: 0000000326-2e07228806e355da91be21a4a24d52c69a5ccc09836c97e743b9a0fb7bf1a46d
+[Update CHANGES.
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20100719222711
+ Ignore-this: b0ced951dc8d30a2471aea7b6f681331
+] 
+hash: 0000000276-3fa418391302fc4baeaeffd14b073e534990f455c61ebf679f27b44c1d5a9f81
+[Add OpenBSD headers
+dermiste@screwball-coders.net**20100516162915
+ Ignore-this: 1b24f833620e1de763ccead09221ed48
+ 
+ Adding some missing headers for compilation on OpenBSD
+ 
+] 
+hash: 0000000527-10cf539cc8e0a2e09d85ce433578f71c024159d2dca5f4db1a1d4eba41202d0c
+[Change config script
+dermiste@screwball-coders.net**20101103170101
+ Ignore-this: a037847e772f0902f95d0e074ae01c48
+ 
+ Ip and Iproute are the exception, not the rule.
+] 
+hash: 0000001334-9140330e6981b9da1615c521663320027c8bdb78890c47d04229873ed3b78fa8
+[Astract entropy source name
+dermiste@screwball-coders.net**20101103170439
+ Ignore-this: d2abfbad006bc37c1fbf7d8ec89fc96e
+] 
+hash: 0000000482-0d9ff69995026d4d20662b445630763ec719748154bc11f4080f76e4b8b17ae4
+[Swap headers to prevent warnings during compilation
+dermiste@screwball-coders.net**20101103170743
+ Ignore-this: a49973513e991d9e3d14b3c73e65b811
+] 
+hash: 0000000499-fcc3261deb94e019feaedb8ce1db66a8acc7e76c59a2a13df818ffc01192d369
+[Add header to prevent warning during compilation
+dermiste@screwball-coders.net**20101103171053
+ Ignore-this: 1de6ba193339a65dbea904c5212e23df
+] 
+hash: 0000000188-86c2243bede9947bfa34cb77b2c2fdf9791066b2a0557d285d04258de0728e27
+[Remove duplicate code that fails too quickly
+dermiste@screwball-coders.net**20101103171140
+ Ignore-this: 6045cf970e846a570aae58afd9a07c98
+] 
+hash: 0000000269-5ef78fb29d9f7bcc77312e51f096a2061eebd3758339cbbaebdc710554ccf7e7
+[Remove unneeded headers
+dermiste@screwball-coders.net**20101103171306
+ Ignore-this: b47b1d8dbfc47f14e54090d7cc3d393
+] 
+hash: 0000000208-899e9eaf2a15c7a4f0581b9219aba5145406eebfdca681a75416b92441f1aff8
+[Avoid warning when compiling config.c.
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20101109113626
+ Ignore-this: 289babdb203c28bd2a57a4c73c45adf6
+] 
+hash: 0000000187-3b9402ced6bce9b05f8e2688286dd255b34833c2db496f6623cce83ff802dfe8
+[Update CHANGES.
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20101109120448
+ Ignore-this: 2dd9ef0a40c254b9911ca1669f4f7260
+] 
+hash: 0000000178-3f9da45eb928535b8d3486d06c8c5aa14cfcd17d41e85a4956528b366c7a7751
+[Tweak README for compatibility with markdown.
+Juliusz Chroboczek <jch@pps.jussieu.fr>**20110219221853
+ Ignore-this: 8c1d4f8c8d447b22084bd24f44bc7031
+] 
+hash: 0000001402-69724047ba2727ad26ce9e3c20654b3afdf860fd8c928db2a9acfab7dc187520

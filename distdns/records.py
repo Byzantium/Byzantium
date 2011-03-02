@@ -10,27 +10,27 @@ class Database:
 
 		if not os.path.isfile(dbfile):
 
-			self.db.execute('create table hosts (ip text, name text, mac text)')
+			self.db.execute('create table hosts (ip text, name text, mac text, type text, ttl integer, ts integer)')
 
 		self.database.commit()
 
-	def addrecord(self, vals):
+	def add(self, vals):
 
 		# check for record
 
 		# do magic to remove old dups
 
-		self.db.execute("insert into hosts values ('%s', '%s', '%s')" % (vals[ip], vals[name], vals[mac]) )
+		self.db.execute("insert into hosts values ('%s', '%s', '%s')" % (vals['ip'], vals['name'], vals['mac'], vals['type']) )
 
 		self.database.commit()
 
-	def delrecord(self, cond):
+	def del(self, cond):
 
       self.execute("delete from hosts where %s" % cond )
 
 		self.database.commit()
 
-	def checkrecord(self, name, rectype = 'A'):
+	def check(self, name, rectype = 'A'):
 
 		records = []
 

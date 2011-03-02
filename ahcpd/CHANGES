@@ -1,0 +1,53 @@
+ahcpd 0.52: unreleased
+
+  * Fixed a typo when testing the prefix length of received IPv6 prefixes.
+    (Thanks to Gabriel Kerneis.)
+  * Port to OpenBSD, by Vincent Gross.
+
+29 January 2010: ahcpd 0.51
+
+  * Servers are now configured with a plain-text configuration file.
+  * Implemented client-side support for prefix delegation (-P).
+  * Made requesting state more persistent, to deal with packet loss.
+  * Fixed a typo that prevented the -I option from working.
+  * Fixed compilation on BSD systems.
+  * Fixed a bug that could cause an expired lease to be discarded when
+    older ones are available.
+
+11 August 2009: ahcpd 0.50
+
+  * Complete redesign of AHCP as a client-server protocol layered over
+    a built-in multicast routing layer.  This protocol (version 1) is
+    completely incompatible with the old (version 0) protocol.
+
+25 May 2008: ahcpd 0.5
+
+  * Made ahcpd gracefully survive interfaces going up/down or being
+    renumbered, as usually happens when tunnels or VPNs are started or
+    stopped.
+  * Implemented the ability to run as a daemon.
+  * Implemented the ability to try multiple stateful servers.
+  * Implemented the flag -r, which prevents the routing protocol from
+    being started.
+
+17 February 2008: ahcpd 0.4
+
+  * Implemented stateful configuration for IPv4.
+  * Tweaked timing to avoid hopping between competing configurations.
+  * Fixed conversion of Babel hello intervals to seconds.
+
+28 October 2007: ahcpd 0.3
+
+  * Moved user-serviceable parts to /etc/ahcp/
+  * Added support for configuring an NTP server.
+  * Made ahcp print warnings when a clock inconsistency is detected.
+  * Fixed error handling when the configuration script dies unexpectedly.
+
+27 September 2007: ahcpd 0.2
+
+  * Fixed a bug in computation of validity time that would cause ahcpd
+    to be much more chatty than necessary.
+
+22 August 2007: ahcpd 0.1
+
+  * Initial public release.
