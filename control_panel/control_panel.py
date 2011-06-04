@@ -49,30 +49,59 @@ class Status(object):
         # Set the variables that'll eventually be displayed to the user to
         # known values.  If nothing else, we'll know if something is going wrong
         # someplace if they don't change.
+        uptime = 0
         one_minute_load = 0
         five_minute_load = 0
-        ten_minute_load = 0
+        fifteen_minute_load = 0
         ram = 0
         ram_used = 0
         swap = 0
         swap_used = 0
 
-        # Execute helper methods to get the one, five, and ten minute system
-        # load averages from the OS.
-        (one_minute_load, five_minute_load, ten_minute_load) = self.get_load()
+        # Get the node's uptime from the OS.
+        uptime = self.get_uptime()
+
+        # Convert the uptime in seconds into something human readable.
+        (minutes, seconds) = divmod(float(uptime), 60)
+        (hours, minutes) = divmod(minutes, 60)
+        uptime = "%i hours, %i minutes, %i seconds" % (hours, minutes, seconds)
+
+        # Get the one, five, and ten minute system load averages from the OS.
+        (one_minute_load, five_minute_load, fifteen_minute_load) = self.get_load()
 
         # Get the amount of RAM and swap used by the system.
         (ram, ram_used, swap, swap_used) = self.get_memory()
 
         page = templatelookup.get_template("/index.html")
-        return page.render(one_minute_load = one_minute_load,
+        return page.render(uptime = uptime, one_minute_load = one_minute_load,
                            five_minute_load = five_minute_load,
-                           ten_minute_load = ten_minute_load,
+                           fifteen_minute_load = fifteen_minute_load,
                            ram = ram, ram_used = ram_used,
                            swap = swap, swap_used = swap_used,
                            title="Byzantium Node Control Panel",
                            purpose_of_page="System Status")
     index.exposed = True
+
+    # Query the node's uptime (in seconds) from the OS.
+    def get_uptime(self):
+        # Open /proc/uptime.
+        uptime = open("/proc/uptime", "r")
+
+        # Read the first vlaue from the file.  If it can't be opened, return
+        # nothing and let the default values take care of it.
+        system_uptime = uptime.readline()
+        if not system_uptime:
+            uptime.close()
+            return
+
+        # Separate the uptime from the idle time.
+        (node_uptime, node_idle_time) = system_uptime.split()
+
+        # Cleanup.
+        uptime.close()
+
+        # Return the system uptime (in seconds).
+        return node_uptime
 
     # Queries the OS to get the system load stats.
     def get_load(self):
