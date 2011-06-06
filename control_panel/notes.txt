@@ -138,3 +138,156 @@ to a bit of code.  For example:
 	${junkgenerator.produce()}
 	${witty_quote()}
 	${pow(x, 4)}
+
+RRDtool: Automagically polls the OS for whatever stats you tell it and generates
+graphs on demand.  Flexible enough that you can use it to graph stats on just
+about whatever you want so long as you can massage the data primitives into
+axes on a graph.
+
+Uses round robin databases to store stats.  Oldest values get cycled out as new
+ones are added.  Database has a fixed size.
+
+X-axis is time.
+Y-axis is kilobytes (sent, received).
+
+Generates PNG files.
+
+Creating a test database:
+rrdtool create test.rrd			Create a database.
+	--start 920804400		When DB created in time_t.
+	DS:speed:COUNTER:600:U:U	Data Source: speed
+					Type of data source: COUNTER
+					Read every 600 seconds (5 minutes)
+	RRA:AVERAGE:0.5:1:24		Round Robin Archive
+					Type of archive: AVERAGE
+					: 0.5
+					Number of values to average: 1
+					Number of samples kept: 24
+
+	RRA:AVERAGE:0.5:6:10		Round Robin Archive
+					Type of archive: AVERAGE
+					: 0.5
+					Number of values to average: 6
+					Number of samples kept: 10
+
+rrdtool can also be used to update databases.
+	rrdtool update test.rrd <time in time_t format>:value
+
+Multiple values can be inserted with a single command.
+	rrdtool update foo.rrd <time>:<value> <time>:<value> <time>:<value:
+
+rrdtool can be used to query (fetch values from) a database:
+	rrdtool fetch test.rrd AVERAGE --start <time> --end <time>
+
+Generating a graph with rrdtool:
+rrdtool graph speed.png --start <time_t> --end <time_t>
+	DEF:myspeed=test.rrd:speed:AVERAGE	Define variable: myspeed
+						Found in: test.rrd
+						Use Data Source: speed
+						Type of output: AVERAGE
+	LINE2:myspeed#FF0000
+						Graph LINE is 2 pixels high.
+						Variable graphed: myspeed
+						Graph line has color FF0000
+							(red)
+
+Colors of graph lines are colored using HTML color codes: #RRGGBB.
+
+Calculations can be carried out when generating the graphs.
+Calculations are specified in Reverse Polish Notation.
+rrdtool graph speed2.png --start <time_t> --end <time_t>
+	--vertical-label m/s			Y-axis label: "m/s"
+	DEF:myspeed=test.rrd:speed:AVERAGE	Define variable: myspeed
+						Found in: test.rrd
+						Use Data Source: speed
+						Type of output: AVERAGE
+	CDEF:realspeed=myspeed,1000,\*		Calculation DEFinition
+						Define variable: realspeed
+						myspeed * 1000 (in RPN)
+
+	LINE2:realspeed#FF0000			Variable graphed: realspeed
+						Graph LINE is 2 pixels high.
+						Variable graphed: myspeed
+						Graph line has color FF0000
+							(red)
+
+Another example of computation while generating a graph.
+rrdtool graph speed3.png --start <time_t> --end <time_t>
+	--vertical-label km/h			Y-axis label: "km/h"
+	DEF:myspeed=test.rrd:speed:AVERAGE	Define variable: myspeed
+						Found in: test.rrd
+						Use DAta Source: speed
+						Type of output: AVERAGE
+	"CDEF:kmh=myspeed,3600,*"		Calculation DEFinition
+						Define variable: kmh
+						myspeed * 3600 (in RPN)
+	CDEF:fast=kmh,100,GT,kmh,0,IF		Calculation DEFinition
+						Define variable: fast
+						IF kmh > 100
+							return 0
+						else
+							return kmh
+
+	CDEF:good=kmh,100,GT,0,kmh,IF		Calculation DEFinition
+						Define variable: good
+						IF kmh > 100
+							return kmh
+						else
+							return 0
+
+	HRULE:100#0000FF:"Maximum allowed"
+						Horizontal RULEr
+						Value on Y-axis to put it: 100
+						HTML color of line: 0000FF
+						label: "Maximum allowed"
+	AREA:good#00FF00:"Good speed"		Graph type: AREA (bar graph)
+						Variable to graph: good
+						HTML color of area: 00FF00
+						Label: "Good speed"
+
+	AREA:fast#FF0000:"Too fast"		Graph type: AREA (bar graph)
+						Variable to graph: fast
+						HTML color of area: FF0000
+						Label: "Too fast"
+
+A daemon running on the node will have to periodically update the database.
+Once a minute?  Could be implemented as a shell script that sleeps for a few
+seconds every time through the loop.
+	-get a value
+	rrdtool update /path/to/foo.rrd N:<value>
+
+/proc/net/dev:
+	first line is the legend
+		interface	received	transmitted
+		wlan...		x x x		y y y
+	each subsequent line is for a network interface
+	want columns 0 (name), 1 (bytes received), 9 (bytes transmitted)
+
+Names of interfaces to poll: wlan?, eth?, ath?
+
+http://martybugs.net/linux/rrdtool/traffic.cgi
+See rrd_traffic.pl.
+Will have to be executed every minute or so.  Automatically generates and
+updates an myrouter.rrd database with network stats.  Needs to be edited by hand
+to take into account different interfaces.  Will probably need some work to
+automate the process somewhat.  If nothing else, we can use the algorithm it
+implements to create and update the RRDtool databases in another way (say, in a
+shell script that runs periodically) and just put IMG SRC tags in /index.html.
+
+Creating a database for a network interface:
+	rrdtool create /tmp/interface.rrd -s 300
+		DS:in:DERIVE:600:0:12500000
+		DS:out:DERIVE:600:0:12500000
+		RRA:AVERAGE:0.5:1:576
+		RRA:AVERAGE:0.5:6:672
+		RRA:AVERAGE:0.5:24:732
+		RRA:AVERAGE:0.5:144:1460
+
+Updating the database:
+	rrdtool update /tmp/interface.rrd -t in:out N:<bytes in>:<bytes out>
+
+Pull stats out of /proc/net/dev or using ifconfig:
+	ifconfig wlan0 | grep bytes | awk '{print $2, $6}' | sed 's/bytes://g'
+
+Then split the two values and inseert them as 'in' and 'out'.
+
