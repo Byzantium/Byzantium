@@ -98,9 +98,6 @@ while true; do
 		done
 
 	# Bottom of the loop.
-
-	echo "Sleeping for 60 seconds..."
-
 	sleep 60
 	done
 
