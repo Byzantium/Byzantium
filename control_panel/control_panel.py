@@ -28,16 +28,14 @@
 import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
+import os
 
 # Global variables.
 filedir = '/srv/controlpanel'
-
 #globalconfig = '/etc/controlpanel/controlpanelGlobal.conf'
 globalconfig = '/home/drwho/Byzantium/control_panel/controlpanelGlobal.conf'
-
 #appconfig = '/etc/controlpanel/controlpanel.conf'
 appconfig = '/home/drwho/Byzantium/control_panel/controlpanel.conf'
-
 cachedir = '/tmp/controlcache'
 
 # Classes.
@@ -72,14 +70,25 @@ class Status(object):
         # Get the amount of RAM and swap used by the system.
         (ram, ram_used, swap, swap_used) = self.get_memory()
 
+        # Enumerate the list of PNG files in the graphs/ directory and generate
+        # a sequence of IMG SRCs to insert into the HTML template.
+        graphdir = filedir + "/graphs"
+        images = os.listdir(graphdir)
+
+        # Pack the string of IMG SRCs into a string.
+        graphs = ""
+        for image in images:
+            graphs = graphs + '<img src="/graphs/' + image + '" width="50%"' + 'height="50%" alt="' + image + '" /><br />'
+
         page = templatelookup.get_template("/index.html")
         return page.render(uptime = uptime, one_minute_load = one_minute_load,
                            five_minute_load = five_minute_load,
                            fifteen_minute_load = fifteen_minute_load,
                            ram = ram, ram_used = ram_used,
                            swap = swap, swap_used = swap_used,
-                           title="Byzantium Node Control Panel",
-                           purpose_of_page="System Status")
+                           title = "Byzantium Node Control Panel",
+                           purpose_of_page = "System Status",
+                           graphs = graphs)
     index.exposed = True
 
     # Query the node's uptime (in seconds) from the OS.
@@ -164,7 +173,6 @@ root = Status()
 cherrypy.tree.mount(root, "/", appconfig)
 
 # Start the web server.
-cherrypy.server.quickstart()
 cherrypy.engine.start()
 
 # End.
