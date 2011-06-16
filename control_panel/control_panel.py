@@ -21,7 +21,9 @@
 
 # URL mappings:
 #	/ == /index.html == system status
+#	/traffic == /traffic/index.html == network traffic report
 
+# v0.2	- Split the network traffic graphs from the system status report.
 # v0.1	- Initial release.
 
 # Import modules.
@@ -39,9 +41,31 @@ appconfig = '/home/drwho/Byzantium/control_panel/controlpanel.conf'
 cachedir = '/tmp/controlcache'
 
 # Classes.
+# This class implements the network traffic status report page.
+class NetworkTraffic(object):
+    # Pretends to be index.html.
+    def index(self):
+        # Enumerate the list of PNG files in the graphs/ directory and generate
+        # a sequence of IMG SRCs to insert into the HTML template.
+        graphdir = "/srv/controlpanel/graphs"
+        images = os.listdir(graphdir)
+
+        # Pack the string of IMG SRCs into a string.
+        graphs = ""
+        for image in images:
+            graphs = graphs + '<img src="/graphs/' + image + '" width="75%"' + 'height="75%" alt="' + image + '" /><br />'
+
+        page = templatelookup.get_template("/traffic/index.html")
+        return page.render(graphs = graphs,
+                           title = "Byzantium Network Traffic Report",
+                           purpose_of_page = "Traffic Graphs")
+    index.exposed = True
+
 # The Status class implements the system status report page that makes up
 # /index.html.
 class Status(object):
+    traffic = NetworkTraffic()
+
     # Pretends to be index.html.
     def index(self):
         # Set the variables that'll eventually be displayed to the user to
@@ -65,30 +89,19 @@ class Status(object):
         uptime = "%i hours, %i minutes, %i seconds" % (hours, minutes, seconds)
 
         # Get the one, five, and ten minute system load averages from the OS.
-        (one_minute_load, five_minute_load, fifteen_minute_load) = self.get_load()
+        (one_minute_load,five_minute_load,fifteen_minute_load) = self.get_load()
 
         # Get the amount of RAM and swap used by the system.
         (ram, ram_used, swap, swap_used) = self.get_memory()
 
-        # Enumerate the list of PNG files in the graphs/ directory and generate
-        # a sequence of IMG SRCs to insert into the HTML template.
-        graphdir = filedir + "/graphs"
-        images = os.listdir(graphdir)
-
-        # Pack the string of IMG SRCs into a string.
-        graphs = ""
-        for image in images:
-            graphs = graphs + '<img src="/graphs/' + image + '" width="50%"' + 'height="50%" alt="' + image + '" /><br />'
-
-        page = templatelookup.get_template("/index.html")
+        page = templatelookup.get_template("index.html")
         return page.render(uptime = uptime, one_minute_load = one_minute_load,
                            five_minute_load = five_minute_load,
                            fifteen_minute_load = fifteen_minute_load,
                            ram = ram, ram_used = ram_used,
                            swap = swap, swap_used = swap_used,
                            title = "Byzantium Node Control Panel",
-                           purpose_of_page = "System Status",
-                           graphs = graphs)
+                           purpose_of_page = "System Status")
     index.exposed = True
 
     # Query the node's uptime (in seconds) from the OS.
@@ -164,8 +177,7 @@ templatelookup = TemplateLookup(directories=[filedir],
 # Read in the name and location of the appserver's global config file.
 cherrypy.config.update(globalconfig)
 
-# Allocate the object representing the root of the URL tree, which in this case
-# is the system status page.
+# Allocate the objects representing the URL tree.
 root = Status()
 
 # Mount the object for the root of the URL tree, which happens to be the system
