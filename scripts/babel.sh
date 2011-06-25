@@ -8,17 +8,17 @@ ESSID=${2:-"hacdc-babel"}
 CHAN=${3:-"9"}
 
 connect_to_adhoc() {
-	/sbin/ifconfig ${WDEV} down
-	/sbin/iwconfig ${WDEV} mode ad-hoc essid ${ESSID} channel ${CHAN}
-	/sbin/ifconfig ${WDEV} up
+	/sbin/ifconfig "${WDEV}" down
+	/sbin/iwconfig "${WDEV}" mode ad-hoc essid "${ESSID}" channel "${CHAN}"
+	/sbin/ifconfig "${WDEV}" up
 }
 
 start_babel() {
-	$BABELD -D -g 33123 ${WDEV}
+	"$BABELD" -D -g 33123 "${WDEV}"
 }
 
 start_ahcpd() {
-	$AHCPD -D ${WDEV}
+	"$AHCPD" -D "${WDEV}"
 }
 
 main() {
