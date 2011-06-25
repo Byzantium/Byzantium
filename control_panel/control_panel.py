@@ -34,8 +34,9 @@ import os
 
 # Global variables.
 filedir = '/srv/controlpanel'
-globalconfig = '/etc/controlpanel/controlpanelGlobal.conf'
-appconfig = '/etc/controlpanel/controlpanel.conf'
+configdir = '/etc/controlpanel'
+globalconfig = os.path.join(configdir,'controlpanelGlobal.conf')
+appconfig = os.path.join(configdir,'controlpanel.conf')
 cachedir = '/tmp/controlcache'
 
 # Classes.
@@ -45,7 +46,7 @@ class NetworkTraffic(object):
     def index(self):
         # Enumerate the list of PNG files in the graphs/ directory and generate
         # a sequence of IMG SRCs to insert into the HTML template.
-        graphdir = "/srv/controlpanel/graphs"
+        graphdir = os.path.join(filedir,"graphs")
         images = os.listdir(graphdir)
 
         # Pack the string of IMG SRCs into a string.
@@ -79,7 +80,8 @@ class Status(object):
         swap_used = 0
 
         # Get the node's uptime from the OS.
-        uptime = self.get_uptime()
+        sysuptime = self.get_uptime()
+        if uptime: uptime = sysuptime
 
         # Convert the uptime in seconds into something human readable.
         (minutes, seconds) = divmod(float(uptime), 60)
@@ -87,10 +89,12 @@ class Status(object):
         uptime = "%i hours, %i minutes, %i seconds" % (hours, minutes, seconds)
 
         # Get the one, five, and ten minute system load averages from the OS.
-        (one_minute_load,five_minute_load,fifteen_minute_load) = self.get_load()
+        sysload = self.get_load()
+        if sysload: (one_minute_load,five_minute_load,fifteen_minute_load) = sysload
 
         # Get the amount of RAM and swap used by the system.
-        (ram, ram_used, swap, swap_used) = self.get_memory()
+        sysmem = self.get_memory()
+        if sysmem: (ram, ram_used, swap, swap_used) = sysmem
 
         page = templatelookup.get_template("index.html")
         return page.render(uptime = uptime, one_minute_load = one_minute_load,
@@ -112,10 +116,10 @@ class Status(object):
         system_uptime = uptime.readline()
         if not system_uptime:
             uptime.close()
-            return
+            return False
 
         # Separate the uptime from the idle time.
-        (node_uptime, node_idle_time) = system_uptime.split()
+        node_uptime = system_uptime.split()[0]
 
         # Cleanup.
         uptime.close()
@@ -133,20 +137,21 @@ class Status(object):
         loadstring = loadavg.readline()
         if not loadstring:
             loadavg.close()
-            return
+            return False
 
         # Extract the load averages from the string.
         averages = loadstring.split()
         loadavg.close()
+        # check to avoid errors
+        if len(averages) < 3:
+           print('WARNING: /proc/loadavg is not formatted as expected')
+           return False
 
         # Return the load average values.
-        return (averages[0], averages[1], averages[2])
+        return (averages[0:2])
 
     # Queries the OS to get the system memory usage stats.
     def get_memory(self):
-        # Set default values for the memory info (real values should never be negative so it is set to -1 to help indicate an error in the final output)
-        memtotal = memfree = memused = swaptotal = swapfree = swapused = -1
-
         # Open /proc/meminfo.
         meminfo = open("/proc/meminfo", "r")
 
@@ -169,6 +174,7 @@ class Status(object):
            except KeyError as e:
               print(e)
               print('WARNING: /proc/meminfo is not formatted as expected')
+              return False
         memused = int(memtotal) - int(memfree)
         swapused = int(swaptotal) - int(swapfree)
 
