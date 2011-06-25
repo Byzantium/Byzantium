@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A valid XML document requires a declaration as the first line. -->
+<!-- The @encoding attribute is optional, but if specified it should be correct. -->
+
+<!-- The root element of an Ant build file.
+Valid attributes are @name, @default, and @basedir.
+
+@name = This sets the ant.project.name property. (Optional)
+We are skipping it here to set it later in the properties file.
+
+@default = The default target. The name of the target to run if none are specified
+on the command-line. (Optional)
+We are using the meta-target 'all' for configurability.
+
+@basedir = The base directory for all relative paths. (Optional)
+-->
+<project default="all" basedir=".">
+    <!-- Load the properties file containing the project-specific configuration. -->
+    <loadproperties srcFile="build.properties"/>
+
+    <property name="x-jarfile" location="${dist}/${ant.project.name}.jar"/>
+
+    <!-- Initialization target. -->
+    <target name="init">
+        <!-- Initialize the timestamp properties. -->
+        <tstamp/>
+
+        <!-- Make sure the src and lib directories exist. -->
+        <mkdir dir="${src}"/>
+        <mkdir dir="${test}"/>
+        <mkdir dir="${lib}"/>
+
+        <!-- Create the build directory. -->
+        <mkdir dir="${build}"/>
+    </target>
+
+    <!-- Meta-target. Just specifies the default target(s) when none is specified on the command-line. -->
+    <target name="all" depends="jar, test"/>
+
+    <!-- Distribute target. Here we prepare for distribution to a customer. -->
+    <target name="dist" depends="clean, jar, javadoc" />
+
+    <!-- Compile target. Here we compile the .java files to .class files. -->
+    <target name="compile" depends="init">
+        <!-- Call javac.
+        Compile the files in @srcdir and place the classes in @destdir.
+        @includeantruntime = Don't want Ant run-time libraries in the classpath.
+        @debug = Include debugging information in the .class files.
+        @debuglevel = Include line numbers, variable names, and lines of source.
+        -->
+        <javac srcdir="${src}"
+                destdir="${build}"
+                includeantruntime="false"
+                debug="${debug}"
+                debuglevel="${debuglevel}">
+            <!-- Include these libraries in the classpath. -->
+            <classpath>
+                <pathelement path="${libs}"/>
+                <fileset dir="${lib}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- Compile the unit tests. -->
+    <target name="compile-tests" depends="compile">
+        <javac srcdir="${test}"
+                destdir="${build}"
+                includeantruntime="false"
+                debug="${debug}"
+                debuglevel="${debuglevel}">
+            <classpath>
+                <pathelement path="${build}"/>
+                <pathelement path="${junit.path}"/>
+                <pathelement path="${libs}"/>
+                <fileset dir="${lib}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+    <!-- Test target. Make sure all the unit tests pass. -->
+    <target name="test" depends="compile, compile-tests" if="junit.path">
+        <junit fork="yes" haltonfailure="yes">
+            <classpath>
+                <pathelement path="${build}"/>
+                <pathelement path="${junit.path}"/>
+                <pathelement path="${libs}"/>
+                <fileset dir="${lib}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+
+            <!-- Format and report the test results to the console. -->
+            <formatter type="plain" usefile="no"/>
+
+            <!-- Consider all classes named Test* to be unit tests and run them. -->
+            <batchtest>
+                <fileset dir="${test}">
+                    <include name="**/Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- Make-jar target. Here we make the Jar file that will be distributed. -->
+    <target name="jar" depends="compile">
+        <!-- Create the distributable directory. -->
+        <mkdir dir="${dist}"/>
+
+        <!-- Create the lib sub directory for the third-party libraries we depend on. -->
+        <mkdir dir="${dist}/lib"/> <!-- this should be conditional on whether or not we have any libs -->
+
+        <!-- Copy the dependent libs to the lib folder.
+        @overwrite = Overwrite exiting (potentially older) versions.
+        @flatten = Don't create subdirectories in the @todir.
+        -->
+        <copy todir="${dist}/lib" overwrite="true" flatten="true">
+            <fileset dir="${lib}"/>
+        </copy>
+
+        <!-- Create a normalized Classpath to point to our libs -->
+        <pathconvert pathsep=" " property="x.classpath">
+            <fileset dir="${lib}"/>
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="lib/*"/>
+            </chainedmapper>
+        </pathconvert>
+
+        <!-- Create the Jar file for our project in the distributable directory. -->
+        <jar jarfile="${x-jarfile}">
+            <!-- Include compiled classes -->
+            <fileset dir="${build}"/>
+
+            <!-- Include source code, but exclude temporary editor files -->
+            <fileset dir="${src}" excludes="**/.*.swp **/*~"/>
+
+            <manifest>
+                <!-- Set's the Main class.
+                This is the class who's main() method will be called by default.
+                -->
+                <attribute name="Main-Class" value="${main}"/>
+
+                <!-- Set the Classpath to use when the Main-Class is executed. -->
+                <attribute name="Class-Path" value="${x.classpath} ${classpath}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- Javadoc target. Generate the Javadoc for the project. -->
+    <target name="javadoc" depends="init">
+        <!-- Create the directory for the project's documentation. -->
+        <mkdir dir="${javadoc}"/>
+
+        <!-- Generate the Javadoc -->
+        <javadoc destdir="${javadoc}">
+            <fileset dir="${src}" excludes="**/.*.swp **/*~"/>
+            <classpath>
+                <pathelement path="${libs}"/>
+                <fileset dir="${lib}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </javadoc>
+    </target>
+
+    <!-- Run target. Run the finished product. -->
+    <target name="run" depends="jar">
+        <!-- Run the compiled Jar file using the arguments and directory specified in the properties. -->
+        <java jar="${x-jarfile}" fork="true" dir="${run.dir}">
+            <arg line="${run.args}"/>
+        </java>
+    </target>
+
+    <!-- Clean target. Clean up all the generated files and directories. -->
+    <target name="clean">
+        <delete dir="${javadoc}"/>
+        <delete dir="${dist}"/>
+        <delete dir="${build}"/>
+    </target>
+</project>
+
