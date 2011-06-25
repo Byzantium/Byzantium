@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -83,16 +83,17 @@ network_prefix(int ae, int plen, unsigned int omitted,
     switch(ae) {
     case 0: break;
     case 1:
-        if(pb > 4 || (pb > omitted && len < pb - omitted)) return -1;
+        if(omitted > 4 || pb > 4 || (pb > omitted && len < pb - omitted))
+            return -1;
         memcpy(prefix, v4prefix, 12);
         if(omitted) {
             if (dp == NULL || !v4mapped(dp)) return -1;
             memcpy(prefix, dp, 12 + omitted);
         }
-        if(pb > omitted) memcpy(prefix + 12 + omitted, p, pb);
+        if(pb > omitted) memcpy(prefix + 12 + omitted, p, pb - omitted);
         break;
     case 2:
-        if(pb > omitted && len < pb - omitted) return -1;
+        if(omitted > 16 || (pb > omitted && len < pb - omitted)) return -1;
         if(omitted) {
             if (dp == NULL || v4mapped(dp)) return -1;
             memcpy(prefix, dp, omitted);
@@ -291,7 +292,7 @@ parse_packet(const unsigned char *from, struct network *net,
                (message[3] == 1 ? have_v4_prefix : have_v6_prefix))
                 rc = network_prefix(message[2], message[4], message[5],
                                     message + 12,
-                                    message[3] == 1 ? v4_prefix : v6_prefix,
+                                    message[2] == 1 ? v4_prefix : v6_prefix,
                                     len - 10, prefix);
             else
                 rc = -1;
