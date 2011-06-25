@@ -22,7 +22,12 @@ connect_to_adhoc() {
 }
 
 start_babel() {
-	"$BABELD" -D -g 33123 "${WDEV}"
+	"$BABELD" -D \
+		-g 33123 \
+		-C "redistribute local if ${WDEV}" \
+		-C "redistribute local deny" \
+		-C "redistribute metric 128" \
+		"${WDEV}"
 }
 
 start_ahcpd() {
