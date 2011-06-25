@@ -81,7 +81,7 @@ class Status(object):
 
         # Get the node's uptime from the OS.
         sysuptime = self.get_uptime()
-        if uptime: uptime = sysuptime
+        if sysuptime: uptime = sysuptime
 
         # Convert the uptime in seconds into something human readable.
         (minutes, seconds) = divmod(float(uptime), 60)
@@ -148,7 +148,7 @@ class Status(object):
            return False
 
         # Return the load average values.
-        return (averages[0:2])
+        return (averages[:3])
 
     # Queries the OS to get the system memory usage stats.
     def get_memory(self):
