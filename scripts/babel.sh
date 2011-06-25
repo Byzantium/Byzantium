@@ -3,9 +3,7 @@
 BABELD=${BABELD:-"babeld"}
 AHCPD=${AHCPD:-"ahcpd"}
 
-WDEV=${1:-"wlan0"}
-ESSID=${2:-"hacdc-babel"}
-CHAN=${3:-"9"}
+#WDEV=${1:-"wlan0"}
 
 kill_nm() {
 	#Fedora
@@ -37,6 +35,35 @@ main() {
 	start_babel
 	start_ahcpd
 }
+
+WDEV=""
+
+while [ $# -gt 0 ]
+do
+	case "$1" in
+		"-e")
+			ESSID="$2"
+			shift 1
+			;;
+		"-c")
+			CHAN="$2"
+			shift 1
+			;;
+		*)
+			WDEV="$1"
+			;;
+	esac
+	shift 1
+done
+
+ESSID=${2:-"hacdc-babel"}
+CHAN=${3:-"9"}
+
+if [ "x$WDEV" = "x" ]
+then
+	echo "Usage: ./babel.sh [-e ESSID] [-c CHANNEL] INTERFACE" >&2
+	exit 1
+fi
 
 main
 
