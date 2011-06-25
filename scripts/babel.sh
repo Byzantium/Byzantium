@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PWD=$(dirname $0)
+
 BABELD=${BABELD:-"babeld"}
 AHCPD=${AHCPD:-"ahcpd"}
 
@@ -24,14 +26,14 @@ connect_to_adhoc() {
 start_babel() {
 	"$BABELD" -D \
 		-g 33123 \
-		-C "redistribute local if ${WDEV}" \
-		-C "redistribute local deny" \
-		-C "redistribute metric 128" \
+		-c ${PWD}/babel.conf \
 		"${WDEV}"
 }
 
 start_ahcpd() {
-	"$AHCPD" -D "${WDEV}"
+	"$AHCPD" -D \
+		-s ${PWD}/ahcp-config.sh \
+		"${WDEV}"
 }
 
 main() {
