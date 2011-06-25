@@ -144,8 +144,8 @@ class Status(object):
 
     # Queries the OS to get the system memory usage stats.
     def get_memory(self):
-        # Set up the dictionary that will hold the system's memory stats.
-        memstats = {}
+        # Set default values for the memory info (real values should never be negative so it is set to -1 to help indicate an error in the final output)
+        memtotal = memfree = memused = swaptotal = swapfree = swapused = -1
 
         # Open /proc/meminfo.
         meminfo = open("/proc/meminfo", "r")
@@ -154,18 +154,26 @@ class Status(object):
         # to make it easy to pick out what we want.  If this can't be done,
         # return nothing and let the default values handle it.
         for line in meminfo:
-            (label, value, junk) = line.split()
-            memstats[label] = value
-
-        # Clean up after ourselves.
-        meminfo.close()
-
-        # Figure out how much RAM and swap are in use right now.
-        memused = int(memstats['MemTotal:']) - int(memstats['MemFree:'])
-        swapused = int(memstats['SwapTotal:']) - int(memstats['SwapFree:'])
+           # homoginize the data
+           line = line.strip().lower()
+           # Figure out how much RAM and swap are in use right now
+           try:
+              if line.startswith('memtotal'):
+                 memtotal = line.split()[1]
+              elif line.startswith('memfree'):
+                 memfree = line.split()[1]
+              elif line.startswith('swaptotal'):
+                 swaptotal = line.split()[1]
+              elif line.startswith('swapfree'):
+                 swapfree = line.split()[1]
+           except KeyError as e:
+              print(e)
+              print('WARNING: /proc/meminfo is not formatted as expected')
+        memused = int(memtotal) - int(memfree)
+        swapused = int(swaptotal) - int(swapfree)
 
         # Return total RAM, RAM used, total swap space, swap space used.
-        return (memstats['MemTotal:'], memused, memstats['SwapTotal:'], swapused)
+        return (memtotal, memused, memtotal, swapused)
 
 # Core code.
 # Set up the location the templates will be served out of.
