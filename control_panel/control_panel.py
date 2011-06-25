@@ -34,10 +34,8 @@ import os
 
 # Global variables.
 filedir = '/srv/controlpanel'
-#globalconfig = '/etc/controlpanel/controlpanelGlobal.conf'
-globalconfig = '/home/drwho/Byzantium/control_panel/controlpanelGlobal.conf'
-#appconfig = '/etc/controlpanel/controlpanel.conf'
-appconfig = '/home/drwho/Byzantium/control_panel/controlpanel.conf'
+globalconfig = '/etc/controlpanel/controlpanelGlobal.conf'
+appconfig = '/etc/controlpanel/controlpanel.conf'
 cachedir = '/tmp/controlcache'
 
 # Classes.

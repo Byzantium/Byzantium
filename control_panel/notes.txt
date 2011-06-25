@@ -291,3 +291,8 @@ Pull stats out of /proc/net/dev or using ifconfig:
 
 Then split the two values and inseert them as 'in' and 'out'.
 
+Building a respin of Ubuntu.
+
+Packages:
+python-mako
+python-cherrypy3
