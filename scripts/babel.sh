@@ -12,7 +12,7 @@ kill_nm() {
 	#Ubuntu
 	stop network-manager >/dev/null 2>&1 || true
 
-	/sbin/iptables -F
+	iptables -F
 }
 
 connect_to_adhoc() {
