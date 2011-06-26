@@ -2,6 +2,7 @@
 import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
+from mako.exceptions import RichTraceback
 import os
 
 from control_panel import *
@@ -34,8 +35,21 @@ class NetworkConfiguration(object):
             ethernet_interfaces = ethernet_interfaces + "<td>" + i + "</td>"
 
         # Render the HTML page.
-        page = templatelookup.get_template("/network/index.html")
+        try:
+            page = templatelookup.get_template("/network/index.html")
+            print page.render(title = "Byzantium Node Network Interfaces",
+                              purpose_of_page = "Configure Network Interfaces",
+                              wireless_interfaces = wireless_interfaces,
+                              ethernet_interfaces = ethernet_interfaces)
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "File %s, line %s, in %s" % (filename, lineno, function)
+                print line, "\n"
+                print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+
         return page.render(title = "Byzantium Node Network Interfaces",
+                           purpose_of_page = "Configure Network Interfaces",
                            wireless_interfaces = wireless_interfaces,
                            ethernet_interfaces = ethernet_interfaces)
     index.exposed = True

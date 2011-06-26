@@ -6,6 +6,7 @@ import os
 
 from control_panel import *
 from networktraffic import NetworkTraffic
+from networkconfiguration import NetworkConfiguration
 
 templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=100)
@@ -14,6 +15,7 @@ templatelookup = TemplateLookup(directories=[filedir],
 # /index.html.
 class Status(object):
     traffic = NetworkTraffic()
+    network = NetworkConfiguration()
 
     # Pretends to be index.html.
     def index(self):
