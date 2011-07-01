@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<!-- This includes all of the stuff to set up an HTML page. -->
+<!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
+<!-- /index.html - Shows status of the Byzantium node. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+</head>
+
+<body>
+<!-- Pull in the code for the top part of the page that says what this page is for. -->
+<%include file="/includes/header.html" />
+
+<!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
+<%include file="/includes/leftbar.html" />
+
+<!-- This is where all of the content of the status page goes. -->
+<div id="main" align="right">
+<table border="1">
+<tr>
+<td>Node uptime:</td>
+<td>${uptime}</td>
+</tr>
+</table>
+
+<table border="1">
+<tr>
+<td>1 minute load</td>
+<td>5 minute load</td>
+<td>15 minute load</td>
+<td>memory (in kb)</td>
+<td>memory used (in kb)</td>
+<td>swap (in kb)</td>
+<td>swap used (in kb)</td>
+</tr>
+<tr>
+<td>${one_minute_load}</td>
+<td>${five_minute_load}</td>
+<td>${fifteen_minute_load}</td>
+<td>${ram}</td>
+<td>${ram_used}</td>
+<td>${swap}</td>
+<td>${swap_used}</td>
+</tr>
+</table>
+
+</body>
+<!-- In case you haven't figured it out, I suck at web design. -The Doctor -->
+</html>
