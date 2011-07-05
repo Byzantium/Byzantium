@@ -1,7 +1,8 @@
 <!DOCTYPE HTML>
 <!-- This includes all of the stuff to set up an HTML page. -->
 <!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
-<!-- /index.html - Shows status of the Byzantium node. -->
+<!-- /network/step2.html - Display the IP address and netmask chosen.  The user
+     will then approve the configuration change or cancel it. -->
 
 <html>
 <head>
@@ -16,36 +17,12 @@
 <!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
 <%include file="/includes/leftbar.html" />
 
-<!-- This is where all of the content of the status page goes. -->
 <div id="main" align="right">
-<table border="1">
-<tr>
-<td>Node uptime:</td>
-<td>${uptime}</td>
-</tr>
-</table>
+<p>The network interface you want to configure is: ${interface}</p>
+<p>The IP address you entered is: ${ip_address}.</p>
+<p>The netmask for the IP network you entered is: ${netmask}.</p>
 
-<table border="1">
-<tr>
-<td>1 minute load</td>
-<td>5 minute load</td>
-<td>15 minute load</td>
-<td>memory (in kb)</td>
-<td>memory used (in kb)</td>
-<td>swap (in kb)</td>
-<td>swap used (in kb)</td>
-</tr>
-<tr>
-<td>${one_minute_load}</td>
-<td>${five_minute_load}</td>
-<td>${fifteen_minute_load}</td>
-<td>${ram}</td>
-<td>${ram_used}</td>
-<td>${swap}</td>
-<td>${swap_used}</td>
-</tr>
-</table>
-
+</div>
 </body>
 <!-- In case you haven't figured it out, I suck at web design. -The Doctor -->
 </html>

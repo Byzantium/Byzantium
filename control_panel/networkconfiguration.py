@@ -27,31 +27,20 @@ class NetworkConfiguration(object):
                 wireless.append(i)
 
         # Build tables containing the interfaces extant.
-        wireless_interfaces = ""
-        ethernet_interfaces = ""
+        wireless_buttons = ""
+        ethernet_buttons = ""
         for i in wireless:
-            wireless_interfaces = wireless_interfaces + "<td>" + i + "</td>"
+            wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
+
         for i in ethernet:
-            ethernet_interfaces = ethernet_interfaces + "<td>" + i + "</td>"
+            ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "'/>\n"
 
         # Render the HTML page.
-        try:
-            page = templatelookup.get_template("/network/index.html")
-            print page.render(title = "Byzantium Node Network Interfaces",
-                              purpose_of_page = "Configure Network Interfaces",
-                              wireless_interfaces = wireless_interfaces,
-                              ethernet_interfaces = ethernet_interfaces)
-        except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "File %s, line %s, in %s" % (filename, lineno, function)
-                print line, "\n"
-                print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
-
+        page = templatelookup.get_template("/network/index.html")
         return page.render(title = "Byzantium Node Network Interfaces",
                            purpose_of_page = "Configure Network Interfaces",
-                           wireless_interfaces = wireless_interfaces,
-                           ethernet_interfaces = ethernet_interfaces)
+                           wireless_buttons = wireless_buttons,
+                           ethernet_buttons = ethernet_buttons)
     index.exposed = True
 
     # Helper method to enumerate all of the network interfaces on a node.
@@ -80,5 +69,45 @@ class NetworkConfiguration(object):
 
         # Remove the loopback interface because that's our failure case.
         interfaces.remove('lo')
-
         return interfaces
+
+    # Implements step one of the interface configuration process: picking an
+    # IP address.
+    def step1(self, interface=None):
+        # The forms in the HTML template do everything here.  This is probably
+        # not the right way to do this, but it can always be fixed later.
+        page = templatelookup.get_template("/network/step1.html")
+        return page.render(title = "Set IP address for Byzantium node.",
+                           purpose_of_page = "Set IP address on interface.",
+                           interface = interface)
+    step1.exposed = True
+
+    # Method turns the user's input from /network/step1.html into an IP address
+    # and netmask.  **ip_info is used to pass the values that are then broken
+    # up and assembled correctly.
+    def enter_ip(self, network_interface=None, **ip_info):
+        # Split ip_info into an IP address and a netmask.  This is ugly, but
+        # you can't pass multiple keyword argument lists to a method.
+        ip_address = ip_info['octet_one'] + "." + ip_info['octet_two'] + "."
+        ip_address = ip_address + ip_info['octet_three'] + "."
+        ip_address = ip_address + ip_info['octet_four']
+
+        netmask = ip_info['netmask_one'] + "." + ip_info['netmask_two'] + "."
+        netmask = netmask + ip_info['netmask_three'] + "."
+        netmask = netmask + ip_info['netmask_four']
+
+        try:
+            page = templatelookup.get_template("/network/step2.html")
+            return page.render(title = "Confirm IP address for network interface.",
+                               purpose_of_page = "Confirm IP address.",
+                               interface = network_interface,
+                               ip_address = ip_address, netmask = netmask)
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "\n"
+                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+                print "Execution died on line %s\n" % line
+                print "%s: %s" % (str(traceback.error.__class__.__name__),
+                    traceback.error)
+    enter_ip.exposed = True

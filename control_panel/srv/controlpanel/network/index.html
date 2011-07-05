@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <!-- This includes all of the stuff to set up an HTML page. -->
 <!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
-<!-- /index.html - Shows status of the Byzantium node. -->
+<!-- /network/index.html - Allows the user to choose a network interface to configure. -->
 
 <html>
 <head>
@@ -19,15 +19,22 @@
 <div id="main" align="right">
 
 <!-- List of wireless network interfaces. -->
+<h2>Wireless network interfaces</h2>
 <table border="1">
-<tr>${wireless_interfaces}</tr>
+<form action="step1" method="post">
+<tr>${wireless_buttons}</tr>
+</form>
 </table>
 
 <!-- List of Ethernet interfaces. -->
+<h2>Ethernet interfaces</h2>
 <table border="1">
-<tr>${ethernet_interfaces}</tr>
+<form action="step1" method="post">
+<tr>${ethernet_buttons}</tr>
+</form>
 </table>
 
+</div>
 </body>
 <!-- In case you haven't figured it out, I suck at web design. -The Doctor -->
 </html>
