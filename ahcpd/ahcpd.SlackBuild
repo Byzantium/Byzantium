@@ -1,4 +1,4 @@
-!/bin/sh -#e
+#!/bin/bash -e
 
 # .SlackBuild script for ahcpd v0.51.  Written for Project Byzantium.
 #	http://wiki.hacdc.org/index.php/Byzantium
