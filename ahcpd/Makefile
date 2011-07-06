@@ -1,6 +1,6 @@
 PREFIX = /usr/local
 
-CDEBUGFLAGS = -Os -g -Wall
+CDEBUGFLAGS = -Os -Wall
 
 DEFINES = $(PLATFORM_DEFINES)
 
