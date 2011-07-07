@@ -3,7 +3,7 @@
 # .SlackBuild script for ahcpd v0.51.  Written for Project Byzantium.
 #	http://wiki.hacdc.org/index.php/Byzantium
 # By: The Doctor [412/724/301/703] <drwho at virtadpt dot net>
-# License: GPLv3
+# Licence: GPLv3
 
 # Save the CWD and set a temporary directory to compile into.
 CWD=$(pwd)
@@ -62,9 +62,9 @@ make || exit 1
 make install TARGET=$PKG || exit 1
 
 # Install documentation.
-mkdir -p $PKG/usr/doc/$APP-$VERSION
-cp README CHANGES LICENSE $CWD/$APP.SlackBuild $PKG/usr/doc/$APP-$VERSION
-find $PKG/usr/doc/$APP-$VERSION -type f -exec chmod 644 {} \;
+mkdir -p $PKG/usr/local/doc/$APP-$VERSION
+cp README CHANGES LICENCE $CWD/$APP.SlackBuild $PKG/usr/local/doc/$APP-$VERSION
+find $PKG/usr/local/doc/$APP-$VERSION -type f -exec chmod 644 {} \;
 
 # Create the ./install directory and copy the slack-desc into it.
 mkdir -p $PKG/install
@@ -76,29 +76,27 @@ if [ -e $CWD/doinst.sh.gz ]; then
 	fi
 
 # Strip libraries and binaries to save some space.
-( cd $PKG
-  find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | \
-	xargs strip --strip-unneeded 2> /dev/null
-  find . | xargs file | grep "shared object" | grep ELF | cut -f 1 -d : | \
-	xargs strip --strip-unneeded 2> /dev/null
-)
+cd $PKG
+find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | \
+	xargs strip --strip-unneeded
       
 # Compress man pages if they exist
-if [ -d $PKG/usr/man ]; then
-	cd $PKG/usr/man
+if [ -d $PKG/usr/local/man ]; then
+	cd $PKG/usr/local/man
 	find . -type f -exec gzip -9 {} \;
 	for i in $(find . -type l) ; do
 		ln -s $(readlink $i).gz $i.gz
 		rm $i
 		done
-fi
+	fi
               
 # Compress info pages if they exist (and remove the dir file)
-if [ -d $PKG/usr/info ]; then
-	gzip -9 $PKG/usr/info/*.info
-	rm -f $PKG/usr/info/dir
+if [ -d $PKG/usr/local/info ]; then
+	gzip -9 $PKG/usr/local/info/*.info
+	rm -f $PKG/usr/local/info/dir
 	fi
 
 # Build the Slackware package.
 cd $PKG
 /sbin/makepkg -l y -c n $TMP/$APP-$PKG_VERSION-$ARCH-$BUILD.tgz
+
