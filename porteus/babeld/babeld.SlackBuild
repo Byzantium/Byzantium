@@ -12,7 +12,7 @@ if [ "$TMP" = "" ]; then
 	fi
 
 # The version which appears in the package's filename.
-VERSION=0.51
+VERSION=1.1.1
 
 # The dash character ("-") is not allowed in the VERSION string, but you can override
 # it here by setting PKG_VERSION to something else than VERSION if you need to.
@@ -27,7 +27,7 @@ ARCH=${ARCH:-i486}
 BUILD=${BUILD:-1_dw}
 
 # The name of the application.
-APP=ahcpd
+APP=babeld
 
 # The installation directory of the package (where its actual directory structure will
 # be created as the package is built.) 
@@ -63,7 +63,7 @@ make install TARGET=$PKG || exit 1
 
 # Install documentation.
 mkdir -p $PKG/usr/doc/$APP-$VERSION
-cp LICENCE CHANGES README $CWD/$APP.SlackBuild $PKG/usr/doc/$APP-$VERSION
+cp README CHANGES LICENSE $CWD/$APP.SlackBuild $PKG/usr/doc/$APP-$VERSION
 find $PKG/usr/doc/$APP-$VERSION -type f -exec chmod 644 {} \;
 
 # Create the ./install directory and copy the slack-desc into it.
@@ -85,13 +85,12 @@ if [ -e $CWD/doinst.sh.gz ]; then
       
 # Compress man pages if they exist
 if [ -d $PKG/usr/man ]; then
-	( cd $PKG/usr/man
+	cd $PKG/usr/man
 	find . -type f -exec gzip -9 {} \;
 	for i in $(find . -type l) ; do
 		ln -s $(readlink $i).gz $i.gz
 		rm $i
 		done
-	) 
 fi
               
 # Compress info pages if they exist (and remove the dir file)
