@@ -50,12 +50,10 @@ rm -rf $TMP/$APP-$VERSION
 cd $TMP || exit 1
  
 # Extract the application source into TMP.
-if [ ! -f $CWD/.extracted ]; then
-	tar -zxvf $CWD/$APP-$VERSION.tar.gz || exit 1
-	cd $APP-$VERSION || exit 1
-	chown -R root:root .
-	chmod -R u+w,go+r-w,a-s .
-	fi
+tar -zxvf $CWD/$APP-$VERSION.tar.gz || exit 1
+cd $APP-$VERSION || exit 1
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
  
 # Compile.
 make || exit 1
@@ -65,7 +63,7 @@ make install TARGET=$PKG || exit 1
 
 # Install documentation.
 mkdir -p $PKG/usr/doc/$APP-$VERSION
-cp LICENSE CHANGES README $CWD/$APP.SlackBuild $PKG/usr/doc/$APP-$VERSION
+cp LICENCE CHANGES README $CWD/$APP.SlackBuild $PKG/usr/doc/$APP-$VERSION
 find $PKG/usr/doc/$APP-$VERSION -type f -exec chmod 644 {} \;
 
 # Create the ./install directory and copy the slack-desc into it.
@@ -77,7 +75,7 @@ if [ -e $CWD/doinst.sh.gz ]; then
 	zcat $CWD/doinst.sh.gz > $PKG/install/doinst.sh
 	fi
 
-# Strip libraries and binaries to save sasce.ome pce.
+# Strip libraries and binaries to save some space.
 ( cd $PKG
   find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | \
 	xargs strip --strip-unneeded 2> /dev/null

@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in.  You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+ahcpd: A lightweight replacement for router discovery and DHCP on IPv4/v6
+ahcpd: networks.  Designed with mobile ad-hoc and mesh networks in mind.
+ahcpd: Configures IP addresses, DNS, and NTP.  Separate routing protocols are
+ahcpd: required to configure nodes, hence, it being uniquely suited for use
+ahcpd: in mesh networks.
+ahcpd: 
+ahcpd: 
+ahcpd: 
+ahcpd: 
+ahcpd: Homepage: http://www.pps.jussieu.fr/~jch/software/ahcp/
+ahcpd: 
