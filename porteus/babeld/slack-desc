@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in.  You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+babeld: Babel is a mesh routing daemon that is designed for mobile IP and
+babeld: ad-hoc wireless networks.  Specifically designed to avoid routing
+babeld: loops.  DVRP routing algorithm.  Layer 3 agnostic; anything from IPv4
+babeld: to IPX/SPX can run atop it.  Can also gateway traffic from wireless
+babeld: to wired networks as required.
+babeld: 
+babeld: 
+babeld: 
+babeld: 
+babeld: Homepage: http://www.pps.jussieu.fr/~jch/software/babel/
+babeld: 
