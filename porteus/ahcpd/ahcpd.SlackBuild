@@ -76,13 +76,10 @@ if [ -e $CWD/doinst.sh.gz ]; then
 	fi
 
 # Strip libraries and binaries to save some space.
-( cd $PKG
+cd $PKG
   find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | \
 	xargs strip --strip-unneeded 2> /dev/null
-  find . | xargs file | grep "shared object" | grep ELF | cut -f 1 -d : | \
-	xargs strip --strip-unneeded 2> /dev/null
-)
-      
+
 # Compress man pages if they exist
 if [ -d $PKG/usr/man ]; then
 	( cd $PKG/usr/man
