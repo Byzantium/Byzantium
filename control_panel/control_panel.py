@@ -44,7 +44,6 @@ cachedir = '/tmp/controlcache'
 templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=100)
 
-
 def main():
     # Read in the name and location of the appserver's global config file.
     cherrypy.config.update(globalconfig)
@@ -59,8 +58,6 @@ def main():
 
     # Start the web server.
     cherrypy.engine.start()
-
-    # End.
 
 if __name__=="__main__":
     main()

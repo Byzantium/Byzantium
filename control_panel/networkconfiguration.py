@@ -16,8 +16,8 @@ class NetworkConfiguration(object):
         # Get a list of all network interfaces on the node (sans loopback).
         interfaces = self.enumerate_network_interfaces()
 
-        # Split the network interface list into two other lists, one for Ethernet
-        # and one for wireless.
+        # Split the network interface list into two other lists, one for
+        # Ethernet and one for wireless.
         ethernet = []
         wireless = []
         for i in interfaces:
@@ -59,8 +59,8 @@ class NetworkConfiguration(object):
             procnetdev.close()
             return 'lo'
 
-        # Begin parsing the contents of /proc/net/dev and extracting the names of
-        # the interfaces.
+        # Begin parsing the contents of /proc/net/dev and extracting the names
+        # of the interfaces.
         for line in procnetdev:
             interface = line.split()[0]
             interface = interface.strip()
@@ -85,7 +85,7 @@ class NetworkConfiguration(object):
     # Method turns the user's input from /network/step1.html into an IP address
     # and netmask.  **ip_info is used to pass the values that are then broken
     # up and assembled correctly.
-    def enter_ip(self, network_interface=None, **ip_info):
+    def enter_ip(self, interface=None, **ip_info):
         # Split ip_info into an IP address and a netmask.  This is ugly, but
         # you can't pass multiple keyword argument lists to a method.
         ip_address = ip_info['octet_one'] + "." + ip_info['octet_two'] + "."
@@ -100,7 +100,7 @@ class NetworkConfiguration(object):
             page = templatelookup.get_template("/network/step2.html")
             return page.render(title = "Confirm IP address for network interface.",
                                purpose_of_page = "Confirm IP address.",
-                               interface = network_interface,
+                               interface = interface,
                                ip_address = ip_address, netmask = netmask)
         except:
             traceback = RichTraceback()
@@ -111,3 +111,26 @@ class NetworkConfiguration(object):
                 print "%s: %s" % (str(traceback.error.__class__.__name__),
                     traceback.error)
     enter_ip.exposed = True
+
+    # Call ifconfig to set the IP address and netmask on the network interface.
+    def set_ip(self, interface=None, ip_address=None, netmask=None):
+        # Call ifconfig and pass the network configuration information.
+        command = '/sbin/ifconfig ' + interface + ip_address + 'netmask'
+        command = command + netmask + 'up'
+        output = os.popen(command)
+
+        try:
+            page = templatelookup.get_template("/network/done.html")
+            return page.render(title = "Network interface configured.",
+                               purpose_of_page = "Configured!",
+                               interface = interface, ip_address = ip_address,
+                               netmask = netmask, output = output.read())
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "\n"
+                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+                print "Execution died on line %s\n" % line
+                print "%s: %s" % (str(traceback.error.__class__.__name__),
+                    traceback.error)
+    set_ip.exposed = True

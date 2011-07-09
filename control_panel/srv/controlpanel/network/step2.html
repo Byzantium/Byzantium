@@ -22,7 +22,14 @@
 <p>The IP address you entered is: ${ip_address}.</p>
 <p>The netmask for the IP network you entered is: ${netmask}.</p>
 
+<form action="set_ip" method="post">
+<input type="hidden" name="interface" value="${interface}">
+<input type="hidden" name="ip_address" value="${ip_address}">
+<input type="hidden" name="netmask" value="${netmask}">
+<input type="submit" value="Configure">
+<input type="button" name="Cancel" value="Cancel" onclick="window.location='/'">
+</form>
+
 </div>
 </body>
-<!-- In case you haven't figured it out, I suck at web design. -The Doctor -->
 </html>
