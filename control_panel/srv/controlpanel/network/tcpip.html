@@ -20,11 +20,10 @@
 <!-- This is where all of the content of the network traffic report page goes. -->
 <div id="main" align="right">
 
-You have selected network interface ${interface} to configure.  You can:
+<p>You have selected network interface ${interface} to configure.</p>
 
 <p>Enter an  IP address and netmask:</p>
 <form action="enter_ip" method="post">
-<input type="hidden" name="interface" value="${interface}">
 <input type="text" name="octet_one" size="3" maxlength="3" tabindex="1" />.
 <input type="text" name="octet_two" size="3" maxlength="3" tabindex="2" />.
 <input type="text" name="octet_three" size="3" maxlength="3" tabindex="3" />.
@@ -39,8 +38,7 @@ You have selected network interface ${interface} to configure.  You can:
 
 <p>Pick a random RFC 1918 address.</p>
 <form action="random_ip" method="post">
-<input type="hidden" name="interface" value="${interface}">
-<input type="button" name="random" value="Random" />
+<input type="submit" value="Random" />
 </form>
 
 </div>

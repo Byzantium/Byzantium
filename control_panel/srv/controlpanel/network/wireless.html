@@ -1,8 +1,6 @@
 <!DOCTYPE HTML>
-<!-- This includes all of the stuff to set up an HTML page. -->
 <!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
-<!-- /network/step1.html - The user can either enter an IP address or netmask, or let the control panel
-      choose one randomly. -->
+<!-- /network/wireless.html - The user enters wireness network parameters . -->
 
 <html>
 <head>
@@ -20,27 +18,14 @@
 <!-- This is where all of the content of the network traffic report page goes. -->
 <div id="main" align="right">
 
-You have selected network interface ${interface} to configure.  You can:
+<p>You have selected wireless interface ${interface} to configure.</p>
 
-<p>Enter an  IP address and netmask:</p>
-<form action="enter_ip" method="post">
-<input type="hidden" name="interface" value="${interface}">
-<input type="text" name="octet_one" size="3" maxlength="3" tabindex="1" />.
-<input type="text" name="octet_two" size="3" maxlength="3" tabindex="2" />.
-<input type="text" name="octet_three" size="3" maxlength="3" tabindex="3" />.
-<input type="text" name="octet_four" size="3" maxlength="3" tabindex="4" /><br />
-<input type="text" name="netmask_one" size="3" maxlength="3" tabindex="5" />.
-<input type="text" name="netmask_two" size="3" maxlength="3" tabindex="6" />.
-<input type="text" name="netmask_three" size="3" maxlength="3" tabindex="7" />.
-<input type="text" name="netmask_four" size="3" maxlength="3" tabindex="8" /><br />
+<p>Enter the wireless channel and ESSID the network interface will use (default: 3 / Byzantium):</p>
+<form action="tcpip" method="post">
+<input type="text" name="channel" size="2" maxlength="2" value="3" />
+<input type="text" name="essid" size="32" maxlength="32" value="Byzantium" />
 <input type="submit" value="Submit" />
 <input type="reset" value="Clear" />
-</form>
-
-<p>Pick a random RFC 1918 address.</p>
-<form action="random_ip" method="post">
-<input type="hidden" name="interface" value="${interface}">
-<input type="button" name="random" value="Random" />
 </form>
 
 </div>
