@@ -1,16 +1,32 @@
-# Import modules.
+# networkconfiguration.py - Implements the network interface configuration
+#    subsystem of the Byzantium control panel.
+
+# TODO:
+# - Figure out what columns in the network configuration database to index.
+#   It's doubtful that a Byzantium node would have more than three interfaces
+#   (not counting lo) but it's wise to plan for the future.
+# - Validate the wireless channel after it's entered by the user to make sure
+#   that it's not fractional or invalid.  Remember that the US has 1-12, the
+#   European Union has 1-13, and Japan has 1-14.
+
+# Import external modules.
 import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
 import os
+import sqlite3
 
+# Import core control panel modules.
 from control_panel import *
 
 # Classes.
 # This class allows the user to configure the network interfaces of their node.
 # Note that this does not configure mesh functionality.
 class NetworkConfiguration(object):
+    #netconfdb = '/var/db/network.sqlite'
+    netconfdb = '/home/drwho/network.sqlite'
+
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
     # user picks an already-configured interface.
@@ -40,21 +56,90 @@ class NetworkConfiguration(object):
             else:
                 wireless.append(i)
 
-        # Build tables containing the interfaces extant.
+        # Build tables containing the interfaces extant.  At the same time,
+        # search the network configuration databases for interfaces that are
+        # already configured and give them a different color.  If they're up
+        # and running give them yet another color.
+        # TODO: Find a way to prune network interfaces that have vanished.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
         wireless_buttons = ""
         ethernet_buttons = ""
+
+        # Start with wireless interfaces.
         for i in wireless:
+            cursor.execute("SELECT interface, configured, enabled FROM wireless WHERE interface=?", (i, ))
+            result = cursor.fetchall()
+
+            # If the interface is not found in database, add it.
+            if not len(result):
+                cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?,?);",
+                              ('no', '0', 'no', '', i, '', '', ))
+                connection.commit()
+                wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
+                continue
+
+            # If the interface has been configured, check to see if it's
+            # running.  If it is, use a CSS hack to make it a different color.
+            if (result[0][1] == "yes") and (result[0][2] == "yes"):
+                wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' style='background-color:green' />\n"
+                continue
+
+            # If it is there test to see if it's been configured or not.  If it
+            # has, use a CSS hack to make its button a different color.
+            if result[0][1] == "yes":
+                wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' style='background-color:red' />\n"
+                continue
+
+            # If all else fails, just add the button without any extra
+            # decoration.
             wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
 
+        # Wired interfaces.
         for i in ethernet:
-            ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "'/>\n"
+            cursor.execute("SELECT interface, configured, enabled FROM wired WHERE interface=?", (i, ))
+            result = cursor.fetchall()
+
+            # If the interface is not found in database, add it.
+            if not len(result):
+                cursor.execute("INSERT INTO wired VALUES (?,?,?,?,?,?);",
+                              ('no', 'no', '', i, '', '', ))
+                connection.commit()
+                ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "'/>\n"
+                continue
+
+            # If the interface has been configured, check to see if it's
+            # running.  If it has, use a CSS hack to make it a different color.
+            if (result[0][1] == "yes") and (result[0][2] == "yes"):
+                ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "' style='background-color:green' />\n"
+                continue
+
+            # If it is found test to see if it's been configured or not.  If it
+            # has, use a CSS hack to make its button a different color.
+            if result[0][1] == "yes":
+                ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "' style='background-color:red' />\n"
+                continue
+
+            # If all else fails, just add the button without any extra
+            # decoration.
+            ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
 
         # Render the HTML page.
-        page = templatelookup.get_template("/network/index.html")
-        return page.render(title = "Byzantium Node Network Interfaces",
-                           purpose_of_page = "Configure Network Interfaces",
-                           wireless_buttons = wireless_buttons,
-                           ethernet_buttons = ethernet_buttons)
+        cursor.close()
+        try:
+            page = templatelookup.get_template("/network/index.html")
+            return page.render(title = "Byzantium Node Network Interfaces",
+                               purpose_of_page = "Configure Network Interfaces",
+                               wireless_buttons = wireless_buttons,
+                               ethernet_buttons = ethernet_buttons)
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "\n"
+                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+                print "Execution died on line %s\n" % line
+                print "%s: %s" % (str(traceback.error.__class__.__name__),
+                    traceback.error)
     index.exposed = True
 
     # Used to reset this class' attributes to a known state.
@@ -101,12 +186,39 @@ class NetworkConfiguration(object):
         # object's attribute set.
         self.interface = interface
 
+        # Default settings for /network/wireless.html page.
+        channel = 3
+        essid = 'Byzantium'
+
+        # If a network interface is marked as configured in the database, pull
+        # its settings and insert them into the page rather than displaying the
+        # defaults.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+        template = (interface, )
+        cursor.execute("SELECT configured, channel, essid FROM wireless WHERE interface=?;", template)
+        result = cursor.fetchall()
+        if result and (result[0][0] == 'yes'):
+            channel = result[0][1]
+            essid = result[0][2]
+        connection.close()
+        
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
-        page = templatelookup.get_template("/network/wireless.html")
-        return page.render(title = "Configure wireless for Byzantium node.",
+        try:
+            page = templatelookup.get_template("/network/wireless.html")
+            return page.render(title = "Configure wireless for Byzantium node.",
                            purpose_of_page = "Set wireless network parameters.",
-                           interface = self.interface)
+                           interface = self.interface, channel = channel,
+                           essid = essid)
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "\n"
+                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+                print "Execution died on line %s\n" % line
+                print "%s: %s" % (str(traceback.error.__class__.__name__),
+                    traceback.error)
     wireless.exposed = True
 
     # Implements step one of the interface configuration process: picking an
@@ -119,13 +231,50 @@ class NetworkConfiguration(object):
         if channel:
             self.channel = channel
 
-        # The forms in the HTML template do everything here.  This is probably
-        # not the right way to do this, but it can always be fixed later.
-        page = templatelookup.get_template("/network/tcpip.html")
-        return page.render(title = "Set IP address for Byzantium node.",
+        # Set default values for the fields of the IP address and netmask fields
+        # on the /network/tcpip.html template.
+        octet_one = octet_two = octet_three = octet_four = ''
+        netmask_one = netmask_two = netmask_three = netmask_four = ''
+
+        # If the network interface is already configured in the database, pull
+        # the settings from the DB and use them as the default values in the
+        # form on /network/tcpip.html.  Otherwise, use blank (empty) defaults.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+        template = (self.interface, )
+        if self.essid:
+            cursor.execute("SELECT interface, ipaddress, netmask FROM wireless WHERE interface=?;", template)
+        else:
+            cursor.execute("SELECT interface, ipaddress, netmask FROM wired WHERE interface=?;", template)
+        result = cursor.fetchall()
+        cursor.close()
+
+        # Take apart the IP address and netmask and repalce the defaults with
+        # their components if they exist.
+        if result:
+            (octet_one, octet_two, octet_three, octet_four) = result[0][1].split('.')
+            (netmask_one, netmask_two, netmask_three, netmask_four) = result[0][2].split('.')
+
+        # The forms in the HTML template do everything here.
+        try:
+            page = templatelookup.get_template("/network/tcpip.html")
+            return page.render(title = "Set IP address for Byzantium node.",
                            purpose_of_page = "Set IP address on interface.",
                            interface = self.interface, essid = self.essid,
-                           channel = self.channel)
+                           channel = self.channel, octet_one = octet_one,
+                           octet_two = octet_two, octet_three = octet_three,
+                           octet_four = octet_four, netmask_one = netmask_one,
+                           netmask_two = netmask_two,
+                           netmask_three = netmask_three,
+                           netmask_four = netmask_four)
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "\n"
+                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+                print "Execution died on line %s\n" % line
+                print "%s: %s" % (str(traceback.error.__class__.__name__),
+                    traceback.error)
     tcpip.exposed = True
 
     # Method turns the user's input from /network/step1.html into an IP address
@@ -231,6 +380,29 @@ class NetworkConfiguration(object):
         command = command + ' netmask ' + self.netmask
         output = os.popen(command)
 
+        # Store the interface's configuration in the database.  Start by
+        # opening the SQLite database file.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+
+        # Because wireless and wired interfaces are in separate tables, we need
+        # different queries to update the tables.  Start with wireless.
+        if self.essid:
+            template = ('yes', self.channel, 'yes', self.essid, self.interface,
+                        self.ip_address, self.netmask, self.interface, )
+            cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, interface=?, ipaddress=?, netmask=? WHERE interface=?;", template)
+
+        # Update query for wired interfaces.
+        else:
+            template = ('yes', 'yes', 'no', self.interface, self.ip_address,
+                        self.netmask, self.interface, )
+            cursor.execute("UPDATE wired SET enabled=?, configured=?, gateway=?, interface=?, ipaddress=?, netmask=? WHERE interface=?;", template)
+
+        # SQLite commands common to both configuration tables.
+        connection.commit()
+        cursor.close()
+
+        # Render and display the page.
         try:
             page = templatelookup.get_template("/network/done.html")
             return page.render(title = "Network interface configured.",
