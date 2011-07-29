@@ -8,6 +8,7 @@
 # - Validate the wireless channel after it's entered by the user to make sure
 #   that it's not fractional or invalid.  Remember that the US has 1-12, the
 #   European Union has 1-13, and Japan has 1-14.
+# - Find a way to prune network interfaces that have vanished.
 
 # Import external modules.
 import cherrypy
@@ -24,8 +25,9 @@ from control_panel import *
 # This class allows the user to configure the network interfaces of their node.
 # Note that this does not configure mesh functionality.
 class NetworkConfiguration(object):
-    #netconfdb = '/var/db/network.sqlite'
-    netconfdb = '/home/drwho/network.sqlite'
+    # Location of the network.sqlite database, which holds the configuration
+    # of every network interface in the node.
+    netconfdb = '/var/db/network.sqlite'
 
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
@@ -60,7 +62,6 @@ class NetworkConfiguration(object):
         # search the network configuration databases for interfaces that are
         # already configured and give them a different color.  If they're up
         # and running give them yet another color.
-        # TODO: Find a way to prune network interfaces that have vanished.
         connection = sqlite3.connect(self.netconfdb)
         cursor = connection.cursor()
         wireless_buttons = ""
