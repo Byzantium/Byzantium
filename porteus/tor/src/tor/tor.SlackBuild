@@ -1,0 +1,133 @@
+#!/bin/sh
+#
+# Slackware build script for tor
+#
+# Copyright 2011-2012 Marco Bonetti <sid77@slackware.it>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=tor
+VERSION=0.2.1.30
+BUILD=${BUILD:-2}
+TAG=${TAG:-_SBo}
+
+# Select tor's default user/group
+#TOR_USER=${TOR_USER:-tor}
+#TOR_UID=${TOR_UID:-220}
+#TOR_GROUP=${TOR_GROUP:-tor}
+#TOR_GID=${TOR_GID:-220}
+TOR_USER=nobody
+TOR_GROUP=nogroup
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+bailout() {
+  echo "  You must have a $TOR_USER user and $TOR_GROUP group to run this script. "
+  echo "  Something like this should suffice for most systems: "
+  echo "    # groupadd -g $TOR_GID $TOR_GROUP "
+  echo "    # useradd -u $TOR_UID -g $TOR_GID -c \"The Onion Router\" -d /dev/null -s /bin/false $TOR_USER "
+  exit 1
+}
+
+# Bail if user and/or group isn't valid on your system
+# uid=220 is suggested to avoid conflicts with other SBo packages,
+# but it's your call: http://slackbuilds.org/uid_gid.txt
+if ! grep -q "^$TOR_USER:" /etc/passwd; then
+  bailout
+elif ! grep -q "^$TOR_GROUP:" /etc/group; then
+  bailout
+fi
+
+set -eu
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
+
+CFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --with-tor-user=$TOR_USER \
+  --with-tor-group=$TOR_GROUP \
+  --build=$ARCH-slackware-linux
+
+make
+make install-strip DESTDIR=$PKG
+
+# Create/install stuff that makes tor work (better)
+mkdir -p $PKG/var/{run,log,lib}/tor
+chown $TOR_USER:$TOR_GROUP $PKG/var/{run,log,lib}/tor
+chmod 0700 $PKG/var/lib/tor
+install -D -m 0755 $CWD/rc.tor $PKG/etc/rc.d/rc.tor.new
+install -D -m 0755 contrib/torctl $PKG/usr/bin/torctl
+install -D -m 0644 $CWD/logrotate.tor $PKG/etc/logrotate.d/tor.new
+install -D -m 0644 $CWD/torrc $PKG/etc/tor/torrc.new
+mv $PKG/etc/tor/tor-tsocks.conf $PKG/etc/tor/tor-tsocks.conf.new
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $(find $PKG/usr/man -type l) ; do ln -s $(readlink $i).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/spec
+cp -a AUTHORS ChangeLog INSTALL LICENSE README ReleaseNotes \
+      $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README.SLACKWARE > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

@@ -1,0 +1,123 @@
+#!/bin/sh
+#
+# tor - The Onion Router
+#
+# Startup/shutdown script for Tor.
+#
+# Written by Marco Bonetti <sid77@slackware.it>, heavily based on
+# contrib/tor.sh, contrib/torctl and Debian init script.
+
+# Check available file descriptors
+if [ -r /proc/sys/fs/file-max ]; then
+  SYSTEM_MAX=`cat /proc/sys/fs/file-max`
+  if [ "$SYSTEM_MAX" -gt "80000" ]; then
+    MAX_FILEDESCRIPTORS=32768
+  elif [ "$SYSTEM_MAX" -gt "40000" ]; then
+    MAX_FILEDESCRIPTORS=16384
+  elif [ "$SYSTEM_MAX" -gt "10000" ]; then
+    MAX_FILEDESCRIPTORS=8192
+  else
+    MAX_FILEDESCRIPTORS=1024
+    cat << EOF
+
+Warning: Your system has very few filedescriptors available in total.
+
+Maybe you should try raising that by adding 'fs.file-max=100000' to your
+/etc/sysctl.conf file.  Feel free to pick any number that you deem appropriate.
+Then run 'sysctl -p'.  See /proc/sys/fs/file-max for the current value, and
+file-nr in the same directory for how many of those are used at the moment.
+
+EOF
+  fi
+else
+  MAX_FILEDESCRIPTORS=8192
+fi
+
+tor_start() {
+  if [ -n "$MAX_FILEDESCRIPTORS" ]; then
+    echo -n "Raising maximum number of filedescriptors (ulimit -n) to $MAX_FILEDESCRIPTORS"
+    if ulimit -n "$MAX_FILEDESCRIPTORS" ; then
+      echo "..."
+    else
+      echo ": FAILED."
+    fi
+  fi
+  echo "Starting Tor..."
+  /usr/bin/tor
+}
+
+tor_stop() {
+  echo -n "Stopping Tor..."
+  PID=`cat /var/run/tor/tor.pid 2>/dev/null`
+  if [ -z "$PID" ]; then
+    echo " not running."
+    exit 0
+  fi
+  if kill -15 $PID; then
+    echo " stopped."
+  else
+    sleep 1
+    if kill -9 $PID; then
+      echo " killed."
+    else
+      echo " error!"
+      exit 1
+    fi
+  fi
+}
+
+tor_reload() {
+  echo -n "Reloading Tor..."
+  PID=`cat /var/run/tor/tor.pid 2>/dev/null`
+  if [ -z "$PID" ]; then
+    echo " not running."
+    exit 0
+  fi
+  if kill -1 $PID; then
+    echo " reloaded."
+  else
+    echo " error!"
+    exit 1
+  fi
+}
+
+tor_status() {
+  PID=`cat /var/run/tor/tor.pid 2>/dev/null`
+  if [ -z "$PID" ]; then
+    echo "Not running."
+    exit 1
+  elif kill -0 $PID; then
+    echo "Running."
+    exit 0
+  else
+    echo "PID file /var/run/tor/tor.pid present but PID $PID is not running."
+    exit 1
+  fi
+}
+
+case "$1" in
+  start)
+    tor_start
+  ;;
+
+  stop)
+    tor_stop
+  ;;
+
+  restart)
+    tor_stop
+    sleep 1
+    tor_start
+  ;;
+
+  reload)
+    tor_reload
+  ;;
+
+  status)
+    tor_status
+  ;;
+
+  *)
+  echo "Usage: $0 (start|stop|restart|reload|status)"
+esac

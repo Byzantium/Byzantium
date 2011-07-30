@@ -1,0 +1,10 @@
+As of tor-0.2.1.30-2 and later, I've updated Tor rc.tor init script to get rid
+of hardcoded values present inside torctl command script. To successfully use
+the newer script be sure to check changes to both /etc/rc.d/rc.tor.new and
+/etc/tor/torrc.new as some configurations values are now required and no
+longer passed on the command line. The original TorProject.org torrc
+configuration is always available as /etc/tor/torrc.sample.
+
+Also, there has been a recent libevent upgrade from 1.4.13 to 2.0.10 in
+SlackBuilds.org 13.37 tree, remember to rebuild Tor when such major upgrades
+happen.

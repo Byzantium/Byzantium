@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+   |-----handy-ruler------------------------------------------------------|
+tor: tor (The second-generation onion router)
+tor:
+tor: Tor is a toolset for a wide range of organizations and people that
+tor: want to improve their safety and security on the Internet. Using Tor
+tor: can help you anonymize web browsing and publishing, instant messaging,
+tor: IRC, SSH, and other applications that use the TCP protocol. Tor also
+tor: provides a platform on which software developers can build new
+tor: applications with built-in anonymity, safety, and privacy features.
+tor:
+tor: https://www.torproject.org/
+tor:

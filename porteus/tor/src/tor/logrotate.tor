@@ -1,0 +1,14 @@
+/var/log/tor/*log {
+  daily
+  rotate 5
+  compress
+  delaycompress
+  missingok
+  notifempty
+  create 0644 tor tor
+  sharedscripts
+  postrotate
+    /etc/rc.d/rc.tor reload > /dev/null
+  endscript
+}
+

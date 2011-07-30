@@ -1,0 +1,30 @@
+Tor is a toolset for a wide range of organizations and people that want
+to improve their safety and security on the Internet. Using Tor can help
+you anonymize web browsing and publishing, instant messaging, IRC,
+SSH, and other applications that use the TCP protocol. Tor also
+provides a platform on which software developers can build new
+applications with built-in anonymity, safety, and privacy features.
+
+This script requires a 'tor' user/group to exist before running.
+The recommended UID/GID is 220. You can create these like so:
+  groupadd -g 220 tor
+  useradd -u 220 -g 220 -c "The Onion Router" -d /dev/null -s /bin/false tor
+
+You can pass another user/group to the script; this is however, less safe:
+  TOR_USER=nobody TOR_GROUP=nogroup sh tor.SlackBuild
+
+The following can be used to start/stop tor automatically:
+/etc/rc.d/rc.local
+  if [ -x /etc/rc.d/rc.tor ]; then
+    /etc/rc.d/rc.tor start
+  fi
+
+/etc/rc.d/rc.local_shutdown
+  if [ -x /etc/rc.d/rc.tor ]; then
+    /etc/rc.d/rc.tor stop
+  fi
+
+Tor requires libevent, while tsocks is an optional run-time dependency if you
+want to use the "torify" shell script.
+
+Take a look at README.SLACKWARE for important notes and recent changes.

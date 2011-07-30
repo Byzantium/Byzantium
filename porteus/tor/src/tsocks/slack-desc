@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+tsocks: tsocks (transparent SOCKS proxying library)
+tsocks:
+tsocks: tsocks' role is to allow these non SOCKS aware applications (e.g
+tsocks: telnet, ssh, ftp etc) to use SOCKS without any modification. It does
+tsocks: this by intercepting the calls that applications make to establish
+tsocks: network connections and negotating them through a SOCKS server as
+tsocks: necessary.
+tsocks:
+tsocks:
+tsocks: http://tsocks.sourceforge.net/
+tsocks:
