@@ -1,0 +1,8 @@
+mupdf is a lightweight PDF viewer and toolkit
+
+The renderer in MuPDF is tailored for high quality anti-aliased graphics.
+MuPDF renders text with metrics and spacing accurate to within fractions of
+a pixel for the highest fidelity in reproducing the look of a printed page
+on screen.
+ 
+This requires jbig2dec and openjpeg.
