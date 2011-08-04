@@ -1,12 +1,19 @@
+# status.py - Implements the status screen of the Byzantium control panel.
+#    Relies on a few other things running under the hood that are independent
+#    of the control panel.  By default, this comprises the /index.html part of
+#    the web app.
+
 # Import modules.
 import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
 import os
 
+# Import control panel modules.
 from control_panel import *
 from networktraffic import NetworkTraffic
 from networkconfiguration import NetworkConfiguration
+from meshconfiguration import MeshConfiguration
 
 templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=100)
@@ -16,6 +23,7 @@ templatelookup = TemplateLookup(directories=[filedir],
 class Status(object):
     traffic = NetworkTraffic()
     network = NetworkConfiguration()
+    mesh = MeshConfiguration()
 
     # Pretends to be index.html.
     def index(self):

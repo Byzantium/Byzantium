@@ -11,18 +11,6 @@
 # For security reasons I see no reason to change this; if you want to admin a
 # Byzantium node remotely you'll have to use SSH port forwarding.
 
-# Uses the Mako templating system (http://www.makotemplates.org/).
-
-# Developers:
-# The Doctor [412/724/301/703] (http://drwho.virtadpt.net) (drwho@virtadpt.net)
-# PGP: 0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
-
-# By default, this app can be accessed at http://localhost:8080/
-
-# URL mappings:
-#	/ == /index.html == system status
-#	/traffic == /traffic/index.html == network traffic report
-
 # v0.2	- Split the network traffic graphs from the system status report.
 # v0.1	- Initial release.
 
