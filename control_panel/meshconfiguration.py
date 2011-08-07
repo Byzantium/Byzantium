@@ -70,7 +70,7 @@ class MeshConfiguration(object):
         if not results:
             # Display an error page which says that no wireless interfaces have
             # been configured yet.
-            error = "<p>ERROR: No wireless network interfaces have been configured yet.  <a href='/networkconfiguration'>You need to do that first!</a></p>"
+            error = "<p>ERROR: No wireless network interfaces have been configured yet.  <a href='/network'>You need to do that first!</a></p>"
         else:
             # Open a connection to the mesh configuration database.
             meshconfconn = sqlite3.connect(self.meshconfdb)
@@ -101,9 +101,9 @@ class MeshConfiguration(object):
                     # into the page, it would tell the user that the interfaces
                     # were detected and are usable.
                     interfaces = interfaces + "<input type='submit' name='junk' value='" + i[0] + "' style='background-color:grey;' />\n"
+            meshconfcursor.close()
 
         # Clean up our connections to the configuration databases.
-        meshconfcursor.close()
         netconfcursor.close()
 
         # Render the HTML page.
