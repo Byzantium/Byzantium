@@ -75,8 +75,9 @@ class NetworkConfiguration(object):
 
             # If the interface is not found in database, add it.
             if not len(result):
-                cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?,?);",
-                              ('no', '0', 'no', '', i, '', '', ))
+                # enabled, channel, configured, essid, interface, ipaddress, netmask
+                template = ('no', '0', 'no', '', i, '0.0.0.0', '0.0.0.0', )
+                cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?,?);", template)
                 connection.commit()
                 wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
                 continue
