@@ -104,8 +104,9 @@ class NetworkConfiguration(object):
 
             # If the interface is not found in database, add it.
             if not len(result):
-                cursor.execute("INSERT INTO wired VALUES (?,?,?,?,?,?);",
-                              ('no', 'no', '', i, '', '', ))
+                # enabled, configured, gateay, interface, ipaddress, netmask
+                template = ('no', 'no', 'no', i, '0.0.0.0', '0.0.0.0', )
+                cursor.execute("INSERT INTO wired VALUES (?,?,?,?,?,?);", template)
                 connection.commit()
                 ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "'/>\n"
                 continue
@@ -226,8 +227,10 @@ class NetworkConfiguration(object):
     # Implements step one of the interface configuration process: picking an
     # IP address.
     def tcpip(self, interface=None, essid=None, channel=None):
-        # Store the ESSID and wireless channel in the class' attribute set if
+        # Store the interface, ESSID and wireless channel in the class' attribute set if
         # they were passed as args.
+        if interface:
+            self.interface = interface
         if essid:
             self.essid = essid
         if channel:
@@ -251,7 +254,7 @@ class NetworkConfiguration(object):
         result = cursor.fetchall()
         cursor.close()
 
-        # Take apart the IP address and netmask and repalce the defaults with
+        # Take apart the IP address and netmask and replace the defaults with
         # their components if they exist.
         if result:
             (octet_one, octet_two, octet_three, octet_four) = result[0][1].split('.')
@@ -374,7 +377,6 @@ class NetworkConfiguration(object):
             output = os.popen(command)
         if self.channel:
             command = '/sbin/iwconfig ' + self.interface + ' channel'
-            command = command + self.essid
             output = os.popen(command)
 
         # Call ifconfig and pass the network configuration information.
