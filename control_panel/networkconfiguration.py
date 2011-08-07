@@ -225,7 +225,7 @@ class NetworkConfiguration(object):
 
     # Implements step one of the interface configuration process: picking an
     # IP address.
-    def tcpip(self, essid=None, channel=None):
+    def tcpip(self, interface=None, essid=None, channel=None):
         # Store the ESSID and wireless channel in the class' attribute set if
         # they were passed as args.
         if essid:
@@ -370,7 +370,7 @@ class NetworkConfiguration(object):
 
         # If they're defined, set the wireless channel and ESSID.
         if self.essid:
-            command = '/sbin/iwconfig '+self.interface+' essid '+self.essid
+            command = '/sbin/iwconfig ' + self.interface + ' essid ' + self.essid
             output = os.popen(command)
         if self.channel:
             command = '/sbin/iwconfig ' + self.interface + ' channel'
