@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# rc.byzantium - Initscript called at boot-time when runlevel 3 is entered (the
+#	default).  Here, long-running scripts and daemons will be started that are
+#	directly involved in Byzantium.  Other things (like optional system services)
+#	will be controlled by other initscripts, just not at boot-time.
+
+# Start rrdtool to monitor network traffic on the interfaces of the node.
+/usr/local/bin/traffic_stats.sh &
