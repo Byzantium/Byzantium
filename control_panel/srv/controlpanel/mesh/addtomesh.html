@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
-<!-- /mesh/addtomesh.html - The user . -->
+<!-- /mesh/addtomesh.html - The user picks which mesh networking protocol (if there is a choice) to run on the
+     wireless interface. -->
 
 <html>
 <head>
@@ -22,7 +23,7 @@
 
 <p>The mesh routing protocol selected is ${protocol}.</p>
 
-ss<p>Click the "Enable" button to join the mesh or the "Cancel" button to abort!</p>
+<p>Click the "Enable" button to activate or the "Cancel" button to abort!</p>
 <form action="enable" method="post">
 <input type="submit" value="Enable" />
 <input type="reset" value="Cancel" />
