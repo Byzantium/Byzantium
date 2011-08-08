@@ -3,6 +3,9 @@
 #    of the control panel.  By default, this comprises the /index.html part of
 #    the web app.
 
+# Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
+# License: GPLv3
+
 # Import modules.
 import cherrypy
 from mako.template import Template

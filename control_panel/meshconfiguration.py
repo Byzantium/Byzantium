@@ -6,6 +6,9 @@
 # (http://www.pps.jussieu.fr/~jch/software/babel/).  It would have to be
 # rewritten to support a different (or more) protocols.
 
+# Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
+# License: GPLv3
+
 # TODO:
 # - Test this more!
 # - Make network interfaces that don't exist anymore go away.

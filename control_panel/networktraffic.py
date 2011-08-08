@@ -1,3 +1,9 @@
+# networktraffic.py - Web application that displays the rrdtool traffic
+#    graphs, so that the node's administrator can see how active their node is.
+
+# Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
+# License: GPLv3
+
 # Import modules.
 import cherrypy
 from mako.template import Template

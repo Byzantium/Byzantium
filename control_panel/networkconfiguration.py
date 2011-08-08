@@ -1,6 +1,9 @@
 # networkconfiguration.py - Implements the network interface configuration
 #    subsystem of the Byzantium control panel.
 
+# Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
+# License: GPLv3
+
 # TODO:
 # - Figure out what columns in the network configuration database to index.
 #   It's doubtful that a Byzantium node would have more than three interfaces

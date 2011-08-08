@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
+# License: GPLv3
 
 # control_panel.py
 # This application runs in the background and implements a (relatively) simple
