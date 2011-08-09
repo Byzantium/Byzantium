@@ -338,12 +338,12 @@ class NetworkConfiguration(object):
             ip_address = '172.16.'
             ip_address = ip_address + str(random.randint(1, 254)) + '.'
             ip_address = ip_address + str(random.randint(1, 254))
-            netmask = '255.255.0.0'
+            netmask = '255.240.0.0'
         else:
             ip_address = '192.168.'
             ip_address = ip_address + str(random.randint(1, 254)) + '.'
             ip_address = ip_address + str(random.randint(1, 254))
-            netmask = '255.255.255.0'
+            netmask = '255.255.0.0'
 
         # Store the randomly generated network configuration information in
         # the class' attribute set.
