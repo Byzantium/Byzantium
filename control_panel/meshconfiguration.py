@@ -170,8 +170,7 @@ class MeshConfiguration(object):
 
         # Set up a default set of command line options for babeld.  Some of
         # these are redundant but are present in case an older version of
-        # babeld is used on the node.  See entries in the following file for
-        # 30 January 2011 (release of babeld v1.1.0) to understand why.
+        # babeld is used on the node.  See the following file to see why:
         # http://www.pps.jussieu.fr/~jch/software/babel/CHANGES.text
         common_babeld_opts = ['-m ff02:0:0:0:0:0:1:6', '-p 6696', '-D']
 
