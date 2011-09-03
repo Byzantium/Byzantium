@@ -147,6 +147,10 @@ cat $CWD/nginx.SlackBuild > $PKG/usr/doc/nginx-$VERSION/nginx.SlackBuild
 mkdir -p $PKG/etc/nginx/apps
 mkdir -p $PKG/etc/nginx/offline_apps
 
+# Create the webroot under /srv.
+mkdir -p $PKG/srv/nginx/root
+find $PKG/srv/nginx -type d -exec chmod 0755 {} \;
+
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
@@ -157,11 +161,6 @@ if [ ! -d $PKG/var/log/nginx ]; then
   mkdir -p $PKG/var/log/nginx
   chown $NGINXUSER:$NGINXGROUP $PKG/var/log/nginx
   chmod 750 $PKG/var/log/nginx
-fi
-
-if [ ! -d $PKG/srv/nginx ]; then
-  mkdir -p $PKG/srv/nginx/root
-  find $PKG/srv/nginx -type d -exec chmod 0755 {} \;
 fi
 EOF
 
