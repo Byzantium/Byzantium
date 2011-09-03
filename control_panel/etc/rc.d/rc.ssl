@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Project Byzantium - http://wiki.hacdc.org/index.php/Byzantium
+# License: GPLv3
+
+# /etc/rc3.d/rc.ssl - Tests for the presence of /etc/nginx/server.[crt,key] files, and
+#	generates them if they don't exist.
+
+# TODO:
+# - Detect whether or not the cert has expired, and if so torch them and make new ones.
+
+# Set up some variables to make things easier to maintain.
+OPENSSL=/usr/bin/openssl
+NGINX_DIR=/etc/nginx
+PRIVATE_KEY=$NGINX_DIR/server.key
+CERT_SIGN_REQ=$NGINX_DIR/server.csr
+CERT=$NGINX_DIR/server.crt
+
+# Test for the presence of the server cert.  If it exists we don't have to do anything,
+# so terminate the initscript and start over.
+if [ -f $CERT ]; then
+	echo "SSL certificate exists.  We don't have to start over.
+	exit 0
+	fi
+	
+# Server certificate not found.  We may as well blow everything away and start over
+# because nothing will match up, anyway.
+rm -f $PRIVATE_KEY $CERT_SIGN_REQ $CERT
+
+# Generate the private key.
+echo "Generating private key."
+$OPENSSL genrsa -out $PRIVATE_KEY 2048
+
+echo "Generating certificate signing request."
+$OPENSSL req -new -key $PRIVATE_KEY -out $CERT_SIGN_REQ -sha1 -batch
+
+echo "Signing certificate."
+$OPENSSL x509 -req -days 365 -in $CERT_SIGN_REQ -signkey $PRIVATE_KEY -out $CERT -sha1
+
+chmod 0644 $PRIVATE_KEY $CERT_SIGN_REQ $CERT
