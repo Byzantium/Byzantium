@@ -1,0 +1,11 @@
+/var/log/nginx/*_log {
+  rotate 10
+  notifempty
+  size=5M
+  compress
+  delaycompress
+  sharedscripts
+  postrotate
+    /etc/rc.d/rc.nginx rotate
+  endscript
+}
