@@ -19,7 +19,7 @@ CERT=$NGINX_DIR/server.crt
 # Test for the presence of the server cert.  If it exists we don't have to do anything,
 # so terminate the initscript and start over.
 if [ -f $CERT ]; then
-	echo "SSL certificate exists.  We don't have to start over.
+	echo "SSL certificate exists.  We don't have to start over."
 	exit 0
 	fi
 	
