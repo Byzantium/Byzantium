@@ -1,0 +1,22 @@
+--- ./php.ini-development.orig	2011-04-14 14:26:44.551000001 -0500
++++ ./php.ini-development	2011-04-14 14:38:48.591000954 -0500
+@@ -1506,7 +1506,7 @@
+ ; where MODE is the octal representation of the mode. Note that this
+ ; does not overwrite the process's umask.
+ ; http://php.net/session.save-path
+-;session.save_path = "/tmp"
++session.save_path = "/var/lib/php"
+ 
+ ; Whether to use cookies.
+ ; http://php.net/session.use-cookies
+--- ./php.ini-production.orig	2011-04-14 14:26:44.558000001 -0500
++++ ./php.ini-production	2011-04-14 14:39:09.598999155 -0500
+@@ -1513,7 +1513,7 @@
+ ; where MODE is the octal representation of the mode. Note that this
+ ; does not overwrite the process's umask.
+ ; http://php.net/session.save-path
+-;session.save_path = "/tmp"
++session.save_path = "/var/lib/php"
+ 
+ ; Whether to use cookies.
+ ; http://php.net/session.use-cookies

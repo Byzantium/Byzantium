@@ -1,0 +1,255 @@
+#!/bin/sh
+
+# Build and package PHP-FCGI on Slackware.
+# by:  David Cantrell <david@slackware.com>
+# Modified for PHP 4-5 by volkerdi@slackware.com
+# Modified for FastCGI by The Doctor <drwho at virtadpt dot net>
+# Copyright 2007, 2008, 2009, 2010, 2011  Patrick Volkerding, Sebeka, MN, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+VERSION=5.3.8
+BUILD=${BUILD:-6}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) export ARCH=i486 ;;
+    arm*) export ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) export ARCH=$( uname -m ) ;;
+  esac
+fi
+
+# I'm building on a single-CPU VM.  No way in hell is -j7 going to work.
+NUMJOBS=${NUMJOBS:-"  "}
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp}
+PKG=$TMP/package-php/
+rm -rf $PKG
+mkdir -p $TMP $PKG
+
+if [ "$ARCH" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Modified for nginx.
+mkdir -p $PKG/etc/nginx
+mkdir -p $PKG/etc/php
+
+cd $TMP
+rm -rf php-$VERSION
+tar xvf $CWD/php-$VERSION.tar.?z* || exit 1
+cd php-$VERSION
+
+# cleanup:
+find . -name "*.orig" -delete
+
+# Add missing(?) PEAR modules back:
+if [ -d php-$VERSION/pear/packages ]; then
+  ( cd php-$VERSION/pear/packages
+    cp -a $CWD/pear/*.bz2 . 2> /dev/null
+    bzip2 -d *.bz2 2> /dev/null
+  )
+fi
+
+if [ "$ARCH" = "s390" ]; then
+  zcat $CWD/php.configure.s390.diff.gz | patch -p1 || exit
+fi
+
+# Fixup perms/owners:
+chown -R root:root .
+find . \
+  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
+
+find . -name "*.h" -exec chmod 644 {} \;
+
+# Sometimes they ship a few of these:
+find . -name "*.orig" -exec rm {} \;
+
+# Patch ini files:
+# MOOF: Use these as a template to figure out what the php.ini options need to be, and
+# hack appropriately.
+#zcat $CWD/php.ini-development.diff.gz | patch -p1 --verbose || exit 1
+#zcat $CWD/php.ini-development.diff.gz | patch -p1 --verbose php.ini-production || exit 1
+#zcat $CWD/php.session.save_path.diff.gz | patch -p1 --verbose || exit 1
+
+# Extensively hacked configure function that adds only what it looks like we need right
+# now.  This script belongs in Henry Armitage's library because reading it cost me some
+# SAN.
+# Sometime soon I'm going to whittle more options out of that horrible command to
+# streamline things somewhat.
+php_configure() {
+EXTENSION_DIR=/usr/lib${LIBDIRSUFFIX}/php/extensions \
+CFLAGS="$SLKCFLAGS" \
+./configure \
+  $* \
+  --enable-fastcgi \
+  --enable-fpm \
+  --enable-mbstring \
+  --disable-pdo \
+  --with-curl \
+  --disable-debug \
+  --disable-rpath \
+  --enable-inline-optimization \
+  --with-bz2 \
+  --with-zlib \
+  --enable-sockets \
+  --enable-sysvsem \
+  --enable-sysvshm \
+  --enable-pcntl \
+  --enable-mbregex \
+  --enable-zip \
+  --with-pcre-regex \
+  --with-openssl \
+  --with-mysql \
+  --with-mysql-sock=/var/run/mysql/mysql.sock \
+  --with-mysqli \
+  --enable-sqlite-utf8 \
+  --prefix=/usr \
+  --with-gmp \
+  --enable-intl \
+  --with-xsl \
+  --without-ldap \
+  --with-mcrypt \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --with-libdir=lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --disable-safe-mode \
+  --disable-magic-quotes \
+  --enable-zend-multibyte \
+  --enable-mbregex \
+  --enable-tokenizer=shared \
+  --with-config-file-scan-dir=/etc/php \
+  --with-config-file-path=/etc/nginx \
+  --enable-mod_charset \
+  --with-layout=PHP \
+  --enable-sigchild \
+  --enable-xml \
+  --with-libxml-dir=/usr \
+  --enable-filter \
+  --with-gdbm=/usr \
+  --with-gd=shared \
+  --with-jpeg-dir=/usr \
+  --with-png-dir=/usr \
+  --with-zlib-dir=/usr \
+  --with-xpm-dir=/usr \
+  --with-freetype-dir=/usr \
+  --with-t1lib=/usr \
+  --enable-gd-native-ttf \
+  --enable-gd-jis-conv \
+  --with-gettext=shared,/usr \
+  --with-iconv=shared \
+  --enable-hash \
+  --with-sqlite=shared \
+  --with-sqlite3=shared \
+  --with-regex=php \
+  --enable-sysvmsg \
+  --enable-shared=yes \
+  --enable-static=no \
+  --with-gnu-ld \
+  --with-pic \
+  --build=$ARCH-slackware-linux
+}
+
+# Make the FastCGI version of PHP.  This includes the CLI version.
+php_configure 
+make $NUMJOBS || make || exit 1
+make install INSTALL_ROOT=$PKG || exit 1
+
+# Get the CLI and FastCGI binaries someplace they can be packaged.
+mkdir -p $PKG/usr/bin
+cat ./sapi/cli/php > $PKG/usr/bin/php
+cat ./sapi/cgi/php-cgi > $PKG/usr/bin/php-cgi
+cat ./sapi/fpm/php-fpm > $PKG/usr/bin/php-fpm
+chmod 755 $PKG/usr/bin/php
+chmod 755 $PKG/usr/bin/php-cgi
+chmod 755 $PKG/usr/bin/php-fpm
+
+# PHP (used to) install Pear with some strange permissions.
+chmod 755 $PKG/usr/bin/pear
+
+# PHP sometimes puts junk in the root directory:
+( cd $PKG
+  rm -rf .channels .depdb .depdblock .filemap .lock .registry
+)
+
+# Fix $PKG/usr/lib/php perms:
+( cd $PKG/usr/lib${LIBDIRSUFFIX}/php
+  find . \
+   \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+   -exec chmod 755 {} \; -o \
+   \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+   -exec chmod 644 {} \;
+)
+
+mkdir -p $PKG/usr/doc/php-$VERSION
+cp -a \
+  CODING_STANDARDS CREDITS EXTENSIONS INSTALL LICENSE NEWS README* TODO* UPGRADING* \
+  sapi/cgi/README.FastCGI \
+  $PKG/usr/doc/php-$VERSION
+chown -R root:root $PKG/usr/doc/php-$VERSION
+chmod 644 $PKG/usr/doc/php-$VERSION/UPGRADING*
+
+mkdir -p $PKG/etc/php
+cp -a php.ini-development php.ini-production $PKG/etc/php
+chmod 644 $PKG/etc/php/*
+chown root:root $PKG/etc/php/*
+
+# This can go now.
+#ls -l $PKG/etc/php/httpd*
+#rm -f $PKG/etc/php/httpd*
+
+# Session directory for PHP:
+mkdir -p $PKG/tmp/php-sessions
+chmod 770 $PKG/tmp/php-sessions
+chown root:nobody $PKG/tmp/php-sessions
+
+# Strip ELF objects.
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+
+# Compress the manpages to conserve disk space.
+gzip -9 $PKG/usr/man/man?/*.?
+
+mkdir -p $PKG/install
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $TMP/php-$VERSION-$ARCH-$BUILD.txz
+

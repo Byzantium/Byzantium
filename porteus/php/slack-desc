@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+   |-----handy-ruler------------------------------------------------------|
+php: php (HTML-embedded scripting language)
+php:
+php: PHP is an HTML-embedded scripting language.  It shares syntax
+php: characteristics with C, Java, and Perl.  The primary objective behind
+php: this language is to make a fast and easy-to-use scripting language
+php: for dynamic web sites.
+php:
+php: More information can be found online at http://www.php.net/
+php:
+php:
+php:
