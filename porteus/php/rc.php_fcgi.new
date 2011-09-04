@@ -11,21 +11,11 @@
 # http://bash.cyberciti.biz/web-server/rhel-fedora-php-fastcgi-initd-script/
 
 # Useful variables.
-SPAWN=/usr/bin/spawn-fcgi
-PHP=/usr/bin/php-cgi
-PID=/var/run/php-cgi.pid
-HOST=127.0.0.1
-PORT=9000
-USER=nobody
-GROUP=nobody
-CHILDREN=5
+PHP=/usr/bin/php-fpm
+PID=/var/run/php-fpm.pid
 
 php_start() {
   # Sanity checks.
-  if [ ! -f $SPAWN ]; then
-    echo "$SPAWN does not appear to exist. Can't start PHP server."
-    exit 1
-  fi
   if [ ! -f $PHP ]; then
     echo "$PHP does not appear to exist. No start PHP server found."
     exit 1
@@ -37,7 +27,7 @@ php_start() {
   fi
 
   echo "Starting the PHP server daemon..."
-  $SPAWN -a $HOST -p $PORT -u $USER -g $GROUP -P $PID -C $CHILDREN -f $PHP
+  $PHP -g $PID 
 }
 
 php_stop() {

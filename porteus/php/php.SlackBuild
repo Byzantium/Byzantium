@@ -244,7 +244,7 @@ find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
 # Compress the manpages to conserve disk space.
 gzip -9 $PKG/usr/man/man?/*.?
 
-# I don't know what there are two copies of php-fpm, so get rid of the second on.
+# I don't know why there are two copies of php-fpm, so get rid of the second on.
 rm -f $PKG/usr/sbin/php-fpm
 
 mkdir -p $PKG/install
