@@ -127,8 +127,9 @@ eval $(perl '-V:archlib')
 rm -rf $PKG/$archlib $PKG/usr/html $PKG/var
 
 # Replace the nginx.conf file with our own but save the old one.
-mv $PKG/etc/nginx/nginx.conf.default $PKG/etc/nginx/nginx.conf.default.orig
+rm $PKG/etc/nginx/nginx.conf.default
 cp $CWD/nginx.conf $PKG/etc/nginx/nginx.conf.default
+cp $CWD/nginx.conf $PKG/etc/nginx/nginx.conf
 
 # Add init scripts for nginx and SSL testing/creation.
 mkdir -p $PKG/etc/rc.d
@@ -154,15 +155,11 @@ find $PKG/srv/nginx -type d -exec chmod 0755 {} \;
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
-cat << EOF >> $PKG/install/doinst.sh
 
 # Create the log and web content directories and set permissions.
-if [ ! -d $PKG/var/log/nginx ]; then
-  mkdir -p $PKG/var/log/nginx
-  chown $NGINXUSER:$NGINXGROUP $PKG/var/log/nginx
-  chmod 750 $PKG/var/log/nginx
-fi
-EOF
+mkdir -p $PKG/var/log/nginx
+chown $NGINXUSER:$NGINXGROUP $PKG/var/log/nginx
+chmod 750 $PKG/var/log/nginx
 
 # Let's not clobber config files on upgrade
 ( cd $PKG/etc/nginx
