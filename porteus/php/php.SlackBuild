@@ -43,7 +43,7 @@ NUMJOBS=${NUMJOBS:-"  "}
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp}
-PKG=$TMP/package-php/
+PKG=$TMP/SBo/package-php/
 rm -rf $PKG
 mkdir -p $TMP $PKG
 
@@ -216,17 +216,17 @@ chmod 755 $PKG/usr/bin/pear
 mkdir -p $PKG/usr/doc/php-$VERSION
 cp -a \
   CODING_STANDARDS CREDITS EXTENSIONS INSTALL LICENSE NEWS README* TODO* UPGRADING* \
-  sapi/cgi/README.FastCGI \
+  sapi/cgi/README.FastCGI slack-desc php.SlackBuild \
   $PKG/usr/doc/php-$VERSION
 chown -R root:root $PKG/usr/doc/php-$VERSION
 chmod 644 $PKG/usr/doc/php-$VERSION/UPGRADING*
 
 mkdir -p $PKG/etc/php
-cp -a php.ini-development php.ini-production $PKG/etc/php
+cp -a php.ini-development php.ini-production php-fpm.conf $PKG/etc/php
 chmod 644 $PKG/etc/php/*
 chown root:root $PKG/etc/php/*
 
-# Add the initscript into the staging directory.
+# Add the initscript to the staging directory.
 mkdir -p $PKG/etc/rc.d
 cp $CWD/rc.php_fcgi.new $PKG/etc/rc.d/rc.php_fcgi
 chown root:root $PKG/etc/rc.d/rc.php_fcgi
