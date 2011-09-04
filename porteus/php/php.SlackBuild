@@ -148,7 +148,7 @@ CFLAGS="$SLKCFLAGS" \
   --with-mcrypt \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --with-libdir=lib${LIBDIRSUFFIX} \
-  --sysconfdir=/etc \
+  --sysconfdir=/etc/php \
   --disable-safe-mode \
   --disable-magic-quotes \
   --enable-zend-multibyte \
@@ -192,10 +192,8 @@ make install INSTALL_ROOT=$PKG || exit 1
 # Get the CLI and FastCGI binaries someplace they can be packaged.
 mkdir -p $PKG/usr/bin
 cat ./sapi/cli/php > $PKG/usr/bin/php
-cat ./sapi/cgi/php-cgi > $PKG/usr/bin/php-cgi
 cat ./sapi/fpm/php-fpm > $PKG/usr/bin/php-fpm
 chmod 755 $PKG/usr/bin/php
-chmod 755 $PKG/usr/bin/php-cgi
 chmod 755 $PKG/usr/bin/php-fpm
 
 # PHP (used to) install Pear with some strange permissions.
@@ -228,9 +226,11 @@ cp -a php.ini-development php.ini-production $PKG/etc/php
 chmod 644 $PKG/etc/php/*
 chown root:root $PKG/etc/php/*
 
-# This can go now.
-#ls -l $PKG/etc/php/httpd*
-#rm -f $PKG/etc/php/httpd*
+# Add the initscript into the staging directory.
+mkdir -p $PKG/etc/rc.d
+cp $CWD/rc.php_fcgi.new $PKG/etc/rc.d/rc.php_fcgi
+chown root:root $PKG/etc/rc.d/rc.php_fcgi
+chmod 0755 $PKG/etc/rc.d/rc.php_fcgi
 
 # Session directory for PHP:
 mkdir -p $PKG/tmp/php-sessions
@@ -244,10 +244,13 @@ find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
 # Compress the manpages to conserve disk space.
 gzip -9 $PKG/usr/man/man?/*.?
 
+# I don't know what there are two copies of php-fpm, so get rid of the second on.
+rm -f $PKG/usr/sbin/php-fpm
+
 mkdir -p $PKG/install
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 cat $CWD/slack-desc > $PKG/install/slack-desc
 
 cd $PKG
-/sbin/makepkg -l y -c n $TMP/php-$VERSION-$ARCH-$BUILD.txz
+/sbin/makepkg -l y -c n $TMP/php-$VERSION-$ARCH-$BUILD.tgz
 
