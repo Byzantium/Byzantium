@@ -135,6 +135,7 @@ cp $CWD/nginx.conf $PKG/etc/nginx/nginx.conf
 mkdir -p $PKG/etc/rc.d
 cat $CWD/rc.nginx > $PKG/etc/rc.d/rc.nginx.new
 cat $CWD/rc.ssl > $PKG/etc/rc.d/rc.ssl.new
+chmod 0755 $PKG/etc/rc.d/rc.ssl.new
 
 # Add a logrotate script.
 mkdir -p $PKG/etc/logrotate.d
