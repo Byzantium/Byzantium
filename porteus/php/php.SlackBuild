@@ -38,9 +38,6 @@ if [ -z "$ARCH" ]; then
   esac
 fi
 
-# I'm building on a single-CPU VM.  No way in hell is -j7 going to work.
-NUMJOBS=${NUMJOBS:-"  "}
-
 CWD=$(pwd)
 TMP=${TMP:-/tmp}
 PKG=$TMP/SBo/package-php/
@@ -186,7 +183,7 @@ CFLAGS="$SLKCFLAGS" \
 
 # Make the FastCGI version of PHP.  This includes the CLI version.
 php_configure 
-make $NUMJOBS || make || exit 1
+make || exit 1
 make install INSTALL_ROOT=$PKG || exit 1
 
 # Get the CLI and FastCGI binaries someplace they can be packaged.
@@ -244,7 +241,7 @@ find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
 # Compress the manpages to conserve disk space.
 gzip -9 $PKG/usr/man/man?/*.?
 
-# I don't know why there are two copies of php-fpm, so get rid of the second on.
+# I don't know why there are two copies of php-fpm, so get rid of the second one.
 rm -f $PKG/usr/sbin/php-fpm
 
 mkdir -p $PKG/install
