@@ -39,8 +39,8 @@ if [ -z "$ARCH" ]; then
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp}
-PKG=$TMP/SBo/package-php/
+TMP=${TMP:-/tmp}/SBo
+PKG=$TMP/package-php/
 rm -rf $PKG
 mkdir -p $TMP $PKG
 
@@ -213,7 +213,7 @@ chmod 755 $PKG/usr/bin/pear
 mkdir -p $PKG/usr/doc/php-$VERSION
 cp -a \
   CODING_STANDARDS CREDITS EXTENSIONS INSTALL LICENSE NEWS README* TODO* UPGRADING* \
-  sapi/cgi/README.FastCGI $CWD/slack-desc $CWD/php.SlackBuild \
+  sapi/cgi/README.FastCGI $CWD/php.SlackBuild \
   $PKG/usr/doc/php-$VERSION
 chown -R root:root $PKG/usr/doc/php-$VERSION
 chmod 644 $PKG/usr/doc/php-$VERSION/UPGRADING*
