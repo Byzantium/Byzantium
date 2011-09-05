@@ -219,7 +219,7 @@ chown -R root:root $PKG/usr/doc/php-$VERSION
 chmod 644 $PKG/usr/doc/php-$VERSION/UPGRADING*
 
 mkdir -p $PKG/etc/php
-cp -a php.ini-development php.ini-production php-fpm.conf $PKG/etc/php
+cp -a php.ini-development php.ini-production $CWD/php-fpm.conf $PKG/etc/php
 chmod 644 $PKG/etc/php/*
 chown root:root $PKG/etc/php/*
 
