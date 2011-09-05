@@ -27,7 +27,7 @@ php_start() {
   fi
 
   echo "Starting the PHP server daemon..."
-  $PHP -g $PID 
+  $PHP
 }
 
 php_stop() {
