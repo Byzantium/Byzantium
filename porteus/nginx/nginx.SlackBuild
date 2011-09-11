@@ -150,7 +150,7 @@ mkdir -p $PKG/etc/nginx/apps
 mkdir -p $PKG/etc/nginx/offline_apps
 
 # Create the webroot under /srv.
-mkdir -p $PKG/srv/nginx/root
+mkdir -p $PKG/srv/nginx
 find $PKG/srv/nginx -type d -exec chmod 0755 {} \;
 
 mkdir -p $PKG/install
