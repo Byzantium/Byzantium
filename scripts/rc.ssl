@@ -11,10 +11,10 @@
 
 # Set up some variables to make things easier to maintain.
 OPENSSL=/usr/bin/openssl
-NGINX_DIR=/etc/nginx
-PRIVATE_KEY=$NGINX_DIR/server.key
-CERT_SIGN_REQ=$NGINX_DIR/server.csr
-CERT=$NGINX_DIR/server.crt
+SERVER_DIR=/etc/httpd
+PRIVATE_KEY=$SERVER_DIR/server.key
+CERT_SIGN_REQ=$SERVER_DIR/server.csr
+CERT=$SERVER_DIR/server.crt
 
 # Test for the presence of the server cert.  If it exists we don't have to do anything,
 # so terminate the initscript and start over.
