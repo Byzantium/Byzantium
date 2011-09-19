@@ -17,6 +17,7 @@ from control_panel import *
 from networktraffic import NetworkTraffic
 from networkconfiguration import NetworkConfiguration
 from meshconfiguration import MeshConfiguration
+from services import Services
 
 templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=100)
