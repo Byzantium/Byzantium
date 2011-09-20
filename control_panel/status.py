@@ -28,6 +28,7 @@ class Status(object):
     traffic = NetworkTraffic()
     network = NetworkConfiguration()
     mesh = MeshConfiguration()
+    services = Services()
 
     # Pretends to be index.html.
     def index(self):
