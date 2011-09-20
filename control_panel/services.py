@@ -32,6 +32,51 @@ class Services(object):
 
     # Pretends to be index.html.
     def index(self):
+        # Set up the strings that will hold the HTML for the tables on this
+        # page.
+        webapps = ''
+        systemservices = ''
+
+        # Set up access to the system services database.  We're going to need
+        # to read successive lines from it to build the HTML tables.
+        error = ''
+        connection = sqlite3.connect(self.servicedb)
+        cursor = connection.cursor()
+
+        # Use the contents of the services.webapps table to build an HTML
+        # table of buttons that are either go/no-go indicators.  It's
+        # complicated, so I'll break it down into smaller pieces.
+        cursor.execute("SELECT name, status FROM webapps;")
+        results = cursor.fetchall()
+        if not results:
+            # Display an error page that says that something went wrong.
+            error = "<p>ERROR: Something went wrong in database " + this.servicedb + ", table webapps.  SELECT query failed.</p>"
+        else:
+            # Roll through the list returned by the SQL query.
+            for (name, status) in results:
+                webapp_row = '<tr>'
+
+                # Set up the first cell in the row, the name of the webapp.
+                if status == 'active':
+                    # White on green means that it's active.
+                    webapp_row = webapp_row + "<td style='background-color:green; color:white;' >" + name + "</td>"
+                else:
+                    # White on red means that it's not active.
+                    webapp_row = webapp_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
+
+                # Set up the second cell in the row, the toggle that will
+                # either turn the web app off, or turn it on.
+                if status == 'active':
+                    # Give the option to deactivate the app.
+                    webapp_row = webapp_row + "<td><input type='submit' name='" + name + "' value='deactivate' style='background-color:red; color:white;' ></td>"
+                else:
+                    # Give the option to activate the app.
+                    webapp_row = webapp_row + "<td><input type='submit' name='" + name + "' value='activate' style='background-color:green; color:white;' ></td>"
+                # Finish off the row in that table.
+                webapp_row = webapp_row + "</tr>\n"
+
+        # Gracefully detach the system services database.
+        cursor.close()
 
         # Render the HTML page.
         try:
