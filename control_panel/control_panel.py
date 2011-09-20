@@ -41,8 +41,8 @@ def main():
     from status import Status
     root = Status()
 
-    # Mount the object for the root of the URL tree, which happens to be the system
-    # status page.  Use the application config file to set it up.
+    # Mount the object for the root of the URL tree, which happens to be the
+    # system status page.  Use the application config file to set it up.
     cherrypy.tree.mount(root, "/", appconfig)
 
     # Start the web server.
