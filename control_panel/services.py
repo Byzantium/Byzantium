@@ -75,6 +75,9 @@ class Services(object):
                 # Finish off the row in that table.
                 webapp_row = webapp_row + "</tr>\n"
 
+            # Add that row to the buffer of HTML for the webapp table.
+            webapps = webapps + webapp_row
+
         # Gracefully detach the system services database.
         cursor.close()
 
@@ -82,7 +85,9 @@ class Services(object):
         try:
             page = templatelookup.get_template("/services/index.html")
             return page.render(title = "Byzantium Node Services",
-                               purpose_of_page = "Manipulate services.")
+                               purpose_of_page = "Manipulate services.",
+                               webapps = webapps,
+                               systemservices = systemservices)
         except:
             traceback = RichTraceback()
             for (filename, lineno, function, line) in traceback.traceback:
