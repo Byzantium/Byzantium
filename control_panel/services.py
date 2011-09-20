@@ -23,9 +23,9 @@ from control_panel import *
 # Allows the user to configure to configure mesh networking on wireless network
 # interfaces.
 class Services(object):
-    # Class constants.
-    netconfdb = '/var/db/controlpanel/network.sqlite'
-    #netconfdb = '/home/drwho/network.sqlite'
+    # Database used to store states of services and webapps.
+    #servicedb = '/var/db/controlpanel/services.sqlite'
+    servicedb = '/home/drwho/services.sqlite'
 
     # Class attributes.  By default they are blank but will be populated from
     # the services.sqlite database.
