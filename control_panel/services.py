@@ -16,6 +16,7 @@ import os
 import time
 import subprocess
 
+# This is where the exception handling and printing that doesn't suck came from!
 from mako import exceptions
 
 # Import core control panel modules.
@@ -29,8 +30,9 @@ class Services(object):
     #servicedb = '/var/db/controlpanel/services.sqlite'
     servicedb = '/home/drwho/services.sqlite'
 
-    # Class attributes.  By default they are blank but will be populated from
-    # the services.sqlite database.
+    # Class attributes.  In this case, they're just used as scratch space to keep
+    # from having to wrestle with hidden form fields.
+    target = ''
 
     # Pretends to be index.html.
     def index(self):
@@ -56,7 +58,7 @@ class Services(object):
         else:
             # Roll through the list returned by the SQL query.
             for (name, status) in results:
-                webapp_row = ''
+                webapp_row = '<tr>'
 
                 # Set up the first cell in the row, the name of the webapp.
                 if status == 'active':
@@ -76,7 +78,7 @@ class Services(object):
                     webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' ></td>"
 
                 # Finish off the row in that table.
-                webapp_row = webapp_row + "\n"
+                webapp_row = webapp_row + "</tr>\n"
 
                 # Add that row to the buffer of HTML for the webapp table.
                 webapps = webapps + webapp_row
@@ -86,15 +88,12 @@ class Services(object):
         # Gracefully detach the system services database.
         cursor.close()
 
-        print "DEBUG: " + webapps
-
         # Render the HTML page.
         try:
             page = templatelookup.get_template("/services/index.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = "Manipulate services",
                                error = error, webapps = webapps)
-                               #systemservices = systemservices)
         except:
             #traceback = RichTraceback()
             #for (filename, lineno, function, line) in traceback.traceback:
@@ -115,9 +114,50 @@ class Services(object):
     # when the user wants to toggle the state of the app, so it looks in the
     # configuration database and switches 'enabled' to 'disabled' or vice versa
     # depending on what it finds.
-    #def webapps(self, app=None):
+    def webapps(self, app=None):
+	# Set up a connection to the services.sqlite database.
+	database = sqlite3.connect(self.servicedb)
+	cursor = database.cursor()
 
-    #webapps.exposed = True
+	# Search the webapps table of the services.sqlite database for the name
+	# of the app that was passed to this method.  Note the status attached
+	# to the name.
+	template = (app, )
+	cursor.execute("SELECT name, status FROM webapps WHERE name=?;", template)
+	(name, status) = cursor.fetchall()
+
+	# Let's stash this in the class attribute because it'll be needed later.
+	target = name
+
+	# Determine what to do.
+	if status == 'active':
+	    action = 'deactivate'
+	    warning = 'This will deactivate the application!'
+	else:
+	    action = 'activate'
+	    warning = 'This will activate the application!'
+
+	# Close the connection to the database.
+	cursor.close()
+
+	# Display to the user the page that asks them if they really want to
+	# shut down that app.
+        try:
+            page = templatelookup.get_template("/services/index.html")
+            return page.render(title = "Byzantium Node Services",
+                               purpose_of_page = (action + " service"),
+                               app = app, action = action, warning = warning)
+        except:
+            return exceptions.html_error_template().render()
+    webapps.exposed = True
+
+    # The method that does the actual heavy lifting of moving an Apache sub-config
+    # file into or out of /etc/httpd/conf/conf.d.  Takes one argument, the name
+    # of the app.  This should never be called from anywhere other than
+    # Services.webapps().
+    #def toggle_webapp(self, app=None):
+
+    #toggle_webapp.exposed = True
 
 
     # Handler for changing the state of a system service.  This method is also
