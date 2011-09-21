@@ -5,19 +5,18 @@
 # License: GPLv3
 
 # TODO:
+# - Make it so that the toggle buttons in Services.index() don't display the name
+#   of the service again, but 'enable' or 'disable' as appropriate.
 
 # Import external modules.
 import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
-from mako.exceptions import RichTraceback
+from mako import exceptions
 import sqlite3
 import os
-import time
 import subprocess
-
-# This is where the exception handling and printing that doesn't suck came from!
-from mako import exceptions
+import shutil
 
 # Import core control panel modules.
 from control_panel import *
@@ -30,9 +29,15 @@ class Services(object):
     #servicedb = '/var/db/controlpanel/services.sqlite'
     servicedb = '/home/drwho/services.sqlite'
 
-    # Class attributes.  In this case, they're just used as scratch space to keep
-    # from having to wrestle with hidden form fields.
-    target = ''
+    # Class attributes.
+    enabled_configs = '/etc/httpd/enabled_apps'
+    disabled_configs = '/etc/httpd/disabled_apps'
+    pid = '/var/run/httpd/httpd.pid'
+
+    # These will be used as scratch variables to keep from running the same SQL
+    # queries over and over again.
+    app = ''
+    status = ''
 
     # Pretends to be index.html.
     def index(self):
@@ -43,7 +48,7 @@ class Services(object):
 
         # Set up access to the system services database.  We're going to need
         # to read successive lines from it to build the HTML tables.
-        error = ''
+        error = ""
         connection = sqlite3.connect(self.servicedb)
         cursor = connection.cursor()
 
@@ -56,10 +61,11 @@ class Services(object):
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database " + this.servicedb + ", table webapps.  SELECT query failed.</p>"
         else:
+            # Set up the opening tag of the table.
+            webapp_row = '<tr>'
+
             # Roll through the list returned by the SQL query.
             for (name, status) in results:
-                webapp_row = '<tr>'
-
                 # Set up the first cell in the row, the name of the webapp.
                 if status == 'active':
                     # White on green means that it's active.
@@ -72,18 +78,19 @@ class Services(object):
                 # either turn the web app off, or turn it on.
                 if status == 'active':
                     # Give the option to deactivate the app.
-                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' ></td>"
+                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
                 else:
                     # Give the option to activate the app.
-                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' ></td>"
-
-                # Finish off the row in that table.
-                webapp_row = webapp_row + "</tr>\n"
+                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
 
                 # Add that row to the buffer of HTML for the webapp table.
-                webapps = webapps + webapp_row
+                webapps = webapps + webapp_row + '\n'
+
+            # Set the closing tag of the table.
+            webapp_row = webapp_row + "</tr>\n"
 
         # Do the same thing for system services, only call this.services().
+        # MOOF MOOF MOOF
 
         # Gracefully detach the system services database.
         cursor.close()
@@ -95,14 +102,6 @@ class Services(object):
                                purpose_of_page = "Manipulate services",
                                error = error, webapps = webapps)
         except:
-            #traceback = RichTraceback()
-            #for (filename, lineno, function, line) in traceback.traceback:
-            #    print "\n"
-            #    print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-            #    print "Execution died on line %s\n" % line
-            #    print "%s: %s" % (str(traceback.error.__class__.__name__),
-            #        traceback.error)
-
             # Holy crap, this is a better exception analysis method than the
             # one above, because it actually prints useful information to the
             # web browser, rather than forcing you to figure it out from stderr.
@@ -115,35 +114,40 @@ class Services(object):
     # configuration database and switches 'enabled' to 'disabled' or vice versa
     # depending on what it finds.
     def webapps(self, app=None):
-	# Set up a connection to the services.sqlite database.
-	database = sqlite3.connect(self.servicedb)
-	cursor = database.cursor()
+        # Save the name of the app in a class attribute to save effort later.
+        self.app = app
 
-	# Search the webapps table of the services.sqlite database for the name
-	# of the app that was passed to this method.  Note the status attached
-	# to the name.
-	template = (app, )
-	cursor.execute("SELECT name, status FROM webapps WHERE name=?;", template)
-	(name, status) = cursor.fetchall()
+        # Set up a connection to the services.sqlite database.
+        database = sqlite3.connect(self.servicedb)
+        cursor = database.cursor()
 
-	# Let's stash this in the class attribute because it'll be needed later.
-	target = name
+        # Search the webapps table of the services.sqlite database for the name
+        # of the app that was passed to this method.  Note the status attached
+        # to the name.
+        template = (self.app, )
+        cursor.execute("SELECT name, status FROM webapps WHERE name=?;", template)
+        result = cursor.fetchall()
+        name = result[0][0]
+        status = result[0][1]
 
-	# Determine what to do.
-	if status == 'active':
-	    action = 'deactivate'
-	    warning = 'This will deactivate the application!'
-	else:
-	    action = 'activate'
-	    warning = 'This will activate the application!'
+        # Save the status of the app in another class attribute for later.
+        self.status = status
 
-	# Close the connection to the database.
-	cursor.close()
+        # Determine what to do.
+        if status == 'active':
+            action = 'deactivate'
+            warning = 'This will deactivate the application!'
+        else:
+            action = 'activate'
+            warning = 'This will activate the application!'
 
-	# Display to the user the page that asks them if they really want to
-	# shut down that app.
+        # Close the connection to the database.
+        cursor.close()
+
+        # Display to the user the page that asks them if they really want to
+        # shut down that app.
         try:
-            page = templatelookup.get_template("/services/index.html")
+            page = templatelookup.get_template("/services/webapp.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = (action + " service"),
                                app = app, action = action, warning = warning)
@@ -155,9 +159,47 @@ class Services(object):
     # file into or out of /etc/httpd/conf/conf.d.  Takes one argument, the name
     # of the app.  This should never be called from anywhere other than
     # Services.webapps().
-    #def toggle_webapp(self, app=None):
+    def toggle_webapp(self, app=None):
+        # Set up a connection to the services.sqlite database.
+        database = sqlite3.connect(self.servicedb)
+        cursor = database.cursor()
 
-    #toggle_webapp.exposed = True
+        if self.status == 'active':
+            # Copy the Apache sub-config file into the right location.
+            shutil.copyfile((self.disabled_configs + '/' + app + '.conf'),
+                            (self.enabled_configs + '/' + app + '.conf'))
+            status = self.status
+            action = 'activated'
+        else:
+            # Delete the Apache sub-config file from the enable_apps/ directory.
+            if os.path.exists():
+                os.remove(self.enabled_configs + '/' + app + '.conf')
+            status = 'disabled'
+            action = 'deactivated'
+
+        # Restart Apache.
+        output = subprocess.Popen(['/etc/rc.d/rc.httpd graceful'])
+
+        # Make sure Apache came back up, and if it did update the database.
+        if os.path.exists(self.pid):
+            error = ''
+            template = (status, self.app, )
+            cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
+        else
+            error = '<p>WARNING: It doesn't look like Apache came back up.  Something went wrong!</p>'
+
+        # Detach the system services database.
+        cursor.close()
+
+        # Render the HTML page and send it to the browser.
+        try:
+            page = templatelookup.get_template("/services/toggled.html")
+            return page.render(title = "Byzantium Node Services",
+                               purpose_of_page = "Service toggled.", app = app,
+                               action = action)
+        except:
+            return exceptions.html_error_template().render()
+    toggle_webapp.exposed = True
 
 
     # Handler for changing the state of a system service.  This method is also
