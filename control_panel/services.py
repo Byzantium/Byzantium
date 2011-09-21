@@ -16,6 +16,8 @@ import os
 import time
 import subprocess
 
+from mako import exceptions
+
 # Import core control panel modules.
 from control_panel import *
 
@@ -34,8 +36,8 @@ class Services(object):
     def index(self):
         # Set up the strings that will hold the HTML for the tables on this
         # page.
-        webapps = ''
-        systemservices = ''
+        webapps = ""
+        systemservices = ""
 
         # Set up access to the system services database.  We're going to need
         # to read successive lines from it to build the HTML tables.
@@ -54,7 +56,7 @@ class Services(object):
         else:
             # Roll through the list returned by the SQL query.
             for (name, status) in results:
-                webapp_row = '<tr>'
+                webapp_row = ''
 
                 # Set up the first cell in the row, the name of the webapp.
                 if status == 'active':
@@ -68,33 +70,60 @@ class Services(object):
                 # either turn the web app off, or turn it on.
                 if status == 'active':
                     # Give the option to deactivate the app.
-                    webapp_row = webapp_row + "<td><input type='submit' name='" + name + "' value='deactivate' style='background-color:red; color:white;' ></td>"
+                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' ></td>"
                 else:
                     # Give the option to activate the app.
-                    webapp_row = webapp_row + "<td><input type='submit' name='" + name + "' value='activate' style='background-color:green; color:white;' ></td>"
-                # Finish off the row in that table.
-                webapp_row = webapp_row + "</tr>\n"
+                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' ></td>"
 
-            # Add that row to the buffer of HTML for the webapp table.
-            webapps = webapps + webapp_row
+                # Finish off the row in that table.
+                webapp_row = webapp_row + "\n"
+
+                # Add that row to the buffer of HTML for the webapp table.
+                webapps = webapps + webapp_row
+
+        # Do the same thing for system services, only call this.services().
 
         # Gracefully detach the system services database.
         cursor.close()
+
+        print "DEBUG: " + webapps
 
         # Render the HTML page.
         try:
             page = templatelookup.get_template("/services/index.html")
             return page.render(title = "Byzantium Node Services",
-                               purpose_of_page = "Manipulate services.",
-                               webapps = webapps,
-                               systemservices = systemservices)
+                               purpose_of_page = "Manipulate services",
+                               error = error, webapps = webapps)
+                               #systemservices = systemservices)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            #traceback = RichTraceback()
+            #for (filename, lineno, function, line) in traceback.traceback:
+            #    print "\n"
+            #    print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+            #    print "Execution died on line %s\n" % line
+            #    print "%s: %s" % (str(traceback.error.__class__.__name__),
+            #        traceback.error)
+
+            # Holy crap, this is a better exception analysis method than the
+            # one above, because it actually prints useful information to the
+            # web browser, rather than forcing you to figure it out from stderr.
+            # I might have to start using this more.
+            return exceptions.html_error_template().render()
     index.exposed = True
 
+    # Handler for changing the state of a web app.  This method is only called
+    # when the user wants to toggle the state of the app, so it looks in the
+    # configuration database and switches 'enabled' to 'disabled' or vice versa
+    # depending on what it finds.
+    #def webapps(self, app=None):
+
+    #webapps.exposed = True
+
+
+    # Handler for changing the state of a system service.  This method is also
+    # only called when the user wants to toggle the state of the app, so it
+    # looks in the configuration database and switches 'enabled' to 'disabled'
+    # or vice versa depending on what it finds.
+    #def services(self, service=None):
+
+    #services.exposed = True
