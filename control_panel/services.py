@@ -7,6 +7,11 @@
 # TODO:
 # - Make it so that the toggle buttons in Services.index() don't display the name
 #   of the service again, but 'enable' or 'disable' as appropriate.
+# - In Services.toggle_webapps(), if there is an error give the user the option
+#   to un-do the last change, forcibly kill Apache (just in case), clear out the
+#   PID file, and start Apache to get it back into a consistent state.  This
+#   should go into an error handler method (Services.apache_fixer()) with its
+#   own HTML file.
 
 # Import external modules.
 import cherrypy
@@ -43,8 +48,8 @@ class Services(object):
     def index(self):
         # Set up the strings that will hold the HTML for the tables on this
         # page.
-        webapps = ""
-        systemservices = ""
+        webapps = ''
+        systemservices = ''
 
         # Set up access to the system services database.  We're going to need
         # to read successive lines from it to build the HTML tables.
@@ -74,8 +79,8 @@ class Services(object):
                     # White on red means that it's not active.
                     webapp_row = webapp_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
 
-                # Set up the second cell in the row, the toggle that will
-                # either turn the web app off, or turn it on.
+                # Set up the second cell in the row, the toggle that will either
+                # turn the web app off or on.
                 if status == 'active':
                     # Give the option to deactivate the app.
                     webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
@@ -83,14 +88,47 @@ class Services(object):
                     # Give the option to activate the app.
                     webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
 
-                # Add that row to the buffer of HTML for the webapp table.
-                webapps = webapps + webapp_row + '\n'
+                # Set the closing tag of the row.
+                webapp_row = webapp_row + "</tr>\n"
 
-            # Set the closing tag of the table.
-            webapp_row = webapp_row + "</tr>\n"
+            # Add that row to the buffer of HTML for the webapp table.
+            webapps = webapps + webapp_row
 
         # Do the same thing for system services, only call this.services().
         # MOOF MOOF MOOF
+        cursor.execute("SELECT name, status FROM daemons;")
+        results = cursor.fetchall()
+        if not results:
+            # Display an error page that says that something went wrong.
+            error = "<p>ERROR: Something went wrong in database " + this.servicedb + ", table daemons.  SELECT query failed.</p>"
+        else:
+            # Set up the opening tag of the table.
+            services_row = '<tr>'
+
+            # Roll through the list returned by the SQL query.
+            for (name, status) in results:
+                # Set up the first cell in the row, the name of the webapp.
+                if status == 'active':
+                    # White on green means that it's active.
+                    services_row = services_row + "<td style='background-color:green; color:white;' >" + name + "</td>"
+                else:
+                    # White on red means that it's not active.
+                    services_row = services_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
+
+                # Set up the second cell in the row, the toggle that will either
+                # turn the web app off or on.
+                if status == 'active':
+                    # Give the option to deactivate the app.
+                    services_row = services_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
+                else:
+                    # Give the option to activate the app.
+                    services_row = services_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
+
+                # Set the closing tag of the row.
+                services_row = services_row + "</tr>\n"
+
+            # Add that row to the buffer of HTML for the webapp table.
+            systemservices = systemservices + services_row
 
         # Gracefully detach the system services database.
         cursor.close()
@@ -100,7 +138,8 @@ class Services(object):
             page = templatelookup.get_template("/services/index.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = "Manipulate services",
-                               error = error, webapps = webapps)
+                               error = error, webapps = webapps,
+                               systemservices = systemservices)
         except:
             # Holy crap, this is a better exception analysis method than the
             # one above, because it actually prints useful information to the
@@ -178,7 +217,7 @@ class Services(object):
             action = 'deactivated'
 
         # Restart Apache.
-        output = subprocess.Popen(['/etc/rc.d/rc.httpd graceful'])
+        output = subprocess.Popen(['/etc/rc.d/rc.httpd', 'graceful'])
 
         # Make sure Apache came back up, and if it did update the database.
         if os.path.exists(self.pid):
@@ -186,7 +225,7 @@ class Services(object):
             template = (status, self.app, )
             cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
         else:
-            error = '<p>WARNING: It doesn't look like Apache came back up.  Something went wrong!</p>'
+            error = "<p>WARNING: It doesn't look like Apache came back up.  Something went wrong!</p>"
 
         # Detach the system services database.
         cursor.close()
@@ -196,16 +235,15 @@ class Services(object):
             page = templatelookup.get_template("/services/toggled.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = "Service toggled.", app = app,
-                               action = action)
+                               action = action, error = error)
         except:
             return exceptions.html_error_template().render()
     toggle_webapp.exposed = True
-
 
     # Handler for changing the state of a system service.  This method is also
     # only called when the user wants to toggle the state of the app, so it
     # looks in the configuration database and switches 'enabled' to 'disabled'
     # or vice versa depending on what it finds.
-    #def services(self, service=None):
+    def services(self, service=None):
 
-    #services.exposed = True
+    services.exposed = True
