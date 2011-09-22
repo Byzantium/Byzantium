@@ -185,7 +185,7 @@ class Services(object):
             error = ''
             template = (status, self.app, )
             cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
-        else
+        else:
             error = '<p>WARNING: It doesn't look like Apache came back up.  Something went wrong!</p>'
 
         # Detach the system services database.
