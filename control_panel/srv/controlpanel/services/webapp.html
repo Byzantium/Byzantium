@@ -1,7 +1,6 @@
 <!DOCTYPE HTML>
 <!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
-<!-- /mesh/addtomesh.html - The user picks which mesh networking protocol (if there is a choice) to run on the
-     wireless interface. -->
+<!-- /services/webapp.html - Gives the user one last chance to decide if they want to toggle a webapp or not. -->
 
 <html>
 <head>
@@ -18,13 +17,12 @@
 
 <div id="main" align="right">
 
-<p>You have selected interface ${interface} to add to the mesh.</p>
+<p>You have chosen to ${action} the ${app} web application.</p>
+<p>${warning}  Are you sure you want to do this?</p>
 
-<p>The mesh routing protocol selected is ${protocol}.</p>
-
-<p>Click the "Enable" button to activate or the "Cancel" button to abort!</p>
-<form action="enable" method="post">
-<input type="submit" value="Enable" />
+<p>Click the "${action}" button to turn it on or the "Cancel" button to abort!</p>
+<form action="toggle_webapp" method="post">
+<input type="submit" value="${action}" />
 <input type="reset" value="Cancel" />
 </form>
 
