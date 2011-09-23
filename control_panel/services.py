@@ -34,13 +34,13 @@ class Services(object):
     #servicedb = '/var/db/controlpanel/services.sqlite'
     servicedb = '/home/drwho/services.sqlite'
 
-    # Class attributes.
+    # Static class attributes.
     enabled_configs = '/etc/httpd/enabled_apps'
     disabled_configs = '/etc/httpd/disabled_apps'
     pid = '/var/run/httpd/httpd.pid'
 
-    # These will be used as scratch variables to keep from running the same SQL
-    # queries over and over again.
+    # These attributes will be used as scratch variables to keep from running the
+    # same SQL queries over and over again.
     app = ''
     status = ''
     initscript = ''
@@ -54,13 +54,13 @@ class Services(object):
 
         # Set up access to the system services database.  We're going to need
         # to read successive lines from it to build the HTML tables.
-        error = ""
+        error = ''
         connection = sqlite3.connect(self.servicedb)
         cursor = connection.cursor()
 
-        # Use the contents of the services.webapps table to build an HTML
-        # table of buttons that are either go/no-go indicators.  It's
-        # complicated, so I'll break it down into smaller pieces.
+        # Use the contents of the services.webapps table to build an HTML table
+        # of buttons that are either go/no-go indicators.  It's a bit 
+        # complicated, so I'll break it into smaller pieces.
         cursor.execute("SELECT name, status FROM webapps;")
         results = cursor.fetchall()
         if not results:
@@ -95,7 +95,7 @@ class Services(object):
             # Add that row to the buffer of HTML for the webapp table.
             webapps = webapps + webapp_row
 
-        # Do the same thing for system services, only call this.services().
+        # Do the same thing for system services.
         cursor.execute("SELECT name, status FROM daemons;")
         results = cursor.fetchall()
         if not results:
@@ -119,10 +119,10 @@ class Services(object):
                 # turn the web app off or on.
                 if status == 'active':
                     # Give the option to deactivate the app.
-                    services_row = services_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
+                    services_row = services_row + "<td><input type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
                 else:
                     # Give the option to activate the app.
-                    services_row = services_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
+                    services_row = services_row + "<td><input type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
 
                 # Set the closing tag of the row.
                 services_row = services_row + "</tr>\n"
@@ -245,8 +245,10 @@ class Services(object):
     # looks in the configuration database and switches 'enabled' to 'disabled'
     # or vice versa depending on what it finds.
     def services(self, service=None):
+        print "DEBUG: Entered Services.services()."
+
         # Save the name of the app in a class attribute to save effort later.
-        self.app = app
+        self.app = service
 
         # Set up a connection to the services.sqlite database.
         database = sqlite3.connect(self.servicedb)
@@ -255,7 +257,7 @@ class Services(object):
         # Search the daemons table of the services.sqlite database for the name
         # of the app passed to this method.  Note the status and name of the
         # initscript attached to the name.
-        template = (self.app, )
+        template = (service, )
         cursor.execute("SELECT name, status, initscript FROM daemons WHERE name=?;", template)
         result = cursor.fetchall()
         name = result[0][0]
@@ -284,7 +286,7 @@ class Services(object):
             page = templatelookup.get_template("/services/services.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = (action + " service"),
-                               app = app, action = action, warning = warning)
+                               action = action, app = service, warning = warning)
         except:
             return exceptions.html_error_template().render()
     services.exposed = True
