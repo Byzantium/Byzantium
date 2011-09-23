@@ -2,6 +2,7 @@ MODULES= \
 		 tor.xzm \
 		 mupdf.xzm \
 		 babel.xzm \
+		 php.xzm \
 
 all: $(MODULES)
 
