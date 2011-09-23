@@ -1,6 +1,7 @@
 MODULES= \
 		 tor.xzm \
 		 mupdf.xzm \
+		 babel.xzm \
 
 all: $(MODULES)
 
