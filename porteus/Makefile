@@ -3,6 +3,7 @@ MODULES= \
 		 mupdf.xzm \
 		 babel.xzm \
 		 php.xzm \
+		 nginx.xzm \
 
 all: $(MODULES)
 
