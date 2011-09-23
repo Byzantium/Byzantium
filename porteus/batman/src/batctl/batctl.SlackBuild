@@ -7,9 +7,7 @@
 
 # Save the CWD and set a temporary directory to compile into.
 CWD=$(pwd)
-if [ "$TMP" = "" ]; then
-	TMP=/tmp
-	fi
+OUTPUT=${OUTPUT:-/tmp}
 
 # The version which appears in the package's filename.
 VERSION=2011.2.0
@@ -31,7 +29,7 @@ APP=batctl
 
 # The installation directory of the package (where its actual directory structure will
 # be created as the package is built.) 
-PKG=$TMP/package-$APP
+PKG=$OUTPUT/package-$APP
 
 # Determine the flags to pass to GCC.
 if [ "$ARCH" = "i486" ]; then
@@ -43,13 +41,13 @@ fi
 # Delete the leftover directories if they exist (due to a previous build)
 # and (re)create the packaging directory
 rm -rf $PKG 
-mkdir -p $TMP $PKG
-rm -rf $TMP/$APP-$VERSION
+mkdir -p $OUTPUT $PKG
+rm -rf $OUTPUT/$APP-$VERSION
 
-# Change to the TMP directory.
-cd $TMP || exit 1
+# Change to the OUTPUT directory.
+cd $OUTPUT || exit 1
  
-# Extract the application source into TMP.
+# Extract the application source into OUTPUT.
 tar -zxvf $CWD/$APP-$VERSION.tar.gz || exit 1
 cd $APP-$VERSION || exit 1
 chown -R root:root .
@@ -100,5 +98,5 @@ if [ -d $PKG/usr/info ]; then
 
 # Build the Slackware package.
 cd $PKG
-/sbin/makepkg -l y -c n $TMP/$APP-$PKG_VERSION-$ARCH-$BUILD.tgz
+/sbin/makepkg -l y -c n $OUTPUT/$APP-$PKG_VERSION-$ARCH-$BUILD.tgz
 

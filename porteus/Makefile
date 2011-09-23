@@ -4,6 +4,7 @@ MODULES= \
 		 babel.xzm \
 		 php.xzm \
 		 nginx.xzm \
+		 batman.xzm \
 
 all: $(MODULES)
 
