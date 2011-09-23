@@ -43,6 +43,7 @@ class Services(object):
     # queries over and over again.
     app = ''
     status = ''
+    initscript = ''
 
     # Pretends to be index.html.
     def index(self):
@@ -95,7 +96,6 @@ class Services(object):
             webapps = webapps + webapp_row
 
         # Do the same thing for system services, only call this.services().
-        # MOOF MOOF MOOF
         cursor.execute("SELECT name, status FROM daemons;")
         results = cursor.fetchall()
         if not results:
@@ -245,5 +245,46 @@ class Services(object):
     # looks in the configuration database and switches 'enabled' to 'disabled'
     # or vice versa depending on what it finds.
     def services(self, service=None):
+        # Save the name of the app in a class attribute to save effort later.
+        self.app = app
 
+        # Set up a connection to the services.sqlite database.
+        database = sqlite3.connect(self.servicedb)
+        cursor = database.cursor()
+
+        # Search the daemons table of the services.sqlite database for the name
+        # of the app passed to this method.  Note the status and name of the
+        # initscript attached to the name.
+        template = (self.app, )
+        cursor.execute("SELECT name, status, initscript FROM daemons WHERE name=?;", template)
+        result = cursor.fetchall()
+        name = result[0][0]
+        status = result[0][1]
+        initscript = result[0][2]
+
+        # Save the status of the app and the initscript in class attributes for
+        # later use.
+        self.status = status
+        self.initscript = initscript
+
+        # Figure out what to do.
+        if status == 'active':
+            action = 'deactivate'
+            warning = 'This will deactivate the application!'
+        else:
+            action = 'activate'
+            warning = 'This will activate the application!'
+
+        # Close the connection to the database.
+        cursor.close()
+
+        # Display to the user the page that asks them if they really want to
+        # shut down that app.
+        try:
+            page = templatelookup.get_template("/services/services.html")
+            return page.render(title = "Byzantium Node Services",
+                               purpose_of_page = (action + " service"),
+                               app = app, action = action, warning = warning)
+        except:
+            return exceptions.html_error_template().render()
     services.exposed = True
