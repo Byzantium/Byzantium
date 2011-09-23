@@ -290,3 +290,43 @@ class Services(object):
         except:
             return exceptions.html_error_template().render()
     services.exposed = True
+
+    # The method that does the actual work of running initscripts located in
+    # /etc/rc.d and starting or stopping system services.  Takes one argument,
+    # the name of the app.  This should never be called from anywhere other than
+    # Services.services().
+    def toggle_service(self, app=None):
+        # Set up a connection to the services.sqlite database.
+        database = sqlite3.connect(self.servicedb)
+        cursor = database.cursor()
+
+        # Query the database to extract the name of the initscript.
+        template = (self.app, )
+        cursor.execute("SELECT name, initscript FROM daemons WHERE name=?;",
+                       template)
+        results = cursor.fetchall()
+        self.initscript = results[0][1]
+
+        # Construct the command line ahead of time to make the code a bit simpler
+        # in the long run.
+        initscript = '/etc/rc.d/' + self.initscript
+        if self.status == 'active':
+            output = subprocess.Popen([initscript, 'stop'])
+        else:
+            output = subprocess.Popen([initscript, 'start'])
+
+        # Check to make sure that the daemon really did shut down and then update
+        # the configuration database.
+
+        # Detach the system services database.
+        cursor.close()
+
+        # Render the HTML page and send it to the browser.
+        try:
+            page = templatelookup.get_template("/services/toggled.html")
+            return page.render(title = "Byzantium Node Services",
+                               purpose_of_page = "Service toggled.", app = app,
+                               action = action, error = error)
+        except:
+            return exceptions.html_error_template().render()
+    toggle_service.exposed = True
