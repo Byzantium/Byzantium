@@ -26,7 +26,7 @@
 
 
 VERSION=5.3.8
-BUILD=${BUILD:-6}
+BUILD=${BUILD:-6_dw}
 
 # Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
@@ -39,10 +39,10 @@ if [ -z "$ARCH" ]; then
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp}/SBo
-PKG=$TMP/package-php/
+OUTPUT=${OUTPUT:-/tmp}
+PKG=$OUTPUT/package-php/
 rm -rf $PKG
-mkdir -p $TMP $PKG
+mkdir -p $OUTPUT $PKG
 
 if [ "$ARCH" = "i386" ]; then
   SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
@@ -65,7 +65,7 @@ fi
 mkdir -p $PKG/etc/nginx
 mkdir -p $PKG/etc/php
 
-cd $TMP
+cd $OUTPUT
 rm -rf php-$VERSION
 tar xvf $CWD/php-$VERSION.tar.?z* || exit 1
 cd php-$VERSION
@@ -249,5 +249,5 @@ cat $CWD/doinst.sh > $PKG/install/doinst.sh
 cat $CWD/slack-desc > $PKG/install/slack-desc
 
 cd $PKG
-/sbin/makepkg -l y -c n $TMP/php-$VERSION-$ARCH-$BUILD.tgz
+/sbin/makepkg -l y -c n $OUTPUT/php-$VERSION-$ARCH-$BUILD.tgz
 
