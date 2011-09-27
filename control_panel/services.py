@@ -7,11 +7,12 @@
 # TODO:
 # - Make it so that the toggle buttons in Services.index() don't display the name
 #   of the service again, but 'enable' or 'disable' as appropriate.
-# - In Services.toggle_webapps(), if there is an error give the user the option
+# - In Services.toggle_webapp(), if there is an error give the user the option
 #   to un-do the last change, forcibly kill Apache (just in case), clear out the
 #   PID file, and start Apache to get it back into a consistent state.  This
 #   should go into an error handler method (Services.apache_fixer()) with its
 #   own HTML file.
+# - List the initscripts in a config file to make them easier to edit?
 
 # Import external modules.
 import cherrypy
@@ -166,7 +167,6 @@ class Services(object):
         template = (self.app, )
         cursor.execute("SELECT name, status FROM webapps WHERE name=?;", template)
         result = cursor.fetchall()
-        name = result[0][0]
         status = result[0][1]
 
         # Save the status of the app in another class attribute for later.
@@ -198,21 +198,22 @@ class Services(object):
     # file into or out of /etc/httpd/conf/conf.d.  Takes one argument, the name
     # of the app.  This should never be called from anywhere other than
     # Services.webapps().
-    def toggle_webapp(self, app=None):
+    def toggle_webapp(self, action=None):
         # Set up a connection to the services.sqlite database.
         database = sqlite3.connect(self.servicedb)
         cursor = database.cursor()
 
-        if self.status == 'active':
+        if action == 'activate':
             # Copy the Apache sub-config file into the right location.
-            shutil.copyfile((self.disabled_configs + '/' + app + '.conf'),
-                            (self.enabled_configs + '/' + app + '.conf'))
+            shutil.copyfile((self.disabled_configs + '/' + self.app + '.conf'),
+                            (self.enabled_configs + '/' + self.app + '.conf'))
             status = self.status
             action = 'activated'
         else:
             # Delete the Apache sub-config file from the enable_apps/ directory.
-            if os.path.exists():
-                os.remove(self.enabled_configs + '/' + app + '.conf')
+            if os.path.exists((self.enabled_configs + '/' + self.app + '.conf')):
+                os.remove(self.enabled_configs + '/' + self.app + '.conf')
+                print "DEBUG: Config file deleted."
             status = 'disabled'
             action = 'deactivated'
 
@@ -295,7 +296,9 @@ class Services(object):
     # /etc/rc.d and starting or stopping system services.  Takes one argument,
     # the name of the app.  This should never be called from anywhere other than
     # Services.services().
-    def toggle_service(self, app=None):
+    def toggle_service(self, action=None):
+        print "DEBUG: Value of action == " + action
+
         # Set up a connection to the services.sqlite database.
         database = sqlite3.connect(self.servicedb)
         cursor = database.cursor()
