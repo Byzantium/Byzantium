@@ -69,7 +69,7 @@ class Services(object):
         results = cursor.fetchall()
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database " + this.servicedb + ", table webapps.  SELECT query failed.</p>"
+            error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table webapps.  SELECT query failed.</p>"
         else:
             # Set up the opening tag of the table.
             webapp_row = '<tr>'
