@@ -34,6 +34,9 @@ if [ -x /etc/rc.d/rc.vboxadd-x11 ]; then
     /etc/rc.d/rc.vboxadd-x11 start
 fi
 
+# Start rrdtool up to gather stats on the network interfaces.
+/usr/local/bin/traffic_stats.sh &
+
 # Test for SSL cert and generate if necessary.
 /etc/rc.d/rc.ssl
 
