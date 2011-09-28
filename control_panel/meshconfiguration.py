@@ -28,6 +28,7 @@ import sqlite3
 import os
 import time
 import subprocess
+import signal
 
 # Import core control panel modules.
 from control_panel import *
@@ -172,7 +173,7 @@ class MeshConfiguration(object):
         # these are redundant but are present in case an older version of
         # babeld is used on the node.  See the following file to see why:
         # http://www.pps.jussieu.fr/~jch/software/babel/CHANGES.text
-        common_babeld_opts = ['-m ff02:0:0:0:0:0:1:6', '-p 6696', '-D']
+        common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D']
 
         # Create a set of unique command line options for babeld.  Right now,
         # this variable is empty but it might be used in the future.  Maybe
@@ -231,7 +232,7 @@ class MeshConfiguration(object):
                 # the presence of the new interface.
                 template = ('yes', self.interface, )
                 cursor.execute("UPDATE meshes SET enabled=? WHERE interface=?;", template)
-                cursor.commit()
+                connection.commit()
         cursor.close()
 
         # Render the HTML page.
