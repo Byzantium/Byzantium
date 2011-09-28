@@ -13,6 +13,9 @@
 #   should go into an error handler method (Services.apache_fixer()) with its
 #   own HTML file.
 # - List the initscripts in a config file to make them easier to edit?
+# - Come up with a method for determining whether or not a system service was
+#   successfully deactivated.  Not all services have initscripts, and of those
+#   that do, not all of them put PID files in /var/run/<nameofapp>.pid.
 
 # Import external modules.
 import cherrypy
@@ -318,8 +321,11 @@ class Services(object):
         else:
             output = subprocess.Popen([initscript, 'start'])
 
-        # Check to make sure that the daemon really did shut down and then update
-        # the configuration database.
+        # Unfortunately, many of the initscripts are inconsistent in that they
+        # either don't generate /var/run/foo.pid files with predictable names
+        # or they don't generate them at all (but some support a 'status' argument
+        # on the command line).
+        # MOOF MOOF MOOF
 
         # Detach the system services database.
         cursor.close()

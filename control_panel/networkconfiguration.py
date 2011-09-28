@@ -380,7 +380,7 @@ class NetworkConfiguration(object):
             command = '/sbin/iwconfig ' + self.interface + ' essid ' + self.essid
             output = os.popen(command)
         if self.channel:
-            command = '/sbin/iwconfig ' + self.interface + ' channel'
+            command = '/sbin/iwconfig ' + self.interface + ' channel ' + self.channel
             output = os.popen(command)
 
         # Call ifconfig and pass the network configuration information.
