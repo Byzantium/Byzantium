@@ -26,7 +26,7 @@ if [ -f $CERT ]; then
 	
 # Server certificate not found.  We may as well blow everything away and start over
 # because nothing will match up, anyway.
-rm -f $PRIVATE_KEY $CERT_SIGN_REQ $CERT
+rm -f $PRIVATE_KEY $CERT_SIGN_REQ $CERT $DH
 
 # Generate the private key.
 echo "Generating private key."
