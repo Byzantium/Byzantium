@@ -72,7 +72,7 @@ WEBIRC_MODE = "webirc"
 # OPTION: WEBIRC_PASSWORD
 #         Used for WEBIRC_MODE webirc and cgiirc, see WEBIRC_MODE
 #         option documentation.
-#WEBIRC_PASSWORD = "fish"
+WEBIRC_PASSWORD = ""
 
 # OPTION: CGIIRC_STRING
 #         Command sent to IRC server in for cgiirc WEBIRC_MODE.
