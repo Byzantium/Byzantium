@@ -31,6 +31,10 @@ case "$1" in
 	'status')
 		ps ax | grep [n]gircd
 		;;
+	'reload')
+		# HUP the server to make it reload its config file.
+		kill -HUP `cat $PID`
+		;;
 	*)
 		echo "USAGE: $0 {start|stop|status}"
 		exit 0
