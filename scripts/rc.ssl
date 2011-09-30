@@ -15,6 +15,7 @@ SERVER_DIR=/etc/httpd
 PRIVATE_KEY=$SERVER_DIR/server.key
 CERT_SIGN_REQ=$SERVER_DIR/server.csr
 CERT=$SERVER_DIR/server.crt
+DH=$SERVER_DIR/dhparams.pem
 
 # Test for the presence of the server cert.  If it exists we don't have to do anything,
 # so terminate the initscript and start over.
@@ -25,7 +26,7 @@ if [ -f $CERT ]; then
 	
 # Server certificate not found.  We may as well blow everything away and start over
 # because nothing will match up, anyway.
-rm -f $PRIVATE_KEY $CERT_SIGN_REQ $CERT
+rm -f $PRIVATE_KEY $CERT_SIGN_REQ $CERT $DH
 
 # Generate the private key.
 echo "Generating private key."
@@ -36,5 +37,8 @@ $OPENSSL req -new -key $PRIVATE_KEY -out $CERT_SIGN_REQ -sha1 -batch
 
 echo "Signing certificate."
 $OPENSSL x509 -req -days 365 -in $CERT_SIGN_REQ -signkey $PRIVATE_KEY -out $CERT -sha1
+
+echo "Diffie-Hellman parameters."
+$OPENSSL dhparam -2 -out $DH 2048
 
 chmod 0644 $PRIVATE_KEY $CERT_SIGN_REQ $CERT
