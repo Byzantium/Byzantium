@@ -1,0 +1,43 @@
+#!/bin/sh
+# rc.ngircd - Initscript that starts and stops ngircd.
+
+# AUTHORS:
+#	The Doctor [412/724/301/703] <drwho at virtadpt dot net>
+#	0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
+
+# v1.0	- Initial release.
+
+# TODO:
+# - Add code to this script to edit the config file and detect whether or not it's been
+#   edited already.
+
+# Variables
+CONFIG=/etc/ngircd.conf
+ARGS=""
+PID=/var/run/ngircd/ngircd.pid
+
+# Core code.
+# Here's where the heavy lifting happens - this parses the arguments passed to
+# script and triggers what has to be triggered.
+case "$1" in
+	'start')
+		# Start ngircd.
+		ngircd $ARGS -f $CONFIG
+		;;
+	'stop')
+		# Terminate ngircd.
+		kill `cat $PID`
+		;;
+	'status')
+		ps ax | grep [n]gircd
+		;;
+	'reload')
+		# HUP the server to make it reload its config file.
+		kill -HUP `cat $PID`
+		;;
+	*)
+		echo "USAGE: $0 {start|stop|status}"
+		exit 0
+	esac
+
+# End of script.

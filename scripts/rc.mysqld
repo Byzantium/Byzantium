@@ -1,0 +1,86 @@
+#!/bin/sh
+# Start/stop/restart mysqld.
+#
+# Copyright 2003  Patrick J. Volkerding, Concord, CA
+# Copyright 2003  Slackware Linux, Inc., Concord, CA
+# Copyright 2008  Patrick J. Volkerding, Sebeka, MN
+#
+# This program comes with NO WARRANTY, to the extent permitted by law.
+# You may redistribute copies of this program under the terms of the
+# GNU General Public License.
+
+# To start MySQL automatically at boot, be sure this script is executable:
+# chmod 755 /etc/rc.d/rc.mysqld
+
+# Before you can run MySQL, you must have a database.  To install an initial
+# database, do this as root:
+#
+#   mysql_install_db --user=mysql
+#
+# Note that the mysql user must exist in /etc/passwd, and the created files
+# will be owned by this dedicated user.  This is important, or else mysql
+# (which runs as user "mysql") will not be able to write to the database
+# later (this can be fixed with 'chown -R mysql.mysql /var/lib/mysql').
+#
+# To increase system security, consider using "mysql_secure_installation"
+# as well.  For more information on this tool, please read:
+#   man mysql_secure_installation
+
+# To allow outside connections to the database comment out the next line.
+# If you don't need incoming network connections, then leave the line
+# uncommented to improve system security.
+#SKIP="--skip-networking"
+
+# Start mysqld:
+mysqld_start() {
+  if [ -x /usr/bin/mysqld_safe ]; then
+    # If there is an old PID file (no mysqld running), clean it up:
+    if [ -r /var/run/mysql/mysql.pid ]; then
+      if ! ps axc | grep mysqld 1> /dev/null 2> /dev/null ; then
+        echo "Cleaning up old /var/run/mysql/mysql.pid."
+        rm -f /var/run/mysql/mysql.pid
+      fi
+    fi
+    /usr/bin/mysqld_safe --datadir=/var/lib/mysql --pid-file=/var/run/mysql/mysql.pid $SKIP &
+  fi
+}
+
+# Stop mysqld:
+mysqld_stop() {
+  # If there is no PID file, ignore this request...
+  if [ -r /var/run/mysql/mysql.pid ]; then
+    killall mysqld
+    # Wait at least one minute for it to exit, as we don't know how big the DB is...
+    for second in 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 \
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 60 ; do
+      if [ ! -r /var/run/mysql/mysql.pid ]; then
+        break;
+      fi
+      sleep 1
+    done
+    if [ "$second" = "60" ]; then
+      echo "WARNING:  Gave up waiting for mysqld to exit!"
+      sleep 15
+    fi
+  fi
+}
+
+# Restart mysqld:
+mysqld_restart() {
+  mysqld_stop
+  mysqld_start
+}
+
+case "$1" in
+'start')
+  mysqld_start
+  ;;
+'stop')
+  mysqld_stop
+  ;;
+'restart')
+  mysqld_restart
+  ;;
+*)
+  echo "usage $0 start|stop|restart"
+esac

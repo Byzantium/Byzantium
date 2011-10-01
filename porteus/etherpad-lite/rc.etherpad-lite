@@ -1,0 +1,55 @@
+#!/bin/sh
+# rc.etherpad-lite - Initscript that manages an instance of Etherpad-Lite running on a
+#    Byzantium host.  Must be run as root because it requires access to /bin/su.
+
+# AUTHORS:
+#	The Doctor [412/724/301/703] <drwho at virtadpt dot net>
+#	0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
+
+# v1.0	- Initial release.
+
+# TODO:
+
+# Variables
+USER="etherpad"
+HOMEDIR="/opt/etherpad-lite"
+ENABLED="/etc/httpd/enabled_apps/etherpad.conf"
+DISABLED="/etc/httpd/disabled_apps/etherpad.conf"
+PID=/var/run/etherpad-lite.pid
+
+# Core code.
+# Here's where the heavy lifting happens - this parses the arguments passed to
+# script and triggers what has to be triggered.
+case "$1" in
+	'start')
+		# Start Etherpad.
+		/bin/su -l -c "bin/run.sh &" $USER
+	
+		# Store the PID in a file.
+		ps ax | grep [n]ode | awk '{print $1}' > $PID
+		
+		# Copy the appropriate config file into place and gracefully restart
+		# Apache.
+		cp $DISABLED $ENABLED
+		chmod 0644 $ENABLED
+		/usr/sbin/apachectl graceful
+		;;
+	'stop')
+		# Remove the Apache sub-config file.
+		rm -f $ENABLED
+		
+		# Gracefully restart Apache.
+		/usr/sbin/apachectl graceful
+		
+		# Terminate Etherpad-Lite.
+		kill `cat $PID`
+		;;
+	'status')
+		ps ax | grep [n]ode
+		;;
+	*)
+		echo "USAGE: $0 {start|stop|status}"
+		exit 0
+	esac
+
+# End of script.

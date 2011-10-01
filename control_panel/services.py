@@ -7,11 +7,15 @@
 # TODO:
 # - Make it so that the toggle buttons in Services.index() don't display the name
 #   of the service again, but 'enable' or 'disable' as appropriate.
-# - In Services.toggle_webapps(), if there is an error give the user the option
+# - In Services.toggle_webapp(), if there is an error give the user the option
 #   to un-do the last change, forcibly kill Apache (just in case), clear out the
 #   PID file, and start Apache to get it back into a consistent state.  This
 #   should go into an error handler method (Services.apache_fixer()) with its
 #   own HTML file.
+# - List the initscripts in a config file to make them easier to edit?
+# - Come up with a method for determining whether or not a system service was
+#   successfully deactivated.  Not all services have initscripts, and of those
+#   that do, not all of them put PID files in /var/run/<nameofapp>.pid.
 
 # Import external modules.
 import cherrypy
@@ -31,8 +35,8 @@ from control_panel import *
 # interfaces.
 class Services(object):
     # Database used to store states of services and webapps.
-    #servicedb = '/var/db/controlpanel/services.sqlite'
-    servicedb = '/home/drwho/services.sqlite'
+    servicedb = '/var/db/controlpanel/services.sqlite'
+    #servicedb = '/home/drwho/services.sqlite'
 
     # Static class attributes.
     enabled_configs = '/etc/httpd/enabled_apps'
@@ -65,7 +69,7 @@ class Services(object):
         results = cursor.fetchall()
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database " + this.servicedb + ", table webapps.  SELECT query failed.</p>"
+            error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table webapps.  SELECT query failed.</p>"
         else:
             # Set up the opening tag of the table.
             webapp_row = '<tr>'
@@ -166,7 +170,6 @@ class Services(object):
         template = (self.app, )
         cursor.execute("SELECT name, status FROM webapps WHERE name=?;", template)
         result = cursor.fetchall()
-        name = result[0][0]
         status = result[0][1]
 
         # Save the status of the app in another class attribute for later.
@@ -198,21 +201,22 @@ class Services(object):
     # file into or out of /etc/httpd/conf/conf.d.  Takes one argument, the name
     # of the app.  This should never be called from anywhere other than
     # Services.webapps().
-    def toggle_webapp(self, app=None):
+    def toggle_webapp(self, action=None):
         # Set up a connection to the services.sqlite database.
         database = sqlite3.connect(self.servicedb)
         cursor = database.cursor()
 
-        if self.status == 'active':
+        if action == 'activate':
             # Copy the Apache sub-config file into the right location.
-            shutil.copyfile((self.disabled_configs + '/' + app + '.conf'),
-                            (self.enabled_configs + '/' + app + '.conf'))
+            shutil.copyfile((self.disabled_configs + '/' + self.app + '.conf'),
+                            (self.enabled_configs + '/' + self.app + '.conf'))
             status = self.status
             action = 'activated'
         else:
             # Delete the Apache sub-config file from the enable_apps/ directory.
-            if os.path.exists():
-                os.remove(self.enabled_configs + '/' + app + '.conf')
+            if os.path.exists((self.enabled_configs + '/' + self.app + '.conf')):
+                os.remove(self.enabled_configs + '/' + self.app + '.conf')
+                print "DEBUG: Config file deleted."
             status = 'disabled'
             action = 'deactivated'
 
@@ -290,3 +294,48 @@ class Services(object):
         except:
             return exceptions.html_error_template().render()
     services.exposed = True
+
+    # The method that does the actual work of running initscripts located in
+    # /etc/rc.d and starting or stopping system services.  Takes one argument,
+    # the name of the app.  This should never be called from anywhere other than
+    # Services.services().
+    def toggle_service(self, action=None):
+        print "DEBUG: Value of action == " + action
+
+        # Set up a connection to the services.sqlite database.
+        database = sqlite3.connect(self.servicedb)
+        cursor = database.cursor()
+
+        # Query the database to extract the name of the initscript.
+        template = (self.app, )
+        cursor.execute("SELECT name, initscript FROM daemons WHERE name=?;",
+                       template)
+        results = cursor.fetchall()
+        self.initscript = results[0][1]
+
+        # Construct the command line ahead of time to make the code a bit simpler
+        # in the long run.
+        initscript = '/etc/rc.d/' + self.initscript
+        if self.status == 'active':
+            output = subprocess.Popen([initscript, 'stop'])
+        else:
+            output = subprocess.Popen([initscript, 'start'])
+
+        # Unfortunately, many of the initscripts are inconsistent in that they
+        # either don't generate /var/run/foo.pid files with predictable names
+        # or they don't generate them at all (but some support a 'status' argument
+        # on the command line).
+        # MOOF MOOF MOOF
+
+        # Detach the system services database.
+        cursor.close()
+
+        # Render the HTML page and send it to the browser.
+        try:
+            page = templatelookup.get_template("/services/toggled.html")
+            return page.render(title = "Byzantium Node Services",
+                               purpose_of_page = "Service toggled.", app = app,
+                               action = action, error = error)
+        except:
+            return exceptions.html_error_template().render()
+    toggle_service.exposed = True
