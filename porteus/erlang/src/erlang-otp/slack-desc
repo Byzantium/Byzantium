@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+          |-----handy-ruler------------------------------------------------------|
+erlang-otp: Erlang (programming language)
+erlang-otp:
+erlang-otp: Erlang is a general-purpose concurrent programming language and 
+erlang-otp: runtime system.
+erlang-otp: The sequential subset of Erlang is a functional language,  
+erlang-otp: with strict evaluation, single assignment, and dynamic typing.
+erlang-otp: It was designed by Ericsson to support distributed, 
+erlang-otp: fault-tolerant, soft-real-time, non-stop applications.
+erlang-otp:
+erlang-otp: http://www.erlang.org/
+erlang-otp:

@@ -1,0 +1,95 @@
+#!/bin/sh
+
+## Written by halflife (vzdorovenco@yahoo.com)
+
+## Feel free to use, modify, redistribute this script.
+## If you make changes please modify the "Written by"
+## so that I don't recieve emails about a script I
+## did not write. Thanks.
+
+# Modified by Robby Workman 20071027
+# I won't change the "Written by" line, because I didn't
+# change who wrote the script.  If there are questions as
+# to whether my changes caused a problem, feel free to 
+# send mail to me first.
+
+# Package adaptation in order to rename it from otp-R11B
+# to erlang-otp, by LukenShiro <Lukenshiro@ngi.it>
+
+PRGNAM=erlang-otp
+VERSION=14B02
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+SRC_NAME_VERSION=otp_src_R${VERSION}
+DOC_NAME_VERSION=otp_doc_man_R${VERSION}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=${PKG:-$TMP/package-$PRGNAM}
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRC_NAME_VERSION
+tar xvf $CWD/${SRC_NAME_VERSION}.tar.gz
+cd $SRC_NAME_VERSION
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
+
+CFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --build=$ARCH-slackware-linux
+
+INSTALL_DV="install: install.dirs install.emulator install.libs"
+sed -i -e "s|$INSTALL_DV install.Install install.bin|$INSTALL_DV|" Makefile
+
+make
+make INSTALL_PREFIX=$PKG install
+
+cd $PKG/usr/bin
+  for file in erl erlc epmd run_erl to_erl dialyzer typer escript ; do
+    rm -f $file
+    ln -s ../lib${LIBDIRSUFFIX}/erlang/bin/$file .
+  done
+cd -
+
+mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+tar xvf $CWD/$DOC_NAME_VERSION.tar.gz -C $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+chown -R root:root $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+chmod -R u+w,go+r-w,a-s $PKG/usr/lib${LIBDIRSUFFIX}/erlang
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+sed "s%@LIBDIR@%/usr/lib${LIBDIRSUFFIX}%g" $CWD/doinst.sh > \
+  $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n -p $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

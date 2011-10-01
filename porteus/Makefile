@@ -5,6 +5,7 @@ MODULES= \
 		 php.xzm \
 		 nginx.xzm \
 		 batman.xzm \
+		 erlang.xzm \
 
 all: $(MODULES)
 

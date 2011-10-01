@@ -1,0 +1,5 @@
+Erlang is a general-purpose concurrent programming language and runtime 
+system. The sequential subset of Erlang is a functional language, with 
+strict evaluation, single assignment, and dynamic typing. It was designed 
+by Ericsson to support distributed, fault-tolerant, soft-real-time, 
+non-stop applications.
