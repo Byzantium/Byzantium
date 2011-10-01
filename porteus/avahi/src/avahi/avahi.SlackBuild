@@ -1,0 +1,157 @@
+#!/bin/sh
+
+# Slackware build script for avahi
+
+# Written by David Somero <dsomero@hotmail.com>
+# Derived from Slackware's Slackbuilds.
+#
+# Copyright 2008, 2009  Patrick J. Volkerding, Sebeka, Minnesota, USA
+# Copyright 2008-2011  David Somero (dsomero@hotmail.com) Athens, TN, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=avahi
+VERSION=0.6.30
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+# Support for mono
+if [ "${MONO:-no}" = "no" ]; then
+    MONO="--disable-mono"
+else
+    MONO="--enable-mono"
+fi
+
+warn_accounts() {
+  echo "  You must have an avahi user and group to run this script. "
+  echo "  Something like this should suffice for most systems: "
+  echo "      # groupadd -g 214 avahi"
+  echo "      # useradd -u 214 -g 214 -c "Avahi" -d /dev/null -s /bin/false avahi"
+ #exit 1
+}
+
+# Bail if user and/or group isn't valid on your system
+if ! grep -q "^avahi:" /etc/passwd; then
+  warn_accounts
+fi
+if ! grep -q "^avahi:" /etc/group ; then
+  warn_accounts
+fi
+
+if [ "${ARCH}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+chmod -R a-s,u+w,go+r-w .
+
+GET_LIBDAEMON_SO=`/bin/ls /tmp/SBo/package-libdaemon/usr/lib64/libdaemon.so* | tail -1`
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+LIBDAEMON_CFLAGS="-I/tmp/SBo/package-libdaemon/usr/include" \
+LIBDAEMON_LIBS="$GET_LIBDAEMON_SO" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --disable-static \
+  --disable-monodoc \
+  --disable-autoipd \
+  --enable-python-dbus \
+  --enable-pygtk\
+  --enable-glib \
+  --enable-dbus \
+  --enable-python \
+  --enable-gtk \
+  --disable-gtk3 \
+  --enable-qt4 \
+  --disable-qt3 \
+  --enable-core-docs \
+  --enable-compat-howl \
+  --enable-compat-libdns_sd \
+  --with-dbus-sys=/etc/dbus-1/system.d \
+  --with-avahi-user=avahi \
+  --with-avahi-group=avahi \
+  --with-avahi-priv-access-group=netdev \
+  --with-distro=slackware \
+  --program-prefix= \
+  --program-suffix= \
+  --build=$ARCH-slackware-linux \
+  $MONO
+
+make
+make install DESTDIR=$PKG
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $(find $PKG/usr/man -type l); do ln -s $(readlink $i).gz $i.gz; rm $i; done
+
+mv $PKG/etc/rc.d/rc.avahidaemon $PKG/etc/rc.d/rc.avahidaemon.new
+mv $PKG/etc/rc.d/rc.avahidnsconfd $PKG/etc/rc.d/rc.avahidnsconfd.new
+mv $PKG/etc/avahi/avahi-daemon.conf $PKG/etc/avahi/avahi-daemon.conf.new
+mv $PKG/etc/dbus-1/system.d/avahi-dbus.conf \
+  $PKG/etc/dbus-1/system.d/avahi-dbus.conf.new
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a LICENSE docs/* $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh  > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

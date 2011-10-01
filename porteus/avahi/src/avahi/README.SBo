@@ -1,0 +1,43 @@
+README.SBo (avahi)
+
+First, be sure you have an "avahi" user and group.  Do this *before*
+you install the avahi package.  We recommend uid/gid of 214, but 
+adjust as needed for your system.  Something like this should suffice:
+
+  # groupadd -g 214 avahi
+  # useradd -u 214 -g 214 -c "Avahi User" -d /dev/null -s /bin/false avahi
+
+
+Now start the Avahi daemon:
+
+	# /etc/rc.d/rc.avahidaemon start
+
+Optionally start the unicast DNS configuration daemon:
+
+	# /etc/rc.d/rc.avahidnsconfd start
+
+
+You will need to start avahi at boot by adding the following 
+to your /etc/rc.d/rc.local and make them executable:
+
+        # Start avahidaemon
+	if [ -x /etc/rc.d/rc.avahidaemon ]; then
+	  /etc/rc.d/rc.avahidaemon start
+	fi
+        # Start avahidnsconfd
+	if [ -x /etc/rc.d/rc.avahidnsconfd ]; then
+	  /etc/rc.d/rc.avahidnsconfd start
+	fi
+
+You will also want to put the following into /etc/rc.d/rc.local_shutdown
+(if that file does not exist, create it and make it executable):
+
+        # Stop avahidnsconfd
+	if [ -x /etc/rc.d/rc.avahidnsconfd ]; then
+	  /etc/rc.d/rc.avahidnsconfd stop
+	fi
+        # Stop avahidaemon
+	if [ -x /etc/rc.d/rc.avahidaemon ]; then
+	  /etc/rc.d/rc.avahidaemon stop
+	fi
+

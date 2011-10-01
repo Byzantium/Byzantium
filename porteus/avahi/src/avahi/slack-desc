@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+     |-----handy-ruler------------------------------------------------------|
+avahi: avahi (service discovery aka zeroconf)
+avahi:
+avahi: Avahi is an Implementation the DNS Service Discovery and Multicast 
+avahi: DNS specifications for Zeroconf Computing. It uses D-BUS for 
+avahi: communication between user applications and a system daemon. The 
+avahi: daemon is used to coordinate application efforts in caching replies,
+avahi: necessary to minimize the traffic imposed on networks. This kind of
+avahi: technology  is already found  in  Apple MacOS X (branded Rendezvous
+avahi: Bonjour and sometimes Zeroconf) and is very convenient.
+avahi:
+avahi:
