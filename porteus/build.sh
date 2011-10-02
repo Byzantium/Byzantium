@@ -4,7 +4,7 @@ set -e
 
 cd $1
 source ./$1.info
-wget $DOWNLOAD
+wget --no-check-certificate -nc $DOWNLOAD
 cd ../../pkgs
 export OUTPUT=`pwd`
 cd -

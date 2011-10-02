@@ -67,7 +67,7 @@ bailout() {
   echo "  Something like this should suffice for most systems: "
   echo "    # groupadd -g $TOR_GID $TOR_GROUP "
   echo "    # useradd -u $TOR_UID -g $TOR_GID -c \"The Onion Router\" -d /dev/null -s /bin/false $TOR_USER "
-  exit 1
+  #exit 1
 }
 
 # Bail if user and/or group isn't valid on your system
@@ -90,6 +90,15 @@ cd $PRGNAM-$VERSION
 chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
 
+# Help ./configure find the right libevent files
+( cd /tmp/SBo/package-libevent/usr/lib ;
+  [ -e libevent.so ] || ln -s `/bin/ls libevent-*.so.* | tail -1` libevemt.so ;
+  [ -e libevent-2.0.so.5 ] || ln -s libevent.so libevent-2.0.so.5 )
+
+# Configure wants to execute a test, so help it find the right libs at runtime (ugly hack)
+OLD_LDPATH="$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/tmp/SBo/package-libevent/usr/lib:$LD_LIBRARY_PATH"
+
 CFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
@@ -100,14 +109,17 @@ CFLAGS="$SLKCFLAGS" \
   --docdir=/usr/doc/$PRGNAM-$VERSION \
   --with-tor-user=$TOR_USER \
   --with-tor-group=$TOR_GROUP \
+  --with-libevent-dir=/tmp/SBo/package-libevent/usr/lib \
   --build=$ARCH-slackware-linux
 
 make
 make install-strip DESTDIR=$PKG
 
+export LD_LIBRARY_PATH="$OLD_LDPATH"
+
 # Create/install stuff that makes tor work (better)
 mkdir -p $PKG/var/{run,log,lib}/tor
-chown $TOR_USER:$TOR_GROUP $PKG/var/{run,log,lib}/tor
+#chown $TOR_USER:$TOR_GROUP $PKG/var/{run,log,lib}/tor
 chmod 0700 $PKG/var/lib/tor
 install -D -m 0755 $CWD/rc.tor $PKG/etc/rc.d/rc.tor.new
 install -D -m 0755 contrib/torctl $PKG/usr/bin/torctl

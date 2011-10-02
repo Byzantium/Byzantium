@@ -1,7 +1,8 @@
 PRGNAM="tor"
 VERSION="0.2.2.32"
 HOMEPAGE="https://www.torproject.org/"
-DOWNLOAD="https://www.torproject.org/dist/tor-0.2.2.32.tar.gz"
+# Tor download site removes old releases, so this is only reliable mirror
+DOWNLOAD="http://distfiles.gentoo.org/distfiles/tor-0.2.2.32.tar.gz"
 MD5SUM="6d70db8da9513453d520168e017a272c"
 DOWNLOAD_x86_64=""
 MD5SUM_x86_64=""
