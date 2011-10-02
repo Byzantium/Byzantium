@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# Slackware build script for RRDTool
+
+# Originally written by <youngmug@animeneko.net>
+# Modified by the SlackBuilds.org team.
+# Versions >= 1.4.2 maintained by Niels Horn <niels.horn@gmail.com>
+# revision date: 2010/12/31
+
+PRGNAM=rrdtool
+VERSION=${VERSION:-1.4.5}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+PYTHON=$( python -c 'import sys; print sys.version[:3]' )
+PERL=$( eval "$(perl -V:version)"; echo $version )
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+  ARCHQUADLET=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+  ARCHQUADLET=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+  ARCHQUADLET=""
+elif [ "$ARCH" = "arm" ]; then
+  SLKCFLAGS="-O2 -march=armv4t"
+  LIBDIRSUFFIX=""
+  ARCHQUADLET="-gnueabi"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+  ARCHQUADLET=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $TMP/$PRGNAM-$VERSION
+chown -R root:root .
+chmod -R a-s,u+w,go+r-w .
+
+# Correct hard-coded path to lua libs (thanks to pprkut for spotting this one!)
+sed "s|/lib/lua|/lib${LIBDIRSUFFIX}/lua|g" -i configure
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+RRDDOCDIR=/usr/doc/$PRGNAM-$VERSION \
+./configure \
+  --prefix=/usr \
+  --mandir=/usr/man \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --disable-static \
+  --with-tcllib=/usr/lib${LIBDIRSUFFIX} \
+  --build=$ARCH-slackware-linux$ARCHQUADLET \
+  --with-perl-options='INSTALLDIRS=vendor' \
+  --disable-ruby
+#  --with-ruby-options="sitedir=\${DESTDIR}/usr/lib${LIBDIRSUFFIX}/ruby/vendor_ruby"
+
+make
+
+# Correct man paths in the Perl bindings.
+sed -r -i 's|/usr/share/man|/usr/man|g' bindings/perl-piped/Makefile
+sed -r -i 's|/usr/share/man|/usr/man|g' bindings/perl-shared/Makefile
+
+make install DESTDIR=$PKG
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $(find $PKG/usr/man -type l) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+find $PKG -name perllocal.pod \
+  -o -name ".packlist" \
+  -o -name "*.bs" \
+  | xargs rm -f
+
+rm -rf $PKG/usr/lib${LIBDIRSUFFIX}/perl5/${PERL}
+rm -rf $PKG/usr/lib${LIBDIRSUFFIX}/perl5/site_perl/${PERL}/$ARCH-linux/auto/RRDp
+
+# Set correct permissions (mostly on the Perl bindings)
+find $PKG -perm 444 -exec chmod 0644 {} \;
+find $PKG -perm 555 -exec chmod 0755 {} \;
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a CHANGES CONTRIBUTORS COPYING COPYRIGHT NEWS README THREADS TODO \
+  WIN32-BUILD-TIPS.txt $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

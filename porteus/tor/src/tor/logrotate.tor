@@ -11,4 +11,3 @@
     /etc/rc.d/rc.tor reload > /dev/null
   endscript
 }
-

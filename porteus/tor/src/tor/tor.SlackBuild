@@ -23,17 +23,15 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=tor
-VERSION=0.2.1.30
-BUILD=${BUILD:-2}
+VERSION=0.2.2.32
+BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
 # Select tor's default user/group
-#TOR_USER=${TOR_USER:-tor}
-#TOR_UID=${TOR_UID:-220}
-#TOR_GROUP=${TOR_GROUP:-tor}
-#TOR_GID=${TOR_GID:-220}
-TOR_USER=nobody
-TOR_GROUP=nogroup
+TOR_USER=${TOR_USER:-tor}
+TOR_UID=${TOR_UID:-220}
+TOR_GROUP=${TOR_GROUP:-tor}
+TOR_GID=${TOR_GID:-220}
 
 # Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
@@ -99,6 +97,7 @@ CFLAGS="$SLKCFLAGS" \
   --localstatedir=/var \
   --mandir=/usr/man \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
   --with-tor-user=$TOR_USER \
   --with-tor-group=$TOR_GROUP \
   --build=$ARCH-slackware-linux
@@ -119,8 +118,8 @@ mv $PKG/etc/tor/tor-tsocks.conf $PKG/etc/tor/tor-tsocks.conf.new
 find $PKG/usr/man -type f -exec gzip -9 {} \;
 for i in $(find $PKG/usr/man -type l) ; do ln -s $(readlink $i).gz $i.gz ; rm $i ; done
 
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/spec
-cp -a AUTHORS ChangeLog INSTALL LICENSE README ReleaseNotes \
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a ChangeLog INSTALL LICENSE README ReleaseNotes \
       $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 cat $CWD/README.SLACKWARE > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE
