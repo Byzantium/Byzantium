@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+    |-----handy-ruler------------------------------------------------------|
+curl: curl (command line URL data transfer tool)
+curl:
+curl: Curl is a command line tool for transferring data specified with URL
+curl: syntax.  The command is designed to work without user interaction or
+curl: any kind of interactivity.   Curl offers a busload of useful tricks
+curl: like proxy support, user authentication, ftp upload, HTTP post,  SSL
+curl: (https:) connections, cookies, file transfer resume and more.
+curl:
+curl: libcurl is a library that Curl uses to do its job. It is readily
+curl: available to be used by your software, too.
+curl:

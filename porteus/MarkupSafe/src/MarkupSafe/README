@@ -1,0 +1,3 @@
+MarkupSafe implements a unicode subclass that supports HTML strings.
+
+MarkupSafe requires pysetuptools.
