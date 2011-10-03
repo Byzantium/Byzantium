@@ -1,0 +1,176 @@
+#!/bin/sh
+
+# Copyright 2008, 2009, 2010, 2011  Patrick J. Volkerding, Sebeka, Minnesota, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+BUILD=${BUILD:-1}
+
+PKGNAM=git
+VERSION=${VERSION:-$(echo $PKGNAM-*.tar.?z* | cut -d - -f 2 | rev | cut -f 3- -d . | rev)}
+NUMJOBS=${NUMJOBS:-" -j7 "}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) export ARCH=i486 ;;
+    arm*) export ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) export ARCH=$( uname -m ) ;;
+  esac
+fi
+
+eval $(perl '-V:installvendorlib')
+PERLDIR=$installvendorlib/$ARCH-linux-thread-multi/auto
+
+if ls /var/log/packages/git-* 1> /dev/null 2> /dev/null ; then
+  echo "Git is installed.  The package should be removed before"
+  echo "building, or the new package might be missing some"
+  echo "perl modules."
+  echo
+  echo "You'll be given a short time to consider this."
+  #sleep 3600
+fi
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "$ARCH" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+else
+  SLKCFLAGS="-O2"
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp}
+OUTPUT=${OUTPUT:-/tmp}
+PKG=$TMP/package-git
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+
+cd $TMP
+rm -rf git-$VERSION
+tar xvf $CWD/git-$VERSION.tar.?z* || exit 1
+cd git-$VERSION
+
+chown -R root:root .
+find . \
+  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
+
+mkdir -p $PKG/usr/doc/git-$VERSION
+cp -a \
+  COPYING* INSTALL README \
+  Documentation \
+  contrib \
+  $PKG/usr/doc/git-$VERSION
+( cd $PKG/usr/doc/git-$VERSION/Documentation ; rm *.1 *.3 *.7 )
+( cd $PKG/usr/doc/git-$VERSION && find . -name ".git*" -exec rm -r "{}" \; )
+
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --build=$ARCH-slackware-linux
+
+export CC=/usr/bin/32/gcc
+. /etc/profile.d/32dev.sh
+
+make $NUMJOBS \
+  prefix=/usr \
+  mandir=/usr/man \
+  CFLAGS="$SLKCFLAGS" \
+  INSTALLDIRS=vendor \
+  ASCIIDOC8=YesPlease \
+  all doc || exit 1
+
+make \
+  prefix=/usr \
+  mandir=/usr/man \
+  "CFLAGS=$SLKCFLAGS" \
+  INSTALLDIRS=vendor \
+  ASCIIDOC8=YesPlease \
+  install \
+  install-doc \
+  DESTDIR=$PKG || exit 1
+
+mv $PKG/usr/share/man/man3 $PKG/usr/man
+rmdir $PKG/usr/share/man
+
+# Compress and if needed symlink the man pages:
+if [ -d $PKG/usr/man ]; then
+  ( cd $PKG/usr/man
+    for manpagedir in $(find . -type d -name "man*") ; do
+      ( cd $manpagedir
+        for eachpage in $( find . -type l -maxdepth 1) ; do
+          ln -s $( readlink $eachpage ).gz $eachpage.gz
+          rm $eachpage
+        done
+        gzip -9 *.?
+      )
+    done
+  )
+fi
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+
+# Since Stuart Winter hates hard links.  ;-)
+#
+# Switch a hard link with a soft link:
+( cd $PKG/usr/bin
+  find . -links +1 -not -name git | while read gitfile ; do
+    if [ git -ef $gitfile ]; then
+      rm -vf $gitfile
+      ln -vfs git $gitfile
+    fi
+  done
+)
+
+# This removes our DESTDIR from the packlist filenames, to keep perl's 
+# internal inventories consistent and correct.
+find $PKG -name .packlist | while read plist ; do
+  sed -e "s%/share/man%/man%g" \
+      -e "s%$PKG%%g" \
+      -e "s%\.1$%\.1\.gz%g" \
+      -e "s%\.2$%\.2\.gz%g" \
+      -e "s%\.3$%\.3\.gz%g" \
+      -e "s%\.3pm$%\.3pm\.gz%g" \
+      -e "s%\.4$%\.4\.gz%g" \
+      -e "s%\.5$%\.5\.gz%g" \
+      -e "s%\.6$%\.6\.gz%g" \
+      -e "s%\.7$%\.7\.gz%g" \
+      -e "s%\.8$%\.8\.gz%g" \
+      ${plist} > ${plist}.new
+      mv -f ${plist}.new ${plist}
+done
+
+# This is junk:
+eval $(perl '-V:privlib')
+( cd $PKG$(dirname $privlib) && rm -rf 5.* )
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/git-$VERSION-$ARCH-$BUILD.tgz
+
