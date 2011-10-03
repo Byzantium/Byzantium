@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+             |-----handy-ruler------------------------------------------------------|
+sqlitebrowser: sqlitebrowser (light QT-based GUI editor for SQLite databases)
+sqlitebrowser:
+sqlitebrowser: SQLite Database Browser is a freeware, public domain, open source
+sqlitebrowser: visual tool used to create, design and edit database files compatible
+sqlitebrowser: with SQLite. It is meant to be used for users and developers that want
+sqlitebrowser: to create databases, edit and search data using a familiar
+sqlitebrowser: spreadsheet-like interface, without the need to learn complicated SQL
+sqlitebrowser: commands.
+sqlitebrowser:
+sqlitebrowser: Homepage: http://sqlitebrowser.sourceforge.net/
+sqlitebrowser:
