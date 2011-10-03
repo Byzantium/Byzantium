@@ -1,0 +1,59 @@
+#!/bin/sh
+
+## Written by hollywoodb (hollywoodb@fastmail.fm)
+
+## Feel free to use, modify, redistribute this script.
+## If you make changes please modify the "Written by"
+## so that I don't recieve emails about a script I
+## did not write.  Thanks.
+
+# Mofified by the SlackBuilds.org project
+
+# Maintained by Audrius Kažukauskas <audrius@neutrino.lt>
+
+PRGNAM=pysetuptools
+SRC_NAME=setuptools
+VERSION=0.6c11
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=${PKG:-$TMP/package-$SRC_NAME}
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRC_NAME-$VERSION
+tar xvf $CWD/$SRC_NAME-$VERSION.tar.gz
+cd $SRC_NAME-$VERSION
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
+
+# Don't need this.
+rm -f setuptools/*.exe
+
+python setup.py install --root=$PKG
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+install -m 0644 *.txt $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n -p $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

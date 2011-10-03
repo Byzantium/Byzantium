@@ -1,0 +1,9 @@
+ngircd (Next Generation IRC Daemon)
+
+ngIRCd is a portable IRC daemon written from scratch.  It is easy to
+configure, supports server links (even with original ircds), and runs
+on hosts with changing IP addresses (such as dial-in networks).
+
+This defaults to using gnutls for SSL support; if you prefer to use
+openssl (which will result in a non-redistributable package), then
+pass "SSLTYPE=openssl" to the script when running it.
