@@ -5,6 +5,8 @@
 # License: GPLv3
 
 # TODO:
+# - While we're at it, refactor that method into separate methods that configure
+#   just the mesh and just the client interfaces.
 # - Figure out what columns in the network configuration database to index.
 #   It's doubtful that a Byzantium node would have more than three interfaces
 #   (not counting lo) but it's wise to plan for the future.
@@ -12,6 +14,8 @@
 #   that it's not fractional or invalid.  Remember that the US has 1-12, the
 #   European Union has 1-13, and Japan has 1-14.
 # - Find a way to prune network interfaces that have vanished.
+# - In NetworkConfiguration.make_hosts(), add code to display an error message
+#   on the control panel if the /etc/hosts.mesh file can't be created.
 
 # Import external modules.
 import cherrypy
@@ -19,7 +23,10 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
 import os
+import os.path
 import sqlite3
+import subprocess
+import random
 
 # Import core control panel modules.
 from control_panel import *
@@ -36,11 +43,23 @@ class NetworkConfiguration(object):
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
     # user picks an already-configured interface.
-    interface = ''
+    mesh_interface = ''
+    mesh_ip = ''
+    client_interface = ''
+    client_ip = ''
     channel = ''
     essid = ''
-    ip_address = ''
-    netmask = ''
+    ethernet_interface = ''
+    ethernet_ip = ''
+
+    # Set the netmasks aside so everything doesn't run together.
+    mesh_netmask = '255.255.255.255'
+    client_netmask = '255.255.255.0'
+
+    # Attributes for flat files that this object maintains for the client side
+    # of the network subsystem.
+    hosts_file = '/etc/hosts.mesh'
+    dnsmasq_include_file = '/etc/dnsmasq.conf.include'
 
     # Pretends to be index.html.
     def index(self):
@@ -73,14 +92,15 @@ class NetworkConfiguration(object):
 
         # Start with wireless interfaces.
         for i in wireless:
-            cursor.execute("SELECT interface, configured, enabled FROM wireless WHERE interface=?", (i, ))
+            cursor.execute("SELECT mesh_interface, configured, enabled FROM wireless WHERE mesh_interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
             if not len(result):
-                # enabled, channel, configured, essid, interface, ipaddress, netmask
-                template = ('no', '0', 'no', '', i, '0.0.0.0', '0.0.0.0', )
-                cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?,?);", template)
+                # client_netmask, client_ip, client_interface, enabled, channel,
+                # configured, essid, mesh_interface, mesh_ip, mesh_netmask
+                template = ('0.0.0.0', '0.0.0.0', (mesh_interface + ':1'), 'no', '0', 'no', '', i, '0.0.0.0', '0.0.0.0', )
+                cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?,?,?,?,?);", template)
                 connection.commit()
                 wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
                 continue
@@ -108,7 +128,7 @@ class NetworkConfiguration(object):
 
             # If the interface is not found in database, add it.
             if not len(result):
-                # enabled, configured, gateay, interface, ipaddress, netmask
+                # enabled, configured, gateway, interface, ipaddress, netmask
                 template = ('no', 'no', 'no', i, '0.0.0.0', '0.0.0.0', )
                 cursor.execute("INSERT INTO wired VALUES (?,?,?,?,?,?);", template)
                 connection.commit()
@@ -151,11 +171,12 @@ class NetworkConfiguration(object):
 
     # Used to reset this class' attributes to a known state.
     def reinitialize_attributes(self):
-        self.interface = ''
+        self.mesh_interface = ''
+        self.client_interface = ''
         self.channel = ''
         self.essid = ''
-        self.ip_address = ''
-        self.netmask = ''
+        self.mesh_ip = ''
+        self.client_ip = ''
 
     # Helper method to enumerate all of the network interfaces on a node.
     def enumerate_network_interfaces(self):
@@ -190,8 +211,10 @@ class NetworkConfiguration(object):
     # the form on /network/index.html.
     def wireless(self, interface=None):
         # Store the name of the network interface chosen by the user in the
-        # object's attribute set.
-        self.interface = interface
+        # object's attribute set and then generate the name of the client
+        # interface.
+        self.mesh_interface = interface
+        self.client_interface = interface + ':1'
 
         # Default settings for /network/wireless.html page.
         channel = 3
@@ -203,7 +226,7 @@ class NetworkConfiguration(object):
         connection = sqlite3.connect(self.netconfdb)
         cursor = connection.cursor()
         template = (interface, )
-        cursor.execute("SELECT configured, channel, essid FROM wireless WHERE interface=?;", template)
+        cursor.execute("SELECT configured, channel, essid FROM wireless WHERE mesh_interface=?;", template)
         result = cursor.fetchall()
         if result and (result[0][0] == 'yes'):
             channel = result[0][1]
@@ -216,7 +239,7 @@ class NetworkConfiguration(object):
             page = templatelookup.get_template("/network/wireless.html")
             return page.render(title = "Configure wireless for Byzantium node.",
                            purpose_of_page = "Set wireless network parameters.",
-                           interface = self.interface, channel = channel,
+                           interface = self.mesh_interface, channel = channel,
                            essid = essid)
         except:
             traceback = RichTraceback()
@@ -228,54 +251,96 @@ class NetworkConfiguration(object):
                     traceback.error)
     wireless.exposed = True
 
-    # Implements step one of the interface configuration process: picking an
-    # IP address.
-    def tcpip(self, interface=None, essid=None, channel=None):
-        # Store the interface, ESSID and wireless channel in the class' attribute set if
+    # Implements step two of the interface configuration process: selecting
+    # IP address blocks for the mesh and client interfaces.  Draws upon class
+    # attributes where they exist but pseudorandomly chooses values where it
+    # needs to.
+    def tcpip(self, essid=None, channel=None):
+        # Store the ESSID and wireless channel in the class' attribute set if
         # they were passed as args.
-        if interface:
-            self.interface = interface
         if essid:
             self.essid = essid
         if channel:
             self.channel = channel
 
-        # Set default values for the fields of the IP address and netmask fields
-        # on the /network/tcpip.html template.
-        octet_one = octet_two = octet_three = octet_four = ''
-        netmask_one = netmask_two = netmask_three = netmask_four = ''
+        # Initialize the Python environment's randomizer.
+        random.seed()
 
-        # If the network interface is already configured in the database, pull
-        # the settings from the DB and use them as the default values in the
-        # form on /network/tcpip.html.  Otherwise, use blank (empty) defaults.
+        # First pick an IP address for the mesh interface on the node.
+        # Go into a loop in which pseudorandom IP addresses are chosen and
+        # tested to see if they have been taken already or not.  Loop until we
+        # have a winner.
+        ip_in_use = 1
+        while ip_in_use:
+            # Pick a random IP address in 192.168/16.
+            addr = '192.168.'
+            addr = addr + str(random.randint(0, 254)) + '.'
+            addr = addr + str(random.randint(0, 254))
+
+            # Run arping to see if any node in range has claimed that IP address
+            # and capture the return code.
+            # Argument breakdown:
+            # -c 5: Send 5 packets
+            # -D: Detect specified address.  Return 1 if found, 0 if not,
+            # -f: Stop after the first positive response.
+            # -I Network interface to use.  Mandatory.
+            arping = ['/usr/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
+                      self.mesh_interface, addr]
+            ip_in_use = subprocess.call(arping)
+
+            # arping returns 1 if the IP is in use, 0 if it's not.
+            if not ip_in_use:
+                self.mesh_ip = addr
+                break
+
+        # Next pick a distinct IP address for the client interface and its
+        # netblock.
+        ip_in_use = 1
+        while ip_in_use:
+            # Pick a random IP address in a 10/24.
+            addr = '10.'
+            addr = addr + str(random.randint(0, 254)) + '.'
+            addr = addr + str(random.randint(0, 254)) + '.1'
+
+            # Run arping to see if any mesh node in range has claimed that IP
+            # address and capture the return code.
+            # Argument breakdown:
+            # -c 5: Send 5 packets
+            # -D: Detect specified address.  Return 1 if found, 0 if not,
+            # -f: Stop after the first positive response.
+            # -I Network interface to use.  Mandatory.
+            arping = ['/usr/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
+                      self.mesh_interface, addr]
+            ip_in_use = subprocess.call(arping)
+
+            # arping returns 1 if the IP is in use, 0 if it's not.
+            if not ip_in_use:
+                self.client_ip = addr
+                break
+
+        # Store this information in the SQLite network configuration database.
         connection = sqlite3.connect(self.netconfdb)
         cursor = connection.cursor()
-        template = (self.interface, )
-        if self.essid:
-            cursor.execute("SELECT interface, ipaddress, netmask FROM wireless WHERE interface=?;", template)
-        else:
-            cursor.execute("SELECT interface, ipaddress, netmask FROM wired WHERE interface=?;", template)
-        result = cursor.fetchall()
-        cursor.close()
+        template = ('yes', self.essid, self.channel, self.mesh_ip, self.mesh_netmask, self.client_interface, self.client_ip, self.client_netmask, self.mesh_interface, )
+        cursor.execute("UPDATE wireless SET configured=?, essid=?, channel=?, mesh_ip=?, mesh_netmask=?, client_interface=?, client_ip=?, client_netmask=? WHERE mesh_interface=?;", template)
+        connection.commit()
+        connection.close()
 
-        # Take apart the IP address and netmask and replace the defaults with
-        # their components if they exist.
-        if result:
-            (octet_one, octet_two, octet_three, octet_four) = result[0][1].split('.')
-            (netmask_one, netmask_two, netmask_three, netmask_four) = result[0][2].split('.')
+        # Send this information to the methods that write the /etc/hosts and
+        # dnsmasq config files.
+        self.make_hosts(ip_address, self.client_ip)
+        #self.configure_dnsmasq()
 
-        # The forms in the HTML template do everything here.
+        # Run the "Are you sure?" page through the Mako template interpeter.
         try:
-            page = templatelookup.get_template("/network/tcpip.html")
-            return page.render(title = "Set IP address for Byzantium node.",
-                           purpose_of_page = "Set IP address on interface.",
-                           interface = self.interface, essid = self.essid,
-                           channel = self.channel, octet_one = octet_one,
-                           octet_two = octet_two, octet_three = octet_three,
-                           octet_four = octet_four, netmask_one = netmask_one,
-                           netmask_two = netmask_two,
-                           netmask_three = netmask_three,
-                           netmask_four = netmask_four)
+            page = templatelookup.get_template("/network/confirm.html")
+            return page.render(title = "Confirm network address for interface.",
+                               purpose_of_page = "Confirm IP configuration.",
+                               mesh_interface = self.mesh_interface,
+                               mesh_ip = self.mesh_ip,
+                               mesh_netmask = self.mesh_netmask,
+                               client_ip = self.client_ip,
+                               client_netmask = self.client_netmask)
         except:
             traceback = RichTraceback()
             for (filename, lineno, function, line) in traceback.traceback:
@@ -286,87 +351,55 @@ class NetworkConfiguration(object):
                     traceback.error)
     tcpip.exposed = True
 
-    # Method turns the user's input from /network/step1.html into an IP address
-    # and netmask.  **ip_info is used to pass the values that are then broken
-    # up and assembled correctly.
-    def enter_ip(self, **ip_info):
-        # Split ip_info into an IP address and a netmask.  This is ugly, but
-        # you can't pass multiple keyword argument lists to a method.  Then
-        # store them in the class' attribute set.
-        self.ip_address = ip_info['octet_one'] + "." 
-        self.ip_address = self.ip_address + ip_info['octet_two'] + "."
-        self.ip_address = self.ip_address + ip_info['octet_three'] + "."
-        self.ip_address = self.ip_address + ip_info['octet_four']
+    # Method that generates an /etc/hosts.mesh file for the node for dnsmasq.
+    # Takes three args, the first and last IP address of the netblock.  Returns
+    # nothing.
+    def make_hosts(self, starting_ip=None):
+        # See if the /etc/hosts.mesh backup file exists.  If it does, delete it.
+        old_hosts_file = self.hosts_file + '.bak'
+        if os.path.exists(old_hosts_file):
+            os.remove(old_hosts_file)
 
-        self.netmask = ip_info['netmask_one'] + "."
-        self.netmask = self.netmask + ip_info['netmask_two'] + "."
-        self.netmask = self.netmask + ip_info['netmask_three'] + "."
-        self.netmask = self.netmask + ip_info['netmask_four']
+        # Back up the old hosts.mesh file.
+        if os.path.exists(self.hosts_file):
+            os.rename(self.hosts_file, old_hosts_file)
 
-        # Run the "Are you sure?" page through the Mako template interpeter.
-        try:
-            page = templatelookup.get_template("/network/confirm.html")
-            return page.render(title = "Confirm network address for interface.",
-                               purpose_of_page = "Confirm IP address.",
-                               interface = self.interface,
-                               ip_address = self.ip_address,
-                               netmask = self.netmask)
-        except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
-    enter_ip.exposed = True
+        # We can make a few assumptions given only the starting IP address of
+        # the client IP block.  Each node only has a /24 netblock for clients,
+        # so we only have to generate 254 entries for that file (.2-254).
+        # First, split the last octet off of the IP address passed to this
+        # method.
+        (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
+        prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 
-    # If this method is called, randomly choose an RFC 1918 IP address to
-    # apply to the network interface.
-    def random_ip(self):
-        # Choose the RFC 1918 network the interface will be configured for.
-        import random
-        random.seed()
-        rfc1918 = random.randint(1, 3)
-        if rfc1918 == 1:
-            ip_address = '10.'
-            ip_address = ip_address + str(random.randint(1, 254)) + '.'
-            ip_address = ip_address + str(random.randint(1, 254)) + '.'
-            ip_address = ip_address + str(random.randint(1, 254))
-            netmask = '255.0.0.0'
-        elif rfc1918 == 2:
-            ip_address = '172.16.'
-            ip_address = ip_address + str(random.randint(1, 254)) + '.'
-            ip_address = ip_address + str(random.randint(1, 254))
-            netmask = '255.240.0.0'
-        else:
-            ip_address = '192.168.'
-            ip_address = ip_address + str(random.randint(1, 254)) + '.'
-            ip_address = ip_address + str(random.randint(1, 254))
-            netmask = '255.255.0.0'
+        # Generate the contents of the new hosts.mesh file.
+        hosts = open(self.hosts_file, "w")
+        for i in range(2, 255):
+            line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh'
+            hosts.write()
+        hosts.close()
 
-        # Store the randomly generated network configuration information in
-        # the class' attribute set.
-        self.ip_address = ip_address
-        self.netmask = netmask
+        # Test for successful generation.
+        if not os.path.exists(self.hosts_file):
+            # Set an error message and put the old file back.
+            # MOOF MOOF MOOF - Error message goes here.
+            os.rename(old_hosts_file, self.hosts_file)
+        return
 
-        # Run the "Are you sure?" page through the Mako template interpeter.
-        try:
-            page = templatelookup.get_template("/network/confirm.html")
-            return page.render(title = "Confirm network address for interface.",
-                               purpose_of_page = "Confirm IP address.",
-                               interface = self.interface,
-                               ip_address = self.ip_address,
-                               netmask = self.netmask)
-        except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
-    random_ip.exposed = True
+    # Generates an /etc/dnsmasq.conf.include file for the node.  Takes three
+    # args, the name of the interface being configured (if it's a wireless
+    # interface, anyway), the starting IP address, and the ending IP address.
+    # MOOF MOOF MOOF - We need a stock dnsmasq.conf file that has basic stuff
+    # already built into it and at the end has a
+    # "conf-file=/etc/dnsmasq.conf.include" directive.  This method generates
+    # the /etc/dnsmasq.conf.include file and restarts dnsmasqd.
+    #def configure_dnsmasq():
+
+        # Set the interface to listen on by default.
+        # interface=<name of interface>
+
+        # Generate the dhcp-range directive.
+        # dhcp-range=<interface>,<starting IP>,<ending IP>,<length of lease>
 
     # Configure the network interface.
     def set_ip(self):
@@ -376,26 +409,26 @@ class NetworkConfiguration(object):
         if self.essid:
             # First, force the wireless NIC offline so that its mode can be
             # changed.
-            command = '/sbin/ifconfig ' + self.interface + ' down'
+            command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
             output = os.popen(command)
-            command = '/sbin/iwconfig ' + self.interface + ' mode ad-hoc'
+            command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
             output = os.popen(command)
 
         # Turn the network interface up.  Without that, nothing else will work
         # reliably.
-        command = '/sbin/ifconfig ' + self.interface + ' up'
+        command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
         output = os.popen(command)
 
         # Then set the wireless ESSID and channel.
         if self.essid:
-            command = '/sbin/iwconfig ' + self.interface + ' essid ' + self.essid
+            command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
             output = os.popen(command)
         if self.channel:
-            command = '/sbin/iwconfig ' + self.interface + ' channel ' + self.channel
+            command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
             output = os.popen(command)
 
         # Call ifconfig and pass the network configuration information.
-        command = '/sbin/ifconfig ' + self.interface + ' ' + self.ip_address
+        command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
         command = command + ' netmask ' + self.netmask
         output = os.popen(command)
 
@@ -407,9 +440,9 @@ class NetworkConfiguration(object):
         # Because wireless and wired interfaces are in separate tables, we need
         # different queries to update the tables.  Start with wireless.
         if self.essid:
-            template = ('yes', self.channel, 'yes', self.essid, self.interface,
-                        self.ip_address, self.netmask, self.interface, )
-            cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, interface=?, ipaddress=?, netmask=? WHERE interface=?;", template)
+            template = ('yes', self.channel, 'yes', self.essid, self.mesh_interface,
+                        self.mesh_ip, self.netmask, self.mesh_interface, )
+            cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, interface=?, ipaddress=?, netm"", templateask=? WHERE interface=?;", template)
 
         # Update query for wired interfaces.
         else:
