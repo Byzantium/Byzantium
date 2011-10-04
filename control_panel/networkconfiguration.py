@@ -16,6 +16,8 @@
 # - Find a way to prune network interfaces that have vanished.
 # - In NetworkConfiguration.make_hosts(), add code to display an error message
 #   on the control panel if the /etc/hosts.mesh file can't be created.
+# - Add code to .set_ip() to verify that the wireless settings took the way
+#   they're supposed to.
 
 # Import external modules.
 import cherrypy
@@ -407,20 +409,13 @@ class NetworkConfiguration(object):
         # wireless class attributes won't be set under any other circumstances),
         # put the interface into ad-hoc mode.
         if self.essid:
-            # First, force the wireless NIC offline so that its mode can be
-            # changed.
+            # First, take the wireless NIC offline so its mode can be changed.
             command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
             output = os.popen(command)
+
+            # Set the mode, ESSID and channel.
             command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
             output = os.popen(command)
-
-        # Turn the network interface up.  Without that, nothing else will work
-        # reliably.
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
-        output = os.popen(command)
-
-        # Then set the wireless ESSID and channel.
-        if self.essid:
             command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
             output = os.popen(command)
         if self.channel:
@@ -429,7 +424,7 @@ class NetworkConfiguration(object):
 
         # Call ifconfig and pass the network configuration information.
         command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
-        command = command + ' netmask ' + self.netmask
+        command = command + ' netmask ' + self.netmask + ' up'
         output = os.popen(command)
 
         # Store the interface's configuration in the database.  Start by
@@ -440,8 +435,7 @@ class NetworkConfiguration(object):
         # Because wireless and wired interfaces are in separate tables, we need
         # different queries to update the tables.  Start with wireless.
         if self.essid:
-            template = ('yes', self.channel, 'yes', self.essid, self.mesh_interface,
-                        self.mesh_ip, self.netmask, self.mesh_interface, )
+            template = ('yes', self.channel, 'yes', self.essid, self.mesh_interface, self.mesh_ip, self.netmask, self.mesh_interface, )
             cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, interface=?, ipaddress=?, netm"", templateask=? WHERE interface=?;", template)
 
         # Update query for wired interfaces.
