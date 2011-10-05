@@ -1,0 +1,11 @@
+PRGNAM="irssi"
+VERSION="0.8.15"
+HOMEPAGE="http://www.irssi.org/"
+# Tor download site removes old releases, so this is only reliable mirror
+DOWNLOAD="http://slackbuilds.org/mirror/slackware/slackware-13.37/source/n/irssi/irssi-0.8.15.tar.bz2"
+MD5SUM="1dcb3f511b88df94b0c996f36668c7da"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+MAINTAINER=""
+EMAIL=""
+APPROVED=""

@@ -1,0 +1,8 @@
+Twisted is an event-driven networking engine written in Python and licensed
+under the MIT license.
+
+Twisted projects variously support TCP, UDP, SSL/TLS, multicast, Unix
+sockets, a large number of protocols (including HTTP, NNTP, IMAP, SSH,
+IRC, FTP, and others), and much more.
+
+This requires zope.interface at runtime.

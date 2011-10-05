@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+         |-----handy-ruler------------------------------------------------------|
+libmcrypt: libmcrypt (encryption functions for MCrypt)
+libmcrypt:
+libmcrypt: mcrypt is a program for encrypting files or streams. It is intended
+libmcrypt: to be a replacement for the old UNIX crypt. It uses well-known and
+libmcrypt: well-tested algorithms like BLOWFISH, AES, ARCFOUR, CAST-128, and
+libmcrypt: more in several modes or operation.
+libmcrypt:
+libmcrypt: Homepage: http://freshmeat.net/projects/mcrypt/
+libmcrypt:
+libmcrypt:
+libmcrypt:

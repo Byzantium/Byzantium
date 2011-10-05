@@ -1,0 +1,109 @@
+#!/bin/sh
+
+# Copyright 2008, 2009, 2010  Patrick J. Volkerding, Sebeka, MN, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+VERSION=${VERSION:-$(echo dnsmasq-*.tar.?z* | rev | cut -f 3- -d . | cut -f 1 -d - | rev)}
+BUILD=${BUILD:-1}
+
+NUMJOBS=${NUMJOBS:-" -j7 "}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) export ARCH=i486 ;;
+    arm*) export ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) export ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp}
+OUTPUT=${OUTPUT:-/tmp}
+PKG=$TMP/package-dnsmasq
+
+rm -rf $PKG
+mkdir -p $TMP $PKG
+cd $TMP
+rm -rf dnsmasq-$VERSION
+tar xvf $CWD/dnsmasq-$VERSION.tar.?*z || exit 1
+cd dnsmasq-$VERSION || exit 1
+chown -R root:root .
+find . \
+  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
+
+zcat $CWD/dnsmasq.leasedir.diff.gz | patch -p1 --verbose --backup --suffix=.orig || exit 1
+
+# Default CFLAGS are "-W -Wall -O2" - that's good enough.
+make $NUMJOBS all-i18n PREFIX=/usr MANDIR=/usr/man || exit 1
+make install-i18n PREFIX=/usr DESTDIR=$PKG MANDIR=/usr/man || exit 1
+chmod 0755 $PKG/usr/sbin/dnsmasq
+
+mkdir -p $PKG/etc/dnsmasq.d
+
+if [ -d $PKG/usr/man ]; then
+  ( cd $PKG/usr/man
+    for manpagedir in $(find . -type d -name "man*") ; do
+      ( cd $manpagedir
+        for eachpage in $( find . -type l -maxdepth 1) ; do
+          ln -s $( readlink $eachpage ).gz $eachpage.gz
+          rm $eachpage
+        done
+        gzip -9 *.?
+      )
+    done
+  )
+fi
+
+mkdir -p $PKG/var/state/dnsmasq
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" \
+  | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+
+mkdir -p $PKG/etc
+cat dnsmasq.conf.example > $PKG/etc/dnsmasq.conf.new
+mkdir -p $PKG/etc/rc.d
+zcat $CWD/rc.dnsmasq.gz > $PKG/etc/rc.d/rc.dnsmasq.new
+
+mkdir -p $PKG/usr/doc/dnsmasq-$VERSION
+cp -a \
+  COPYING FAQ doc.html setup.html \
+  $PKG/usr/doc/dnsmasq-$VERSION
+
+# If there's a ChangeLog, installing at least part of the recent history
+# is useful, but don't let it get totally out of control:
+if [ -r CHANGELOG ]; then
+  DOCSDIR=$(echo $PKG/usr/doc/*-$VERSION)
+  cat CHANGELOG | head -n 1000 > $DOCSDIR/CHANGELOG
+  touch -r CHANGELOG $DOCSDIR/CHANGELOG
+fi
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+zcat $CWD/doinst.sh.gz > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/dnsmasq-$VERSION-$ARCH-$BUILD.tgz
+

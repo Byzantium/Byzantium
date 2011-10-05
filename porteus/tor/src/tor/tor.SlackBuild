@@ -23,17 +23,15 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=tor
-VERSION=0.2.1.30
-BUILD=${BUILD:-2}
+VERSION=0.2.2.32
+BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
 # Select tor's default user/group
-#TOR_USER=${TOR_USER:-tor}
-#TOR_UID=${TOR_UID:-220}
-#TOR_GROUP=${TOR_GROUP:-tor}
-#TOR_GID=${TOR_GID:-220}
-TOR_USER=nobody
-TOR_GROUP=nogroup
+TOR_USER=${TOR_USER:-tor}
+TOR_UID=${TOR_UID:-220}
+TOR_GROUP=${TOR_GROUP:-tor}
+TOR_GID=${TOR_GID:-220}
 
 # Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
@@ -69,7 +67,7 @@ bailout() {
   echo "  Something like this should suffice for most systems: "
   echo "    # groupadd -g $TOR_GID $TOR_GROUP "
   echo "    # useradd -u $TOR_UID -g $TOR_GID -c \"The Onion Router\" -d /dev/null -s /bin/false $TOR_USER "
-  exit 1
+  #exit 1
 }
 
 # Bail if user and/or group isn't valid on your system
@@ -92,6 +90,15 @@ cd $PRGNAM-$VERSION
 chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
 
+# Help ./configure find the right libevent files
+( cd /tmp/SBo/package-libevent/usr/lib ;
+  [ -e libevent.so ] || ln -s `/bin/ls libevent-*.so.* | tail -1` libevemt.so ;
+  [ -e libevent-2.0.so.5 ] || ln -s libevent.so libevent-2.0.so.5 )
+
+# Configure wants to execute a test, so help it find the right libs at runtime (ugly hack)
+OLD_LDPATH="$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/tmp/SBo/package-libevent/usr/lib:$LD_LIBRARY_PATH"
+
 CFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
@@ -99,16 +106,20 @@ CFLAGS="$SLKCFLAGS" \
   --localstatedir=/var \
   --mandir=/usr/man \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
   --with-tor-user=$TOR_USER \
   --with-tor-group=$TOR_GROUP \
+  --with-libevent-dir=/tmp/SBo/package-libevent/usr/lib \
   --build=$ARCH-slackware-linux
 
 make
 make install-strip DESTDIR=$PKG
 
+export LD_LIBRARY_PATH="$OLD_LDPATH"
+
 # Create/install stuff that makes tor work (better)
 mkdir -p $PKG/var/{run,log,lib}/tor
-chown $TOR_USER:$TOR_GROUP $PKG/var/{run,log,lib}/tor
+#chown $TOR_USER:$TOR_GROUP $PKG/var/{run,log,lib}/tor
 chmod 0700 $PKG/var/lib/tor
 install -D -m 0755 $CWD/rc.tor $PKG/etc/rc.d/rc.tor.new
 install -D -m 0755 contrib/torctl $PKG/usr/bin/torctl
@@ -119,8 +130,8 @@ mv $PKG/etc/tor/tor-tsocks.conf $PKG/etc/tor/tor-tsocks.conf.new
 find $PKG/usr/man -type f -exec gzip -9 {} \;
 for i in $(find $PKG/usr/man -type l) ; do ln -s $(readlink $i).gz $i.gz ; rm $i ; done
 
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/spec
-cp -a AUTHORS ChangeLog INSTALL LICENSE README ReleaseNotes \
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a ChangeLog INSTALL LICENSE README ReleaseNotes \
       $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 cat $CWD/README.SLACKWARE > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE

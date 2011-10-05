@@ -1,2 +1,3 @@
-DOWNLOAD=http://www.pps.jussieu.fr/~jch/software/files/babeld-1.1.1.tar.gz
-
+PRGNAM="babeld"
+VERSION="1.2.0"
+DOWNLOAD="http://fidelio.qi-hardware.com/~xiangfu/openwrt-xburst.full_system/dl/babeld-1.2.0.tar.gz"

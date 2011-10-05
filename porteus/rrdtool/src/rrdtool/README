@@ -1,0 +1,4 @@
+RRDTool is the industry standard data logging and graphing application.
+
+This package makes all bindings that are supported on the system.
+Bindings for lua will be made automatically if it is detected.

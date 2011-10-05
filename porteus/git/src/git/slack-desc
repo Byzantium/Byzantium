@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in.  You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+   |-----handy-ruler------------------------------------------------------|
+git: git (the stupid content tracker)
+git:
+git: Git is a fast, scalable, distributed revision control system with an
+git: unusually rich command set that provides both high-level operations
+git: and full access to internals.
+git:
+git: "git" can mean anything, depending on your mood.
+git:
+git: Git was originally written by Linus Torvalds and is currently
+git: maintained by Junio C. Hamano.
+git:

@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+ipcalc: ipcalc (An IP Netmask/broadcast/etc calculator)
+ipcalc:
+ipcalc: ipcalc takes an IP address and netmask and calculates
+ipcalc: the resulting broadcast, network, Cisco wildcard mask,
+ipcalc: and host range. By giving a second netmask, you can
+ipcalc: design sub- and supernetworks. It is also intended to
+ipcalc: be a teaching tool and presents the results as
+ipcalc: easy-to-understand binary values.
+ipcalc:
+ipcalc:
+ipcalc:

@@ -1,0 +1,8 @@
+PRGNAM="libmcrypt"
+VERSION="2.5.8"
+HOMEPAGE="http://mcrypt.sourceforge.net/"
+DOWNLOAD="http://downloads.sourceforge.net/mcrypt/libmcrypt-2.5.8.tar.bz2"
+MD5SUM="c4f491dd411a09e9de3b8702ea6f73eb"
+MAINTAINER="Frank Gingras"
+EMAIL="francois.gingras@gmail.com"
+APPROVED="dsomero,rworkman"

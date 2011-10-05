@@ -1,16 +1,15 @@
 #!/bin/bash -e
 
 # .SlackBuild script for ahcpd v0.51.  Written for Project Byzantium.
-#	http://wiki.hacdc.org/index.php/Byzantium
+#    http://wiki.hacdc.org/index.php/Byzantium
 # By: The Doctor [412/724/301/703] <drwho at virtadpt dot net>
 # License: GPLv3
 
 # Save the CWD and set a temporary directory to compile into.
 CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
 OUTPUT=${OUTPUT:-/tmp}
-
-# The version which appears in the package's filename.
-VERSION=0.51
+PKG=$TMP/package-$PRGNAM
 
 # The dash character ("-") is not allowed in the VERSION string, but you can override
 # it here by setting PKG_VERSION to something else than VERSION if you need to.
@@ -20,49 +19,50 @@ PKG_VERSION=$VERSION
 # Set the architecture for which you want to build your package.
 ARCH=${ARCH:-i486}
 
-# First digit is the build number, which specifies how many times it has been built.	
+# First digit is the build number, which specifies how many times it has been built.    
 # Second string is the short form of the authors name, typical three initials.
 BUILD=${BUILD:-1_dw}
 
-# The name of the application.
-APP=ahcpd
-
 # The installation directory of the package (where its actual directory structure will
 # be created as the package is built.) 
-PKG=$OUTPUT/package-$APP
+PKG=$TMP/package-$PRGNAM
 
 # Determine the flags to pass to GCC.
 if [ "$ARCH" = "i486" ]; then
-	SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+    SLKCFLAGS="-O2 -march=i486 -mtune=i686"
 elif [ "$ARCH" = "x86_64" ]; then
-	SLKCFLAGS="-O2 -fPIC"
+    SLKCFLAGS="-O2 -fPIC"
 fi
 
 # Delete the leftover directories if they exist (due to a previous build)
 # and (re)create the packaging directory
 rm -rf $PKG 
-mkdir -p $OUTPUT $PKG
-rm -rf $OUTPUT/$APP-$VERSION
+mkdir -p $TMP $PKG $OUTPUT
+rm -rf $TMP/$PRGNAM-$VERSION
 
-# Change to the OUTPUT directory.
-cd $OUTPUT || exit 1
- 
-# Extract the application source into OUTPUT.
-tar -zxvf $CWD/$APP-$VERSION.tar.gz || exit 1
-cd $APP-$VERSION || exit 1
-chown -R root:root .
-chmod -R u+w,go+r-w,a-s .
+# Change to the TMP directory.
+cd $TMP || exit 1
+
+echo "VERSION $VERSION"
+
+# Extract the application source into TMP.
+if [ ! -f $CWD/.extracted ]; then
+    tar -zxvf $CWD/$PRGNAM-$VERSION.tar.gz || exit 1
+    cd $PRGNAM-$VERSION || exit 1
+    chown -R root:root .
+    chmod -R u+w,go+r-w,a-s .
+fi
  
 # Compile.
-make || exit 1
+make PREFIX=/usr || exit 1
 
 # Install into the temporary directory.
-make install TARGET=$PKG || exit 1
+make install PREFIX=/usr TARGET=$PKG || exit 1
 
 # Install documentation.
-mkdir -p $PKG/usr/doc/$APP-$VERSION
-cp LICENCE CHANGES README $CWD/$APP.SlackBuild $PKG/usr/doc/$APP-$VERSION
-find $PKG/usr/doc/$APP-$VERSION -type f -exec chmod 644 {} \;
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp LICENSE CHANGES README $CWD/$PRGNAM.SlackBuild $PKG/usr/doc/$PRGNAM-$VERSION
+find $PKG/usr/doc/$PRGNAM-$VERSION -type f -exec chmod 644 {} \;
 
 # Create the ./install directory and copy the slack-desc into it.
 mkdir -p $PKG/install
@@ -70,31 +70,34 @@ cat $CWD/slack-desc > $PKG/install/slack-desc
 
 # Add doinst.sh to package if it exists.
 if [ -e $CWD/doinst.sh.gz ]; then
-	zcat $CWD/doinst.sh.gz > $PKG/install/doinst.sh
-	fi
+    zcat $CWD/doinst.sh.gz > $PKG/install/doinst.sh
+fi
 
-# Strip libraries and binaries to save some space.
-cd $PKG
+# Strip libraries and binaries to save sasce.ome pce.
+( cd $PKG
   find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | \
-	xargs strip --strip-unneeded 2> /dev/null
-
+    xargs strip --strip-unneeded 2> /dev/null
+  find . | xargs file | grep "shared object" | grep ELF | cut -f 1 -d : | \
+    xargs strip --strip-unneeded 2> /dev/null
+)
+      
 # Compress man pages if they exist
 if [ -d $PKG/usr/man ]; then
-	( cd $PKG/usr/man
-	find . -type f -exec gzip -9 {} \;
-	for i in $(find . -type l) ; do
-		ln -s $(readlink $i).gz $i.gz
-		rm $i
-		done
-	) 
+    ( cd $PKG/usr/man
+    find . -type f -exec gzip -9 {} \;
+    for i in $(find . -type l) ; do
+        ln -s $(readlink $i).gz $i.gz
+        rm $i
+        done
+    ) 
 fi
               
 # Compress info pages if they exist (and remove the dir file)
 if [ -d $PKG/usr/info ]; then
-	gzip -9 $PKG/usr/info/*.info
-	rm -f $PKG/usr/info/dir
-	fi
+    gzip -9 $PKG/usr/info/*.info
+    rm -f $PKG/usr/info/dir
+fi
 
 # Build the Slackware package.
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$APP-$PKG_VERSION-$ARCH-$BUILD.tgz
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$PKG_VERSION-$ARCH-$BUILD.tgz

@@ -6,6 +6,7 @@ MODULES= \
 		 nginx.xzm \
 		 batman.xzm \
 		 erlang.xzm \
+		 avahi.xzm
 
 all: $(MODULES)
 

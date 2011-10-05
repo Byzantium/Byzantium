@@ -1,0 +1,14 @@
+libmcrypt (encryption functions for MCrypt)
+
+mcrypt is a program for encrypting files or streams. It is intended
+to be a replacement for the old UNIX crypt. It uses well-known and
+well-tested algorithms like BLOWFISH, AES, ARCFOUR, CAST-128, and
+more in several modes or operation.
+
+This package is configured with --disable-posix-threads. Using the worker
+or event MPM with apache can lead to instability when using mod_php and
+non-thread-safe extensions. The flag can be safely removed from the
+slackbuild when the prefork MPM is used, or when apache will not be installed
+or running on the target machine.
+
+See http://php.net/manual/en/mcrypt.installation.php for more details.

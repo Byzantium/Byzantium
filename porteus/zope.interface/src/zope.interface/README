@@ -1,0 +1,5 @@
+ZOPE Interfaces are a mechanism for labeling objects as conforming to a
+given API or contract.
+
+This requires pysetuptools, and zope.testing is an optional dependency
+if you want to run the test suite.

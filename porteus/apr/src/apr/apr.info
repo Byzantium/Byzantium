@@ -1,0 +1,11 @@
+PRGNAM="apr"
+VERSION="1.4.2"
+HOMEPAGE="https://apr.apache.org/"
+# Tor download site removes old releases, so this is only reliable mirror
+DOWNLOAD="https://archive.apache.org/dist/apr/apr-1.4.2.tar.bz2"
+MD5SUM="4b00e8f70c067893d075577962656b35"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+MAINTAINER=""
+EMAIL=""
+APPROVED=""
