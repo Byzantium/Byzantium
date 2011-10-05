@@ -18,6 +18,8 @@
 #   on the control panel if the /etc/hosts.mesh file can't be created.
 # - Add code to .set_ip() to verify that the wireless settings took the way
 #   they're supposed to.
+# - Write an initscript for dnsmasq so that I don't have to send a signal
+#   directly to the process.
 
 # Import external modules.
 import cherrypy
@@ -29,6 +31,7 @@ import os.path
 import sqlite3
 import subprocess
 import random
+import signal
 
 # Import core control panel modules.
 from control_panel import *
@@ -331,9 +334,9 @@ class NetworkConfiguration(object):
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
         self.make_hosts(ip_address, self.client_ip)
-        #self.configure_dnsmasq()
+        self.configure_dnsmasq(self.client_ip)
 
-        # Run the "Are you sure?" page through the Mako template interpeter.
+        # Run the "Are you sure?" page through the template interpeter.
         try:
             page = templatelookup.get_template("/network/confirm.html")
             return page.render(title = "Confirm network address for interface.",
@@ -377,8 +380,8 @@ class NetworkConfiguration(object):
         # Generate the contents of the new hosts.mesh file.
         hosts = open(self.hosts_file, "w")
         for i in range(2, 255):
-            line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh'
-            hosts.write()
+            line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
+            hosts.write(line)
         hosts.close()
 
         # Test for successful generation.
@@ -388,20 +391,52 @@ class NetworkConfiguration(object):
             os.rename(old_hosts_file, self.hosts_file)
         return
 
-    # Generates an /etc/dnsmasq.conf.include file for the node.  Takes three
-    # args, the name of the interface being configured (if it's a wireless
-    # interface, anyway), the starting IP address, and the ending IP address.
-    # MOOF MOOF MOOF - We need a stock dnsmasq.conf file that has basic stuff
-    # already built into it and at the end has a
-    # "conf-file=/etc/dnsmasq.conf.include" directive.  This method generates
-    # the /etc/dnsmasq.conf.include file and restarts dnsmasqd.
-    #def configure_dnsmasq():
+    # Generates an /etc/dnsmasq.conf.include file for the node.  Takes two
+    # args, the starting IP address.
+    def configure_dnsmasq(self, starting_ip=None):
+        # First, split the last octet off of the IP address passed into this
+        # method.
+        (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
+        prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
+        start = prefix + str('2')
+        end = prefix + str('254')
 
-        # Set the interface to listen on by default.
-        # interface=<name of interface>
+        # Use that to generate the line for the config file.
+        # dhcp-range=<starting IP>,<ending IP>,<length of lease>
+        directive = 'dhcp-range=' + start + ',' + end + ',5m\n'
 
-        # Generate the dhcp-range directive.
-        # dhcp-range=<interface>,<starting IP>,<ending IP>,<length of lease>
+        # If an include file already exists, move it out of the way.
+        oldfile = self.dnsmasq_include_file + '.bak'
+        if os.path.exists(oldfile):
+            os.remove(oldfile)
+
+        # Back up the old dnsmasq.conf.include file.
+        if os.path.exists(self.dnsmasq_include_file):
+            os.rename(self.dnsmasq_include_file, oldfile)
+
+        # Generate the new include file.
+        file = open(self.dnsmasq_include_file, 'w')
+        file.write(directive)
+        file.close()
+
+        # Test for success.  If so, HUP dnsmasq.  If not, move the old file
+        # back into place and throw an error.
+        if os.path.exists(self.dnsmasq_include_file):
+            file = open('/var/run/dnsmasq.pid', 'r')
+            pid = file.readline()
+            file.close()
+
+            # If no dnsmasq PID was found, start the server.
+            if not pid:
+                output = subprocess.Popen(['/usr/sbin/dnsmasq'])
+            else:
+                os.kill(pid, signal.SIGHUP)
+
+        else:
+            # Set an error message and put the old file back.
+            # MOOF MOOF MOOF - Error message goes here.
+            os.rename(oldfile, self.dnsmasq_include_file)
+            return
 
     # Configure the network interface.
     def set_ip(self):
@@ -418,17 +453,21 @@ class NetworkConfiguration(object):
             output = os.popen(command)
             command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
             output = os.popen(command)
-        if self.channel:
             command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
             output = os.popen(command)
 
-        # Call ifconfig and pass the network configuration information.
+        # Call ifconfig and set up the network configuration information.
         command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
-        command = command + ' netmask ' + self.netmask + ' up'
+        command = command + ' netmask ' + self.netmask
+        output = os.popen(command)
+        command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
         output = os.popen(command)
 
-        # Store the interface's configuration in the database.  Start by
-        # opening the SQLite database file.
+        # Add the client interface.
+        command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
+        output = os.popen(command)
+
+        # Commit the interface's configuration to the database.
         connection = sqlite3.connect(self.netconfdb)
         cursor = connection.cursor()
 
