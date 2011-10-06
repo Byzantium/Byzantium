@@ -17,9 +17,6 @@
 #   on the control panel if the /etc/hosts.mesh file can't be created.
 # - Change the code that restarts dnsmasq to use the initscript that'll be in
 #   the official package.
-# - Add a check to NetworkConfiguration.tcpip() to see if the mesh interface is
-#   already configured, and if it is display an alternative HTML template that
-#   shows the existing settings and gives a chance to abort.
 # - Rework network/done.html so that it makes a little more sense.
 
 # Import external modules.
@@ -288,22 +285,6 @@ class NetworkConfiguration(object):
             self.essid = essid
         if channel:
             self.channel = channel
-
-        # MOOF MOOF MOOF: Check the database to see if the mesh interface is
-        # already configured, and display an alternate page with the current
-        # settings and a chance to abort if it is!  Don't forget to check to
-        # see if the interface is online at the same time to keep from borking
-        # the local mesh!
-
-        # Open a connection to the network configuration database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-        template = (self.mesh_interface, 'yes', )
-        cursor.execute("SELECT mesh_interface, configured, enabled FROM wireless WHERE mesh_interface=? AND configured=?;", template)
-        result = cursor.fetchall()
-        if len(result):
-            
-        cursor.close()
 
         # Initialize the Python environment's randomizer.
         random.seed()
