@@ -30,6 +30,7 @@ import os
 import os.path
 import sqlite3
 import subprocess
+from subprocess import call
 import random
 import signal
 
@@ -104,7 +105,7 @@ class NetworkConfiguration(object):
             if not len(result):
                 # client_netmask, client_ip, client_interface, enabled, channel,
                 # configured, essid, mesh_interface, mesh_ip, mesh_netmask
-                template = ('0.0.0.0', '0.0.0.0', (mesh_interface + ':1'), 'no', '0', 'no', '', i, '0.0.0.0', '0.0.0.0', )
+                template = ('0.0.0.0', '0.0.0.0', (i + ':1'), 'no', '0', 'no', '', i, '0.0.0.0', '0.0.0.0', )
                 cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?,?,?,?,?);", template)
                 connection.commit()
                 wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
@@ -289,7 +290,7 @@ class NetworkConfiguration(object):
             # -D: Detect specified address.  Return 1 if found, 0 if not,
             # -f: Stop after the first positive response.
             # -I Network interface to use.  Mandatory.
-            arping = ['/usr/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
+            arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       self.mesh_interface, addr]
             ip_in_use = subprocess.call(arping)
 
@@ -314,7 +315,7 @@ class NetworkConfiguration(object):
             # -D: Detect specified address.  Return 1 if found, 0 if not,
             # -f: Stop after the first positive response.
             # -I Network interface to use.  Mandatory.
-            arping = ['/usr/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
+            arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       self.mesh_interface, addr]
             ip_in_use = subprocess.call(arping)
 
