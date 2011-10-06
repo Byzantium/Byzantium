@@ -33,6 +33,7 @@ import subprocess
 from subprocess import call
 import random
 import signal
+import time
 
 # Import core control panel modules.
 from control_panel import *
@@ -43,8 +44,8 @@ from control_panel import *
 class NetworkConfiguration(object):
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
-    #netconfdb = '/var/db/controlpanel/network.sqlite'
-    netconfdb = '/home/drwho/network.sqlite'
+    netconfdb = '/var/db/controlpanel/network.sqlite'
+    #netconfdb = '/home/drwho/network.sqlite'
 
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
@@ -272,6 +273,17 @@ class NetworkConfiguration(object):
         # Initialize the Python environment's randomizer.
         random.seed()
 
+        # To run arping, the interface has to be up.
+        # Note that arping returns '2' if the interface isn't online!
+        command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
+        output = os.popen(command)
+        
+        # Sleep five seconds to give the hardware a chance to catch up.
+        time.sleep(5)
+       
+        print "DEBUG: Output of ifconfig is: %s" % output 
+        print "DEBUG: Interface %s is now active." % self.mesh_interface
+
         # First pick an IP address for the mesh interface on the node.
         # Go into a loop in which pseudorandom IP addresses are chosen and
         # tested to see if they have been taken already or not.  Loop until we
@@ -283,6 +295,8 @@ class NetworkConfiguration(object):
             addr = addr + str(random.randint(0, 254)) + '.'
             addr = addr + str(random.randint(0, 254))
 
+            print "DEBUG: Probing for routing IP %s." % addr
+            
             # Run arping to see if any node in range has claimed that IP address
             # and capture the return code.
             # Argument breakdown:
@@ -293,6 +307,8 @@ class NetworkConfiguration(object):
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       self.mesh_interface, addr]
             ip_in_use = subprocess.call(arping)
+            
+            print "DEBUG: arping returned %d." % ip_in_use
 
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
@@ -308,6 +324,8 @@ class NetworkConfiguration(object):
             addr = addr + str(random.randint(0, 254)) + '.'
             addr = addr + str(random.randint(0, 254)) + '.1'
 
+            print "DEBUG: Probing for mesh IP %s." % addr
+            
             # Run arping to see if any mesh node in range has claimed that IP
             # address and capture the return code.
             # Argument breakdown:
@@ -319,10 +337,19 @@ class NetworkConfiguration(object):
                       self.mesh_interface, addr]
             ip_in_use = subprocess.call(arping)
 
+            print "DEBUG: arping returned %d." % ip_in_use
+
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
                 self.client_ip = addr
                 break
+
+        # Deactivate the interface again.
+        command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
+        output = os.popen(command)
+        
+        print "DEBUG: Output of ifconfig is: %s" % output 
+        print "DEBUG: Deactivating interface %s." % self.mesh_interface
 
         # Store this information in the SQLite network configuration database.
         connection = sqlite3.connect(self.netconfdb)
@@ -334,7 +361,7 @@ class NetworkConfiguration(object):
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
-        self.make_hosts(ip_address, self.client_ip)
+        self.make_hosts(self.client_ip)
         self.configure_dnsmasq(self.client_ip)
 
         # Run the "Are you sure?" page through the template interpeter.
@@ -342,7 +369,7 @@ class NetworkConfiguration(object):
             page = templatelookup.get_template("/network/confirm.html")
             return page.render(title = "Confirm network address for interface.",
                                purpose_of_page = "Confirm IP configuration.",
-                               mesh_interface = self.mesh_interface,
+                               interface = self.mesh_interface,
                                mesh_ip = self.mesh_ip,
                                mesh_netmask = self.mesh_netmask,
                                client_ip = self.client_ip,
@@ -431,7 +458,7 @@ class NetworkConfiguration(object):
             if not pid:
                 output = subprocess.Popen(['/usr/sbin/dnsmasq'])
             else:
-                os.kill(pid, signal.SIGHUP)
+                os.kill(int(pid), signal.SIGHUP)
 
         else:
             # Set an error message and put the old file back.
