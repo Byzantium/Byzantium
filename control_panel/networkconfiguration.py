@@ -20,6 +20,10 @@
 #   they're supposed to.
 # - Write an initscript for dnsmasq so that I don't have to send a signal
 #   directly to the process.
+# - Add a check to NetworkConfiguration.tcpip() to see if the mesh interface is
+#   already configured, and if it is display an alternative HTML template that
+#   shows the existing settings and gives a chance to abort.
+# - Rework network/done.html so that it makes a little more sense.
 
 # Import external modules.
 import cherrypy
@@ -270,6 +274,12 @@ class NetworkConfiguration(object):
         if channel:
             self.channel = channel
 
+        # MOOF MOOF MOOF: Check the database to see if the mesh interface is
+        # already configured, and display an alternate page with the current
+        # settings and a chance to abort if it is!  Don't forget to check to
+        # see if the interface is online at the same time to keep from borking
+        # the local mesh!
+
         # Initialize the Python environment's randomizer.
         random.seed()
 
@@ -486,10 +496,11 @@ class NetworkConfiguration(object):
 
         # Call ifconfig and set up the network configuration information.
         command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
-        command = command + ' netmask ' + self.netmask
+        command = command + ' netmask ' + self.mesh_netmask
         output = os.popen(command)
         command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
         output = os.popen(command)
+        time.sleep(5)
 
         # Add the client interface.
         command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
@@ -502,8 +513,8 @@ class NetworkConfiguration(object):
         # Because wireless and wired interfaces are in separate tables, we need
         # different queries to update the tables.  Start with wireless.
         if self.essid:
-            template = ('yes', self.channel, 'yes', self.essid, self.mesh_interface, self.mesh_ip, self.netmask, self.mesh_interface, )
-            cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, interface=?, ipaddress=?, netm"", templateask=? WHERE interface=?;", template)
+            template = ('yes', self.channel, 'yes', self.essid, self.mesh_interface, self.mesh_ip, self.mesh_netmask, self.client_interface, self.client_ip, self.client_netmask, self.mesh_interface, )
+            cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, mesh_interface=?, mesh_ip=?, mesh_netmask=?, client_interface=?, client_ip=?, client_netmask=? WHERE mesh_interface=?;", template)
 
         # Update query for wired interfaces.
         else:
@@ -520,9 +531,9 @@ class NetworkConfiguration(object):
             page = templatelookup.get_template("/network/done.html")
             return page.render(title = "Network interface configured.",
                                purpose_of_page = "Configured!",
-                               interface = self.interface,
-                               ip_address = self.ip_address,
-                               netmask = self.netmask)
+                               interface = self.mesh_interface,
+                               ip_address = self.mesh_ip,
+                               netmask = self.mesh_netmask)
         except:
             traceback = RichTraceback()
             for (filename, lineno, function, line) in traceback.traceback:
