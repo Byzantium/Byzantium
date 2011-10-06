@@ -5,8 +5,6 @@
 # License: GPLv3
 
 # TODO:
-# - While we're at it, refactor that method into separate methods that configure
-#   just the mesh and just the client interfaces.
 # - Figure out what columns in the network configuration database to index.
 #   It's doubtful that a Byzantium node would have more than three interfaces
 #   (not counting lo) but it's wise to plan for the future.
@@ -14,12 +12,11 @@
 #   that it's not fractional or invalid.  Remember that the US has 1-12, the
 #   European Union has 1-13, and Japan has 1-14.
 # - Find a way to prune network interfaces that have vanished.
+#   MOOF MOOF MOOF - Stubbed in.
 # - In NetworkConfiguration.make_hosts(), add code to display an error message
 #   on the control panel if the /etc/hosts.mesh file can't be created.
-# - Add code to .set_ip() to verify that the wireless settings took the way
-#   they're supposed to.
-# - Write an initscript for dnsmasq so that I don't have to send a signal
-#   directly to the process.
+# - Change the code that restarts dnsmasq to use the initscript that'll be in
+#   the official package.
 # - Add a check to NetworkConfiguration.tcpip() to see if the mesh interface is
 #   already configured, and if it is display an alternative HTML template that
 #   shows the existing settings and gives a chance to abort.
@@ -78,6 +75,10 @@ class NetworkConfiguration(object):
         # reconfigure an interface.  It'll be used to set the default values
         # of the HTML fields.
         self.reinitialize_attributes()
+
+        # MOOF MOOF MOOF - call to stub implementation.
+        # Test to see if any network interfaces have gone away.
+        # self.prune()
 
         # Get a list of all network interfaces on the node (sans loopback).
         interfaces = self.enumerate_network_interfaces()
@@ -189,7 +190,14 @@ class NetworkConfiguration(object):
         self.mesh_ip = ''
         self.client_ip = ''
 
-    # Helper method to enumerate all of the network interfaces on a node.
+    # This method is run every time the NetworkConfiguration() object is
+    # instantiated by the admin browsing to /network.  It traverses the list
+    # of network interfaces extant on the system and compares it against the
+    # network configuration database.  Anything in the database that isn't in
+    # the kernel is deleted.
+    # def prune(self):
+
+    # Utility method to enumerate all of the network interfaces on a node.
     def enumerate_network_interfaces(self):
         interfaces = []
 
@@ -291,9 +299,6 @@ class NetworkConfiguration(object):
         # Sleep five seconds to give the hardware a chance to catch up.
         time.sleep(5)
        
-        print "DEBUG: Output of ifconfig is: %s" % output 
-        print "DEBUG: Interface %s is now active." % self.mesh_interface
-
         # First pick an IP address for the mesh interface on the node.
         # Go into a loop in which pseudorandom IP addresses are chosen and
         # tested to see if they have been taken already or not.  Loop until we
@@ -305,8 +310,6 @@ class NetworkConfiguration(object):
             addr = addr + str(random.randint(0, 254)) + '.'
             addr = addr + str(random.randint(0, 254))
 
-            print "DEBUG: Probing for routing IP %s." % addr
-            
             # Run arping to see if any node in range has claimed that IP address
             # and capture the return code.
             # Argument breakdown:
@@ -318,8 +321,6 @@ class NetworkConfiguration(object):
                       self.mesh_interface, addr]
             ip_in_use = subprocess.call(arping)
             
-            print "DEBUG: arping returned %d." % ip_in_use
-
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
                 self.mesh_ip = addr
@@ -334,8 +335,6 @@ class NetworkConfiguration(object):
             addr = addr + str(random.randint(0, 254)) + '.'
             addr = addr + str(random.randint(0, 254)) + '.1'
 
-            print "DEBUG: Probing for mesh IP %s." % addr
-            
             # Run arping to see if any mesh node in range has claimed that IP
             # address and capture the return code.
             # Argument breakdown:
@@ -347,8 +346,6 @@ class NetworkConfiguration(object):
                       self.mesh_interface, addr]
             ip_in_use = subprocess.call(arping)
 
-            print "DEBUG: arping returned %d." % ip_in_use
-
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
                 self.client_ip = addr
@@ -358,9 +355,6 @@ class NetworkConfiguration(object):
         command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
         output = os.popen(command)
         
-        print "DEBUG: Output of ifconfig is: %s" % output 
-        print "DEBUG: Deactivating interface %s." % self.mesh_interface
-
         # Store this information in the SQLite network configuration database.
         connection = sqlite3.connect(self.netconfdb)
         cursor = connection.cursor()
