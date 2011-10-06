@@ -289,13 +289,22 @@ class NetworkConfiguration(object):
         # Initialize the Python environment's randomizer.
         random.seed()
 
-        # To run arping, the interface has to be up.
-        # Note that arping returns '2' if the interface isn't online!
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
-        output = os.popen(command)
+        # Connect to the network configuration database.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+
+        # To run arping, the interface has to be up.  Check the database to
+        # see if it's up, and if not flip it on for a few seconds to test.
+        template = (self.mesh_interface, 'yes', )
+        cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=? AND enabled=?;", template)
+        result = cursor.fetchall()
+        if not len(result):
+            # Note that arping returns '2' if the interface isn't online!
+            command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
+            output = os.popen(command)
         
-        # Sleep five seconds to give the hardware a chance to catch up.
-        time.sleep(5)
+            # Sleep five seconds to give the hardware a chance to catch up.
+            time.sleep(5)
        
         # First pick an IP address for the mesh interface on the node.
         # Go into a loop in which pseudorandom IP addresses are chosen and
@@ -349,22 +358,13 @@ class NetworkConfiguration(object):
                 self.client_ip = addr
                 break
 
-        # Deactivate the interface again.
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
-        output = os.popen(command)
-        
-        # Store this information in the SQLite network configuration database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-        template = ('yes', self.essid, self.channel, self.mesh_ip, self.mesh_netmask, self.client_interface, self.client_ip, self.client_netmask, self.mesh_interface, )
-        cursor.execute("UPDATE wireless SET configured=?, essid=?, channel=?, mesh_ip=?, mesh_netmask=?, client_interface=?, client_ip=?, client_netmask=? WHERE mesh_interface=?;", template)
-        connection.commit()
-        connection.close()
+        # Deactivate the interface again if it was down to begin with.
+        if not len(result):
+            command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
+            output = os.popen(command)
 
-        # Send this information to the methods that write the /etc/hosts and
-        # dnsmasq config files.
-        self.make_hosts(self.client_ip)
-        self.configure_dnsmasq(self.client_ip)
+        # Close the database connection.
+        connection.close()
 
         # Run the "Are you sure?" page through the template interpeter.
         try:
@@ -470,14 +470,18 @@ class NetworkConfiguration(object):
 
     # Configure the network interface.
     def set_ip(self):
+        # If we've made it this far, the user's decided to (re)configure a
+        # network interface.  Full steam ahead, damn the torpedoes!
+
+        # First, take the wireless NIC offline so its mode can be changed.
+        command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
+        output = os.popen(command)
+        time.sleep(5)
+
         # if the network interface in question is a wireless interface (the
         # wireless class attributes won't be set under any other circumstances),
         # put the interface into ad-hoc mode.
         if self.essid:
-            # First, take the wireless NIC offline so its mode can be changed.
-            command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
-            output = os.popen(command)
-
             # Set the mode, ESSID and channel.
             command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
             output = os.popen(command)
@@ -504,7 +508,7 @@ class NetworkConfiguration(object):
 
         # Because wireless and wired interfaces are in separate tables, we need
         # different queries to update the tables.  Start with wireless.
-        if self.essid:
+        if self.sql_query:
             template = ('yes', self.channel, 'yes', self.essid, self.mesh_interface, self.mesh_ip, self.mesh_netmask, self.client_interface, self.client_ip, self.client_netmask, self.mesh_interface, )
             cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, mesh_interface=?, mesh_ip=?, mesh_netmask=?, client_interface=?, client_ip=?, client_netmask=? WHERE mesh_interface=?;", template)
 
@@ -518,6 +522,11 @@ class NetworkConfiguration(object):
         connection.commit()
         cursor.close()
 
+        # Send this information to the methods that write the /etc/hosts and
+        # dnsmasq config files.
+        self.make_hosts(self.client_ip)
+        self.configure_dnsmasq(self.client_ip)
+
         # Render and display the page.
         try:
             page = templatelookup.get_template("/network/done.html")
@@ -525,7 +534,9 @@ class NetworkConfiguration(object):
                                purpose_of_page = "Configured!",
                                interface = self.mesh_interface,
                                ip_address = self.mesh_ip,
-                               netmask = self.mesh_netmask)
+                               netmask = self.mesh_netmask,
+                               client_ip = self.client_ip,
+                               client_netmask = self.client_netmask)
         except:
             traceback = RichTraceback()
             for (filename, lineno, function, line) in traceback.traceback:
