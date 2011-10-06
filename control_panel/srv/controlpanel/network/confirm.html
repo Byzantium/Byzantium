@@ -18,9 +18,9 @@
 <%include file="/includes/leftbar.html" />
 
 <div id="main" align="right">
-<p>The network interface you want to configure is: ${interface}</p>
-<p>The IP address you entered is: ${ip_address}.</p>
-<p>The netmask for the IP network you entered is: ${netmask}.</p>
+<p>The network interface you want to enable is: ${interface}</p>
+<p>The mesh IP address is: ${mesh_ip}/${mesh_netmask}</p>
+<p>The client interface IP address is: ${client_ip}/${client_netmask}</p>
 
 <form action="set_ip" method="post">
 <input type="submit" value="Configure">
