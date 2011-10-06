@@ -508,7 +508,7 @@ class NetworkConfiguration(object):
 
         # Because wireless and wired interfaces are in separate tables, we need
         # different queries to update the tables.  Start with wireless.
-        if self.sql_query:
+        if self.essid:
             template = ('yes', self.channel, 'yes', self.essid, self.mesh_interface, self.mesh_ip, self.mesh_netmask, self.client_interface, self.client_ip, self.client_netmask, self.mesh_interface, )
             cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, mesh_interface=?, mesh_ip=?, mesh_netmask=?, client_interface=?, client_ip=?, client_netmask=? WHERE mesh_interface=?;", template)
 
