@@ -20,6 +20,9 @@
 
 <p>You have selected wireless interface ${interface} to configure.</p>
 
+<!-- If this variable is set, the user is trying to reconfigure an active interface. -->
+${warning}
+
 <p>Enter the wireless channel and ESSID the network interface will use (default: ${channel} / ${essid}):</p>
 <form action="tcpip" method="post">
 <input type="text" name="channel" size="2" maxlength="2" value="${channel}" />

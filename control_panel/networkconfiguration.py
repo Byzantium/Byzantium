@@ -76,12 +76,14 @@ class NetworkConfiguration(object):
         # of the HTML fields.
         self.reinitialize_attributes()
 
-        # MOOF MOOF MOOF - call to stub implementation.
-        # Test to see if any network interfaces have gone away.
-        # self.prune()
-
         # Get a list of all network interfaces on the node (sans loopback).
         interfaces = self.enumerate_network_interfaces()
+
+        # MOOF MOOF MOOF - call to stub implementation.  We can use the list
+        # immediately above (interfaces) as the list to compare the database
+        # against.
+        # Test to see if any network interfaces have gone away.
+        #self.prune(interfaces)
 
         # Split the network interface list into two other lists, one for
         # Ethernet and one for wireless.
@@ -194,8 +196,9 @@ class NetworkConfiguration(object):
     # instantiated by the admin browsing to /network.  It traverses the list
     # of network interfaces extant on the system and compares it against the
     # network configuration database.  Anything in the database that isn't in
-    # the kernel is deleted.
-    # def prune(self):
+    # the kernel is deleted.  Takes one argument, the list of interfaces the
+    # kernel believes are present.
+    # def prune(self, interfaces=None):
 
     # Utility method to enumerate all of the network interfaces on a node.
     def enumerate_network_interfaces(self):
@@ -239,6 +242,9 @@ class NetworkConfiguration(object):
         channel = 3
         essid = 'Byzantium'
 
+        # Set up the warning in case the interface is already configured.
+        warning = ''
+
         # If a network interface is marked as configured in the database, pull
         # its settings and insert them into the page rather than displaying the
         # defaults.
@@ -250,6 +256,7 @@ class NetworkConfiguration(object):
         if result and (result[0][0] == 'yes'):
             channel = result[0][1]
             essid = result[0][2]
+            warning = '<p>WARNING: This network interface is already configured!  Changing it now might break the local mesh!  You can back out now without changing anything!</p>'
         connection.close()
         
         # The forms in the HTML template do everything here, as well.  This
@@ -258,8 +265,8 @@ class NetworkConfiguration(object):
             page = templatelookup.get_template("/network/wireless.html")
             return page.render(title = "Configure wireless for Byzantium node.",
                            purpose_of_page = "Set wireless network parameters.",
-                           interface = self.mesh_interface, channel = channel,
-                           essid = essid)
+                           warning = warning, interface = self.mesh_interface,
+                           channel = channel, essid = essid)
         except:
             traceback = RichTraceback()
             for (filename, lineno, function, line) in traceback.traceback:
@@ -287,6 +294,16 @@ class NetworkConfiguration(object):
         # settings and a chance to abort if it is!  Don't forget to check to
         # see if the interface is online at the same time to keep from borking
         # the local mesh!
+
+        # Open a connection to the network configuration database.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+        template = (self.mesh_interface, 'yes', )
+        cursor.execute("SELECT mesh_interface, configured, enabled FROM wireless WHERE mesh_interface=? AND configured=?;", template)
+        result = cursor.fetchall()
+        if len(result):
+            
+        cursor.close()
 
         # Initialize the Python environment's randomizer.
         random.seed()
