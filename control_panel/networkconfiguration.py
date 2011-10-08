@@ -109,7 +109,7 @@ class NetworkConfiguration(object):
 
         # Start with wireless interfaces.
         for i in wireless:
-            cursor.execute("SELECT mesh_interface, configured FROM wireless WHERE mesh_interface=?", (i, ))
+            cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
@@ -252,7 +252,7 @@ class NetworkConfiguration(object):
         if result and (result[0][0] == 'yes'):
             channel = result[0][1]
             essid = result[0][2]
-            warning = '<p>WARNING: This network interface is already configured!  Changing it now will break the local mesh!  You can hit cancel now without changing anything!</p>'
+            warning = '<p>WARNING: This interface is already configured!  Changing it now will break the local mesh!  You can hit cancel now without changing anything!</p>'
         connection.close()
         
         # The forms in the HTML template do everything here, as well.  This
@@ -421,7 +421,7 @@ class NetworkConfiguration(object):
                 if 'Mode' in line:
                     line = line.strip()
                     mode = line.split(' ')[0].split(':')[1]
-            if mode != 'Ad-Hoc:'
+            if mode != 'Ad-Hoc':
                 continue
 
             # Test the ESSID to see if it's been set properly.
