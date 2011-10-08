@@ -17,7 +17,6 @@
 #   on the control panel if the /etc/hosts.mesh file can't be created.
 # - Change the code that restarts dnsmasq to use the initscript that'll be in
 #   the official package.
-# - Rework network/done.html so that it makes a little more sense.
 
 # Import external modules.
 import cherrypy
@@ -42,8 +41,8 @@ from control_panel import *
 class NetworkConfiguration(object):
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
-    netconfdb = '/var/db/controlpanel/network.sqlite'
-    #netconfdb = '/home/drwho/network.sqlite'
+    #netconfdb = '/var/db/controlpanel/network.sqlite'
+    netconfdb = '/home/drwho/network.sqlite'
 
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
@@ -103,7 +102,7 @@ class NetworkConfiguration(object):
 
         # Start with wireless interfaces.
         for i in wireless:
-            cursor.execute("SELECT mesh_interface, configured, enabled FROM wireless WHERE mesh_interface=?", (i, ))
+            cursor.execute("SELECT mesh_interface, configured FROM wireless WHERE mesh_interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
@@ -478,10 +477,25 @@ class NetworkConfiguration(object):
         output = os.popen(command)
         time.sleep(5)
 
-        # if the network interface in question is a wireless interface (the
-        # wireless class attributes won't be set under any other circumstances),
-        # put the interface into ad-hoc mode.
-        if self.essid:
+        # Wrap this whole process in a loop to ensure that stubborn wireless
+        # interfaces are configured reliably.
+        stable = 0
+        while not stable:
+
+            # if the network interface in question is a wireless interface (the
+            # wireless class attributes won't be set under any other
+            # circumstances), put the interface into ad-hoc mode.
+            # Test the ESSID to see if it's been set properly.
+
+            # Run iwconfig, grep -i for 'Mode:'
+            # if not 'ad-hoc', iwconfig mode ad-hoc, continue, else stable=1
+
+            # Run iwconfig, grep -i for 'ESSID:'
+            # if essid doesn't match, iwconfig essid foo, continue, else stable=1
+
+            # Run iwconfig, grep -i for 'channel' (will be in GHz; need table)
+            # if channel doesn't match, iwconfig channel foo, continue, else stable=1
+
             # Set the mode, ESSID and channel.
             command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
             output = os.popen(command)
@@ -490,33 +504,25 @@ class NetworkConfiguration(object):
             command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
             output = os.popen(command)
 
-        # Call ifconfig and set up the network configuration information.
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
-        command = command + ' netmask ' + self.mesh_netmask
-        output = os.popen(command)
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
-        output = os.popen(command)
-        time.sleep(5)
+            # Call ifconfig and set up the network configuration information.
+            command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
+            command = command + ' netmask ' + self.mesh_netmask
+            output = os.popen(command)
+            command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
+            output = os.popen(command)
+            time.sleep(5)
 
-        # Add the client interface.
-        command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
-        output = os.popen(command)
+            # Add the client interface.
+            command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
+            output = os.popen(command)
 
-        # Commit the interface's configuration to the database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
+            # Commit the interface's configuration to the database.
+            connection = sqlite3.connect(self.netconfdb)
+            cursor = connection.cursor()
 
-        # Because wireless and wired interfaces are in separate tables, we need
-        # different queries to update the tables.  Start with wireless.
-        if self.essid:
+            # Update the wireless table.
             template = ('yes', self.channel, 'yes', self.essid, self.mesh_interface, self.mesh_ip, self.mesh_netmask, self.client_interface, self.client_ip, self.client_netmask, self.mesh_interface, )
             cursor.execute("UPDATE wireless SET enabled=?, channel=?, configured=?, essid=?, mesh_interface=?, mesh_ip=?, mesh_netmask=?, client_interface=?, client_ip=?, client_netmask=? WHERE mesh_interface=?;", template)
-
-        # Update query for wired interfaces.
-        else:
-            template = ('yes', 'yes', 'no', self.interface, self.ip_address,
-                        self.netmask, self.interface, )
-            cursor.execute("UPDATE wired SET enabled=?, configured=?, gateway=?, interface=?, ipaddress=?, netmask=? WHERE interface=?;", template)
 
         # SQLite commands common to both configuration tables.
         connection.commit()
