@@ -47,8 +47,8 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 class NetworkConfiguration(object):
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
-    #netconfdb = '/var/db/controlpanel/network.sqlite'
-    netconfdb = '/home/drwho/network.sqlite'
+    netconfdb = '/var/db/controlpanel/network.sqlite'
+    #netconfdb = '/home/drwho/network.sqlite'
 
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
@@ -421,24 +421,24 @@ class NetworkConfiguration(object):
                 if 'Mode' in line:
                     line = line.strip()
                     mode = line.split(' ')[0].split(':')[1]
-            if mode != 'Ad-Hoc':
-                continue
+                    if mode != 'Ad-Hoc':
+                        continue
 
             # Test the ESSID to see if it's been set properly.
             for line in configuration:
                 if 'ESSID' in line:
                     line = line.strip()
-                    essid = line.split(' ')[3].split(':')[1]
-            if essid != self.essid:
-                continue
+                    essid = line.split(' ')[-1].split(':')[1]
+                    if essid != self.essid:
+                        continue
 
             # Check the wireless channel to see if it's been set properly.
             for line in configuration:
                 if 'Frequency' in line:
                     line = line.strip()
-                    frequency = line.split(' ')[1].split(':')[1].split(' ')[0]
-            if frequency != self.frequency:
-                continue
+                    frequency = line.split(' ')[2].split(':')[1]
+                    if frequency != self.frequency:
+                        continue
 
             # "Victory is mine!"
             # --Stewie, _Family Guy_
@@ -460,7 +460,7 @@ class NetworkConfiguration(object):
 
         # Update the wireless table.
         template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface, )
-        cursor.execute("UPDATE wireless SET enabled=?, channel=?, essid=?, mesh_interface=?, client_interface=?, WHERE mesh_interface=?;", template)
+        cursor.execute("UPDATE wireless SET enabled=?, channel=?, essid=?, mesh_interface=?, client_interface=? WHERE mesh_interface=?;", template)
         connection.commit()
         cursor.close()
 
