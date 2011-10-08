@@ -1,6 +1,5 @@
 BEGIN TRANSACTION;
 CREATE TABLE daemons (initscript TEXT, name TEXT, status TEXT);
-INSERT INTO daemons VALUES('rc.httpd','Apache','enabled');
 INSERT INTO daemons VALUES('rc.ngircd','IRC server','disabled');
 INSERT INTO daemons VALUES('rc.sshd','SSH','disabled');
 INSERT INTO daemons VALUES('rc.etherpad-lite','Pad','disabled');
