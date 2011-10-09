@@ -16,7 +16,7 @@ ACTION=="add", ENV{crypto}!="", TEST!="/dev/mapper/%k", GOTO="media_by_label_aut
 # Global mount options
 ACTION=="add", ENV{mount_options}="noatime"
 # Filesystem-specific mount options
-ACTION=="add", PROGRAM=="/sbin/blkid -o value -s TYPE %E{device}", RESULT=="vfat|ntfs", ENV{mount_options}="%E{mount_options},utf8,gid=100,umask=002"
+ACTION=="add", PROGRAM=="/sbin/blkid -o value -s TYPE %E{device}", RESULT=="vfat|ntfs", ENV{mount_options}="%E{mount_options},utf8,umask=002"
 
 # Get label if present, otherwise assign one
 PROGRAM=="/sbin/blkid -o value -s LABEL %E{device}", ENV{dir_name}="%c"
@@ -24,17 +24,19 @@ PROGRAM=="/sbin/blkid -o value -s LABEL %E{device}", ENV{dir_name}="%c"
 PROGRAM=="/usr/bin/basename '%E{dir_name}'", ENV{dir_name}="%c"
 ENV{dir_name}=="", ENV{dir_name}="usbhd-%k"
 
-# Mount the device if crypto
+# Mount the device
 #ACTION=="add", ENV{dir_name}!="", RUN+="/bin/mkdir -p '/media/%E{dir_name}'", RUN+="/bin/mount -o %E{mount_options} /dev/%E{crypto}%k '/media/%E{dir_name}'"
 ACTION=="add", ENV{dir_name}!="", RUN+="/bin/mkdir -p '/media/%E{dir_name}'", RUN+="/bin/mount -o %E{mount_options} %E{device} /media/%E{dir_name}"
 
 # Run post-mount Byzantium script
-ACTION=="ADD", ENV{dir_name}!="", RUN+="/usr/local/sbin/post-disk-mount %E{device} '/media/%E{dir_name}'"
+ACTION=="add", ENV{dir_name}!="", RUN+="/usr/local/sbin/post-disk-mount %E{device} '/media/%E{dir_name}' %E{crypto}"
 
 # Clean up after removal
-ACTION=="remove", ENV{dir_name}!="", RUN+="/bin/umount -l '/media/%E{dir_name}'"
-ACTION=="remove", ENV{crypto}!="", RUN+="/sbin/cryptsetup luksClose %k"
-ACTION=="remove", ENV{dir_name}!="", RUN+="/bin/rmdir '/media/%E{dir_name}'"
+ACTION=="remove", ENV{dir_name}!="", RUN+="/usr/local/sbin/pre-disk-umount %E{device} '/media/%E{dir_name}' %E{crypto}"
+
+#ACTION=="remove", ENV{dir_name}!="", RUN+="/bin/umount -l '/media/%E{dir_name}'"
+#ACTION=="remove", ENV{crypto}!="", RUN+="/sbin/cryptsetup luksClose %k"
+#ACTION=="remove", ENV{dir_name}!="", RUN+="/bin/rmdir '/media/%E{dir_name}'"
 
 # Exit
 LABEL="media_by_label_auto_mount_end"

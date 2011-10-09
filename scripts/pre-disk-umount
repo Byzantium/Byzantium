@@ -1,0 +1,56 @@
+#!/bin/sh
+# pre-disk-mount - execute actions after a disk has been removed
+# Copyright (C) 2011 Peter Willis <psypete@gmail.com>
+# 
+# This script has to clean up after a persistent storage disk once it's been removed.
+
+if [ $# -lt 2 ] ; then
+    echo "Usage: $0 DEVICE MOUNT_DIR [crypto_path]"
+    exit 1
+fi
+
+DEVICE="$1"
+MOUNT="$2"
+NEWMOUNT="$2"
+CRYPTO="$3"
+
+if [ ! -d "$MOUNT" ] ; then
+    echo "Error: mount directory $MOUNT does not exist"
+    exit 1
+fi
+
+# If the device was not already encrypted, locate an encrypted file and loop-mount it
+if [ ! -n "$CRYPTO" ] ; then
+    for img in $MOUNT/*.img ; do
+        BN=`basename $img .img`
+        file $img | grep -q "^$BN.img: LUKS encrypted file"
+        if [ $? -eq 0 ] ; then
+            NEWMOUNT=`cat /proc/mounts | grep -q "^/dev/mapper/$BN /media/$BN "`
+            if [ -n "$NEWMOUNT" ] ; then
+                LOOP=`losetup -a | grep "($img)" | cut -d : -f 1`
+                if [ ! -n "$LOOP" ] ; then
+                    echo "Error: could not find loop device for $BN"
+                    exit 1
+                fi
+
+                # Undo the image file which was mounted by post-disk-mount earlier
+                umount -l "/media/$BN"
+                cryptsetup luksClose "$LOOP"
+                losetup -d "$LOOP"
+                rmdir "/media/$BN"
+            fi
+        fi
+    done
+fi
+
+# The main disk which was originally mounted by the udev rules
+umount -l "$MOUNT"
+cryptsetup luksClose "$DEVICE"
+rmdir "$MOUNT"
+
+# OK, now pass off execution to the byzantium_post script if it exists
+if [ -e "$NEWMOUNT/byzantium_post" ] ; then
+    chmod 700 "$NEWMOUNT/byzantium_post"
+    exec "$NEWMOUNT/byzantium_post" "$@"
+fi
+

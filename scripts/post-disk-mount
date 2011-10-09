@@ -1,0 +1,64 @@
+#!/bin/sh
+# post-disk-mount - execute actions after a disk has been mounted
+# Copyright (C) 2011 Peter Willis <psypete@gmail.com>
+# 
+# The main purpose of this script is to handle persistent storage needs for Project Byzantium.
+# 
+# Step 1: if there exists an *.img file on the disk, the script checks to see if it's a
+#         LUKS-encrypted file and then attempts to decrypt and mount it.
+# 
+# Step 2: execute a file on the mount directory to perform additional setup tasks (handling the
+#         rest of moving persistent storage configuration to the running host)
+# 
+
+if [ $# -lt 2 ] ; then
+    echo "Usage: $0 DEVICE MOUNT_DIR [crypto_path]"
+    exit 1
+fi
+
+DEVICE="$1"
+MOUNT="$2"
+NEWMOUNT="$2"
+CRYPTO="$3"
+
+if [ ! -d "$MOUNT" ] ; then
+    echo "Error: mount directory $MOUNT does not exist"
+    exit 1
+fi
+
+# If the device was not already encrypted, locate an encrypted file and loop-mount it
+if [ ! -n "$CRYPTO" ] ; then
+    for img in $MOUNT/*.img ; do
+        BN=`basename $img .img`
+        file $img | grep -q "^$BN.img: LUKS encrypted file"
+        if [ $? -eq 0 ] ; then
+            LOOP=`losetup -v -f "$img" | awk '{print $4}'`
+            if [ ! -n "$LOOP" ] ; then
+                echo "Error: could not loop-mount file $img"
+                exit 1
+            fi
+            if [ -e "/dev/mapper/$BN" ] ; then
+                echo "Error: mapper device called $BN already exists. Please rename $img"
+                exit 1
+            fi
+            if [ -e "/media/$BN" ] ; then
+                echo "Error: /media/$BN already exists. Please rename $img"
+                exit 1
+            fi
+
+            xterm -display :0.0 -e "echo \"Password for $img\" ; cryptsetup luksOpen $LOOP $BN"
+            if [ -e "/dev/mapper/$BN" ] ; then
+                NEWMOUNT="/media/$BN"
+                mkdir -p "$NEWMOUNT"
+                mount -o noatime,utf8,umask=002 "/dev/mapper/$BN" "$NEWMOUNT"
+            fi
+        fi
+    done
+fi
+
+# OK, now pass off execution to the byzantium_post script if it exists
+if [ -e "$NEWMOUNT/byzantium_post" ] ; then
+    chmod 700 "$NEWMOUNT/byzantium_post"
+    exec "$NEWMOUNT/byzantium_post" "$@"
+fi
+
