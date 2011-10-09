@@ -35,7 +35,7 @@ if [ ! -n "$CRYPTO" ] ; then
 
                 # Undo the image file which was mounted by post-disk-mount earlier
                 umount -l "/media/$BN"
-                cryptsetup luksClose "$LOOP"
+                cryptsetup luksClose "$BN"
                 losetup -d "$LOOP"
                 rmdir "/media/$BN"
             fi
