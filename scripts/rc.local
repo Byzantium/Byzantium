@@ -7,33 +7,6 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
-# Install VirtualBox video kernel driver.
-# MOOF MOOF MOOF - take this out before the official release!
-modprobe vboxguest
-modprobe vboxvideo
-modprobe vboxsf
-
-# Start vboxadd
-# If you do not wish this to be executed here then comment it out,
-# and the installer will skip it next time.
-if [ -x /etc/rc.d/rc.vboxadd ]; then
-    /etc/rc.d/rc.vboxadd start
-fi
-
-# Start vboxadd-service
-# If you do not wish this to be executed here then comment it out,
-# and the installer will skip it next time.
-if [ -x /etc/rc.d/rc.vboxadd-service ]; then
-    /etc/rc.d/rc.vboxadd-service start
-fi
-
-# Start vboxadd-x11
-# If you do not wish this to be executed here then comment it out,
-# and the installer will skip it next time.
-if [ -x /etc/rc.d/rc.vboxadd-x11 ]; then
-    /etc/rc.d/rc.vboxadd-x11 start
-fi
-
 # Start rrdtool up to gather stats on the network interfaces.
 /usr/local/bin/traffic_stats.sh &
 
