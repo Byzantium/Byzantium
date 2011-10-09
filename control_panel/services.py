@@ -238,8 +238,9 @@ class Services(object):
         try:
             page = templatelookup.get_template("/services/toggled.html")
             return page.render(title = "Byzantium Node Services",
-                               purpose_of_page = "Service toggled.", app = app,
-                               action = action, error = error)
+                               purpose_of_page = "Service toggled.",
+                               error = error, app = self.app,
+                               action = action)
         except:
             return exceptions.html_error_template().render()
     toggle_webapp.exposed = True

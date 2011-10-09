@@ -42,11 +42,11 @@ class MeshConfiguration(object):
     babeld_pid = '/var/run/babeld.pid'
     babeld_timeout = 3
 
-    #netconfdb = '/var/db/controlpanel/network.sqlite'
-    netconfdb = '/home/drwho/network.sqlite'
+    netconfdb = '/var/db/controlpanel/network.sqlite'
+    #netconfdb = '/home/drwho/network.sqlite'
 
-    #meshconfdb = '/var/db/controlpanel/mesh.sqlite'
-    meshconfdb = '/home/drwho/mesh.sqlite'
+    meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+    #meshconfdb = '/home/drwho/mesh.sqlite'
 
     # Class attributes which apply to a network interface.  By default they
     # are blank but will be populated from the mesh.sqlite database if the
@@ -69,7 +69,7 @@ class MeshConfiguration(object):
         netconfconn = sqlite3.connect(self.netconfdb)
         netconfcursor = netconfconn.cursor()
         interfaces = []
-        netconfcursor.execute("SELECT interface, enabled FROM wireless;")
+        netconfcursor.execute("SELECT mesh_interface, enabled FROM wireless;")
         results = netconfcursor.fetchall()
         if not results:
             # Display an error page which says that no wireless interfaces have
@@ -227,7 +227,7 @@ class MeshConfiguration(object):
             if not os.path.isdir(procdir):
                 error = "ERROR: babeld is not running!  Did it crash after startup?"
             else:
-                output = babeld + " has been successfully started with PID " + pid + "."
+                output = self.babeld + " has been successfully started with PID " + pid + "."
                 # Update the mesh configuration database to take into account
                 # the presence of the new interface.
                 template = ('yes', self.interface, )
