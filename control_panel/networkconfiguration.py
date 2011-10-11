@@ -512,6 +512,8 @@ class NetworkConfiguration(object):
 
         # Generate the contents of the new hosts.mesh file.
         hosts = open(self.hosts_file, "w")
+        line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
+        hosts.write(line)
         for i in range(2, 255):
             line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
             hosts.write(line)
