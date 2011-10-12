@@ -68,7 +68,7 @@ CREATE TABLE `config` (
 
 LOCK TABLES `config` WRITE;
 /*!40000 ALTER TABLE `config` DISABLE KEYS */;
-INSERT INTO `config` VALUES ('attachments','dir','/var/www/microblog/file/'),('attachments','path','microblog/file/'),('attachments','server',''),('attachments','sslpath',''),('attachments','sslserver',''),('avatar','dir','/var/www/microblog/avatar/'),('avatar','path','microblog/avatar/'),('avatar','server',''),('background','dir','/var/www/microblog/background/'),('background','path','microblog/background/'),('background','server',''),('background','sslpath',''),('background','sslserver',''),('design','disposition','2'),('invite','enabled','0'),('license','image','http://i.creativecommons.org/p/mark/1.0/80x15.png'),('license','owner',''),('license','title','Public Domain'),('license','type','cc'),('license','url','http://creativecommons.org/publicdomain/mark/1.0/'),('newuser','default','byzantium'),('newuser','welcome','Welcome to Byzantium.  Be careful, because you may be under surveillance!'),('profile','biolimit','280'),('site','broughtby','Project Byzantium'),('site','broughtbyurl','http://wiki.hacdc.org/index.php/Byzantium'),('site','dupelimit','60'),('site','email','you@example.com'),('site','fancy','0'),('site','language','en'),('site','locale_path','/var/www/microblog/locale'),('site','logo',''),('site','name','Byzantium Meshblog'),('site','notice','NOTICE:\r\nYou may be under surveillance! Use caution when disclosing personal information or communicating with new people! Do not personally identify anyone or give away your location!'),('site','path','microblog'),('site','site',NULL),('site','ssl','sometimes'),('site','ssllogo',''),('site','sslserver',''),('site','textlimit','560'),('site','theme','clean'),('site','timezone','UTC'),('theme','dir',''),('theme','path',''),('theme','server',''),('theme','sslpath',''),('theme','sslserver','');
+INSERT INTO `config` VALUES ('attachments','dir','/var/www/microblog/file/'),('attachments','path','microblog/file/'),('attachments','server',''),('attachments','sslpath',''),('attachments','sslserver',''),('avatar','dir','/var/www/microblog/avatar/'),('avatar','path','microblog/avatar/'),('avatar','server',''),('background','dir','/var/www/microblog/background/'),('background','path','microblog/background/'),('background','server',''),('background','sslpath',''),('background','sslserver',''),('design','disposition','2'),('invite','enabled','0'),('license','image','http://i.creativecommons.org/p/mark/1.0/80x15.png'),('license','owner',''),('license','title','Public Domain'),('license','type','cc'),('license','url','http://creativecommons.org/publicdomain/mark/1.0/'),('newuser','default','byzantium'),('newuser','welcome','Welcome to Byzantium.  Be careful, because you may be under surveillance!'),('profile','biolimit','280'),('site','broughtby','Project Byzantium'),('site','broughtbyurl','http://wiki.hacdc.org/index.php/Byzantium'),('site','dupelimit','60'),('site','email','you@example.com'),('site','fancy','0'),('site','language','en'),('site','locale_path','/var/www/microblog/locale'),('site','logo',''),('site','name','Byzantium Meshblog'),('site','notice','NOTICE:\r\nYou may be under surveillance! Use caution when disclosing personal information or communicating with new people! Do not personally identify anyone or give away your location!'),('site','path','microblog'),('site','site',NULL),('site','ssl','sometimes'),('site','ssllogo',''),('site','sslserver',''),('site','textlimit','560'),('site','theme','mnml'),('site','timezone','UTC'),('theme','dir',''),('theme','path',''),('theme','server',''),('theme','sslpath',''),('theme','sslserver','');
 /*!40000 ALTER TABLE `config` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1389,7 +1389,7 @@ CREATE TABLE `remember_me` (
 
 LOCK TABLES `remember_me` WRITE;
 /*!40000 ALTER TABLE `remember_me` DISABLE KEYS */;
-INSERT INTO `remember_me` VALUES ('a3321547f153f0a6935a289bceec8093',1,'2011-09-17 17:05:53');
+INSERT INTO `remember_me` VALUES ('217adff5340154e34fae1a3b48acefd1',1,'2011-10-07 22:21:32');
 /*!40000 ALTER TABLE `remember_me` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1779,4 +1779,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2011-10-06 20:49:49
+-- Dump completed on 2011-10-12 22:08:04
