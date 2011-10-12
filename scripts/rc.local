@@ -15,3 +15,6 @@
 
 # Start Apache.
 /etc/rc.d/rc.httpd start
+
+# Start dnsmasq.
+/etc/rc.d/rc.dnsmasq start
