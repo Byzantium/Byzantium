@@ -6,5 +6,4 @@ INSERT INTO daemons VALUES('rc.etherpad-lite','Pad','disabled');
 INSERT INTO daemons VALUES('rc.qwebirc','Web Chat','disabled');
 CREATE TABLE webapps (name TEXT, status TEXT);
 INSERT INTO webapps VALUES('microblog','disabled');
-INSERT INTO webapps VALUES('cryptocat','disabled');
 COMMIT;

@@ -24,7 +24,6 @@ import sqlite3
 import subprocess
 from subprocess import call
 import random
-import signal
 import time
 
 # Import core control panel modules.
