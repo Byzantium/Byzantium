@@ -25,7 +25,6 @@ from mako import exceptions
 import sqlite3
 import os
 import subprocess
-import shutil
 
 # Import core control panel modules.
 from control_panel import *
@@ -207,29 +206,15 @@ class Services(object):
         cursor = database.cursor()
 
         if action == 'activate':
-            # Copy the Apache sub-config file into the right location.
-            shutil.copyfile((self.disabled_configs + '/' + self.app + '.conf'),
-                            (self.enabled_configs + '/' + self.app + '.conf'))
             status = self.status
             action = 'activated'
         else:
-            # Delete the Apache sub-config file from the enable_apps/ directory.
-            if os.path.exists((self.enabled_configs + '/' + self.app + '.conf')):
-                os.remove(self.enabled_configs + '/' + self.app + '.conf')
-                print "DEBUG: Config file deleted."
             status = 'disabled'
             action = 'deactivated'
 
-        # Restart Apache.
-        output = subprocess.Popen(['/etc/rc.d/rc.httpd', 'graceful'])
-
-        # Make sure Apache came back up, and if it did update the database.
-        if os.path.exists(self.pid):
-            error = ''
-            template = (status, self.app, )
-            cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
-        else:
-            error = "<p>WARNING: It doesn't look like Apache came back up.  Something went wrong!</p>"
+        # Update the database with the new status.
+        template = (status, self.app, )
+        cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
 
         # Detach the system services database.
         cursor.close()
