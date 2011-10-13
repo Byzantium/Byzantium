@@ -8,15 +8,10 @@
 # - Figure out what columns in the network configuration database to index.
 #   It's doubtful that a Byzantium node would have more than three interfaces
 #   (not counting lo) but it's wise to plan for the future.
-# - Validate the wireless channel after it's entered by the user to make sure
-#   that it's not fractional or invalid.  Remember that the US has 1-12, the
-#   European Union has 1-13, and Japan has 1-14.
 # - Find a way to prune network interfaces that have vanished.
 #   MOOF MOOF MOOF - Stubbed in.
 # - In NetworkConfiguration.make_hosts(), add code to display an error message
 #   on the control panel if the /etc/hosts.mesh file can't be created.
-# - Change the code that restarts dnsmasq to use the initscript that'll be in
-#   the official package.
 
 # Import external modules.
 import cherrypy
@@ -554,22 +549,7 @@ class NetworkConfiguration(object):
         file.write(directive)
         file.close()
 
-        # Test for success.  If so, HUP dnsmasq.  If not, move the old file
-        # back into place and throw an error.
-        if os.path.exists(self.dnsmasq_include_file):
-            file = open('/var/run/dnsmasq.pid', 'r')
-            pid = file.readline()
-            file.close()
-
-            # If no dnsmasq PID was found, start the server.
-            if not pid:
-                output = subprocess.Popen(['/usr/sbin/dnsmasq'])
-            else:
-                os.kill(int(pid), signal.SIGHUP)
-
-        else:
-            # Set an error message and put the old file back.
-            # MOOF MOOF MOOF - Error message goes here.
-            os.rename(oldfile, self.dnsmasq_include_file)
-            return
+        # Restart dnsmasq.
+        output = subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
+        return
 
