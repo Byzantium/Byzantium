@@ -41,7 +41,7 @@ class Gateways(object):
 
         # Generate a list of Ethernet interfaces on the node that are enabled.
         # Each interface gets its own button in a table.
-        cursor.execute("SELECT interface, enabled FROM wired WHERE gateway='no';")
+        cursor.execute("SELECT interface FROM wired WHERE gateway='no';")
         results = cursor.fetchall()
         if len(results):
             for interface in results:
@@ -53,12 +53,10 @@ class Gateways(object):
         cursor.execute("SELECT mesh_interface FROM wireless WHERE gateway='no';")
         if len(results):
             for interface in results:
-                print "DEBUG: Selected interface %s from %s.wireless." % (interface[0], self.netconfdb)
                 wireless_buttons = wireless_buttons + "<td><input type='submit' name='interface' value='" + interface[0] + "' /></td>\n"
 
         # Close the connection to the database.
         cursor.close()
-        print "DEBUG: Closed database %s." % self.netconfdb
 
         # Render the HTML page.
         cursor.close()
@@ -77,6 +75,34 @@ class Gateways(object):
                 print "%s: %s" % (str(traceback.error.__class__.__name__),
                     traceback.error)
     index.exposed = True
+
+    # Implements step two of the wired gateway configuration process: turning
+    # the gateway on.  This method assumes that whichever Ethernet interface
+    # chosen is already configured via DHCP through ifplugd.
+    def tcpip(self, interface=None):
+        
+
+        # Run the "Are you sure?" page through the template interpeter.
+        try:
+            page = templatelookup.get_template("/gateways/confirm.html")
+            return page.render(title = "Confirm network address for interface.",
+                               purpose_of_page = "Confirm IP configuration.",
+                               interface = self.mesh_interface,
+                               mesh_ip = self.mesh_ip,
+                               mesh_netmask = self.mesh_netmask,
+                               client_ip = self.client_ip,
+                               client_netmask = self.client_netmask)
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "\n"
+                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+                print "Execution died on line %s\n" % line
+                print "%s: %s" % (str(traceback.error.__class__.__name__),
+                    traceback.error)
+    tcpip.exposed = True
+
+
 
     # Allows the user to enter the ESSID and wireless channel of the node's
     # wireless network gateway.  Takes as an argument the value of the
