@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<!-- This includes all of the stuff to set up an HTML page. -->
+<!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
+<!-- /network/index.html - Allows the user to choose a network interface to configure. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+</head>
+
+<body>
+<!-- Pull in the code for the top part of the page that says what this page is for. -->
+<%include file="/includes/header.html" />
+
+<!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
+<%include file="/includes/leftbar.html" />
+
+<div id="main" align="right">
+
+<!-- List of Ethernet interfaces. -->
+<h2>Ethernet interfaces</h2>
+<table border="1">
+<form action="tcpip" method="post">
+<tr>${ethernet_buttons}</tr>
+</form>
+</table>
+
+<!-- List of wireless network interfaces. -->
+<h2>Wireless network interfaces</h2>
+<table border="1">
+<form action="wireless" method="post">
+<tr>${wireless_buttons}</tr>
+</form>
+</table>
+
+</div>
+</body>
+</html>
