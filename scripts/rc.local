@@ -7,6 +7,9 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
+# Use ifplugd to watch any Ethernet interfaces on this node.
+/etc/rc.d/rc.ifplugd start
+
 # Start rrdtool up to gather stats on the network interfaces.
 /usr/local/bin/traffic_stats.sh &
 
