@@ -56,6 +56,7 @@ class NetworkConfiguration(object):
     ethernet_interface = ''
     ethernet_ip = ''
     frequency = 0.0
+    gateway = 'no'
 
     # Set the netmasks aside so everything doesn't run together.
     mesh_netmask = '255.255.255.255'
@@ -108,10 +109,11 @@ class NetworkConfiguration(object):
 
             # If the interface is not found in database, add it.
             if not len(result):
-                # client_interface, enabled, channel, essid, mesh_interface
-                template = ((i + ':1'), 'no', '0', '', i, )
+                # gateway, client_interface, enabled, channel, essid,
+                # mesh_interface
+                template = ('no', (i + ':1'), 'no', '0', '', i, )
 
-                cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?);", template)
+                cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?);", template)
                 connection.commit()
                 wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
                 continue
@@ -177,6 +179,7 @@ class NetworkConfiguration(object):
         self.mesh_ip = ''
         self.client_ip = ''
         self.frequency = 0.0
+        self.gateway = 'no'
 
     # This method is run every time the NetworkConfiguration() object is
     # instantiated by the admin browsing to /network.  It traverses the list
