@@ -80,18 +80,14 @@ class Gateways(object):
     # the gateway on.  This method assumes that whichever Ethernet interface
     # chosen is already configured via DHCP through ifplugd.
     def tcpip(self, interface=None):
-        
+        # MOOF MOOF MOOF - I left off here!
 
         # Run the "Are you sure?" page through the template interpeter.
         try:
             page = templatelookup.get_template("/gateways/confirm.html")
-            return page.render(title = "Confirm network address for interface.",
-                               purpose_of_page = "Confirm IP configuration.",
-                               interface = self.mesh_interface,
-                               mesh_ip = self.mesh_ip,
-                               mesh_netmask = self.mesh_netmask,
-                               client_ip = self.client_ip,
-                               client_netmask = self.client_netmask)
+            return page.render(title = "Enable gateway?",
+                               purpose_of_page = "Confirm gateway mode.",
+                               interface = interface)
         except:
             traceback = RichTraceback()
             for (filename, lineno, function, line) in traceback.traceback:
@@ -103,6 +99,24 @@ class Gateways(object):
     tcpip.exposed = True
 
 
+    # Method that does the deed of turning an interface into a gateway.
+    # def activate(self, ):
+
+        # Run the confirmation page through the template interpeter.
+        #try:
+        #    page = templatelookup.get_template("/gateways/done.html")
+        #    return page.render(title = "Enable gateway?",
+        #                       purpose_of_page = "Confirm gateway mode.",
+        #                       interface = interface)
+        #except:
+        #    traceback = RichTraceback()
+        #    for (filename, lineno, function, line) in traceback.traceback:
+        #        print "\n"
+        #        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+        #        print "Execution died on line %s\n" % line
+        #        print "%s: %s" % (str(traceback.error.__class__.__name__),
+        #            traceback.error)
+    #activate.exposed = True
 
     # Allows the user to enter the ESSID and wireless channel of the node's
     # wireless network gateway.  Takes as an argument the value of the
