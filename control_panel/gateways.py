@@ -45,18 +45,20 @@ class Gateways(object):
         results = cursor.fetchall()
         if len(results):
             for interface in results:
-                ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + interface[0] + "' />\n"
+                ethernet_buttons = ethernet_buttons + "<td><input type='submit' name='interface' value='" + interface[0] + "' /></td>\n"
 
         # Generate a list of wireless interfaces on the node that are not
         # enabled but are known.  As before, each button gets is own button
         # in a table.
-        cursor.execute("SELECT interface, enabled FROM wired WHERE gateway='no';")
+        cursor.execute("SELECT mesh_interface FROM wireless WHERE gateway='no';")
         if len(results):
             for interface in results:
-                wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + interface[0] + "' />\n"
+                print "DEBUG: Selected interface %s from %s.wireless." % (interface[0], self.netconfdb)
+                wireless_buttons = wireless_buttons + "<td><input type='submit' name='interface' value='" + interface[0] + "' /></td>\n"
 
         # Close the connection to the database.
         cursor.close()
+        print "DEBUG: Closed database %s." % self.netconfdb
 
         # Render the HTML page.
         cursor.close()
