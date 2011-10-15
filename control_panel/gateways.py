@@ -99,9 +99,16 @@ class Gateways(object):
 
     # Method that does the deed of turning an interface into a gateway.
     def activate(self, interface=None):
+        # Add a gateway route to the kernel routing table.  This route just
+        # so happens to be the network interface the user selected on the
+        # previous page.
+        route_command = ['', ''. ]
+        process = subprocess.Popen(route_command)
+
+
         # Turn on NAT using iptables to the network interface in question.
         nat_command = ['', '', ]
-        process - subprocess.Popen(nat_command)
+        process = subprocess.Popen(nat_command)
 
         # Kill babeld, then re-run it using an extra configuration option to
         # announce the new route to the mesh.
