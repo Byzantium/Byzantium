@@ -15,19 +15,29 @@ import os
 import os.path
 import sqlite3
 import subprocess
+import signal
+import time
 
 # Import core control panel modules.
 from control_panel import *
-
-# Constants.
 
 # Classes.
 # This class allows the user to turn a configured network interface on their
 # node into a gateway from the mesh to another network (usually the global Net).
 class Gateways(object):
+    # Class constants.
+    # babeld related paths.
+    babeld = '/usr/local/bin/babeld'
+    babeld_pid = '/var/run/babeld.pid'
+    babeld_timeout = 3
+
     # Path to network configuration database.
     #netconfdb = '/var/db/controlpanel/network.sqlite'
     netconfdb = '/home/drwho/network.sqlite'
+
+    # Path to mesh configuration database.
+    #meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+    meshconfdb = '/home/drwho/mesh.sqlite'
 
     # Pretends to be index.html.
     def index(self):
@@ -102,19 +112,74 @@ class Gateways(object):
         # Add a gateway route to the kernel routing table.  This route just
         # so happens to be the network interface the user selected on the
         # previous page.
-        route_command = ['', ''. ]
+        route_command = ['/sbin/route', 'add', '-net', '0.0.0.0', 'netmask',
+                         '0.0.0.0', 'dev', interface]
         process = subprocess.Popen(route_command)
 
-
         # Turn on NAT using iptables to the network interface in question.
-        nat_command = ['', '', ]
+        nat_command = ['/usr/sbin/iptables', '-t', 'nat', '-A', 'POSTROUTING',
+                      '-o', interface, '-j', 'MASQUERADE']
         process = subprocess.Popen(nat_command)
 
-        # Kill babeld, then re-run it using an extra configuration option to
-        # announce the new route to the mesh.
+        # Assemble a new invocation of babeld.
+        common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
+                              '-C']
+        gateway_command = '"redistribute if ' + interface + ' metric 128"'
+        unique_babeld_opts = []
+
+        # Set up a list of mesh interfaces for which babeld is already running.
+        interfaces = []
+        connection = sqlite3.connect(self.meshconfdb)
+        cursor = connection.cursor()
+        cursor.execute("SELECT interface, enabled, protocol FROM meshes WHERE enabled='yes' AND protocol='babel';")
+        results = cursor.fetchall()
+        for i in results:
+            interfaces.append(i[0][0])
+        interfaces.append(interface)
+        cursor.close()
+
+        # Assemble the invocation of babeld.
+        babeld_command = []
+        babeld_command.append(self.babeld)
+        babeld_command = babeld_command + common_babeld_opts
+        babeld_command.append(gateway_command)
+        babeld_command = babeld_command + unique_babeld_opts + interfaces
+
+        # Kill the old instance of babeld.
+        pid = ''
+        if os.path.exists(self.babeld_pid):
+            pidfile = open(self.babeld_pid, 'r')
+            pid = pidfile.readline()
+            pidfile.close()
+        if pid:
+            os.kill(int(pid), signal.SIGTERM)
+            time.sleep(self.babeld_timeout)
+
+        # Re-run babeld with the extra option to propagate the gateway route.
+        process = subprocess.Popen(babeld_command)
+        time_sleep(self.babel_timeout)
 
         # Update the network configuration database to reflect the fact that
-        # the interface is now a gateway.
+        # the interface is now a gateway.  Search the table of Ethernet
+        # interfaces first.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+        template = (interface, )
+        cursor.execute("SELECT interface FROM wired WHERE interface=?;",
+                       template)
+        results = cursor.fetchall()
+        if len(results):
+            template = ('yes', interface, )
+            cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
+                            template)
+        # Otherwise, it's a wireless interface.
+        else:
+            template = ('yes', interface, )
+            cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
+
+        # Clean up.
+        connection.commit()
+        cursor.close()
 
         # Display the confirmation of the operation to the user.
         try:
@@ -287,73 +352,4 @@ class Gateways(object):
                 print "%s: %s" % (str(traceback.error.__class__.__name__),
                     traceback.error)
     set_ip.exposed = True
-
-    # Method that generates an /etc/hosts.mesh file for the node for dnsmasq.
-    # Takes three args, the first and last IP address of the netblock.  Returns
-    # nothing.
-    def make_hosts(self, starting_ip=None):
-        # See if the /etc/hosts.mesh backup file exists.  If it does, delete it.
-        old_hosts_file = self.hosts_file + '.bak'
-        if os.path.exists(old_hosts_file):
-            os.remove(old_hosts_file)
-
-        # Back up the old hosts.mesh file.
-        if os.path.exists(self.hosts_file):
-            os.rename(self.hosts_file, old_hosts_file)
-
-        # We can make a few assumptions given only the starting IP address of
-        # the client IP block.  Each node only has a /24 netblock for clients,
-        # so we only have to generate 254 entries for that file (.2-254).
-        # First, split the last octet off of the IP address passed to this
-        # method.
-        (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
-        prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
-
-        # Generate the contents of the new hosts.mesh file.
-        hosts = open(self.hosts_file, "w")
-        line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
-        hosts.write(line)
-        for i in range(2, 255):
-            line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
-            hosts.write(line)
-        hosts.close()
-
-        # Test for successful generation.
-        if not os.path.exists(self.hosts_file):
-            # Set an error message and put the old file back.
-            # MOOF MOOF MOOF - Error message goes here.
-            os.rename(old_hosts_file, self.hosts_file)
-        return
-
-    # Generates an /etc/dnsmasq.conf.include file for the node.  Takes two
-    # args, the starting IP address.
-    def configure_dnsmasq(self, starting_ip=None):
-        # First, split the last octet off of the IP address passed into this
-        # method.
-        (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
-        prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
-        start = prefix + str('2')
-        end = prefix + str('254')
-
-        # Use that to generate the line for the config file.
-        # dhcp-range=<starting IP>,<ending IP>,<length of lease>
-        directive = 'dhcp-range=' + start + ',' + end + ',5m\n'
-
-        # If an include file already exists, move it out of the way.
-        oldfile = self.dnsmasq_include_file + '.bak'
-        if os.path.exists(oldfile):
-            os.remove(oldfile)
-
-        # Back up the old dnsmasq.conf.include file.
-        if os.path.exists(self.dnsmasq_include_file):
-            os.rename(self.dnsmasq_include_file, oldfile)
-
-        # Generate the new include file.
-        file = open(self.dnsmasq_include_file, 'w')
-        file.write(directive)
-        file.close()
-
-        # Restart dnsmasq.
-        output = subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
-        return
 
