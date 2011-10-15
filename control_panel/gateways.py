@@ -32,12 +32,12 @@ class Gateways(object):
     babeld_timeout = 3
 
     # Path to network configuration database.
-    #netconfdb = '/var/db/controlpanel/network.sqlite'
-    netconfdb = '/home/drwho/network.sqlite'
+    netconfdb = '/var/db/controlpanel/network.sqlite'
+    #netconfdb = '/home/drwho/network.sqlite'
 
     # Path to mesh configuration database.
-    #meshconfdb = '/var/db/controlpanel/mesh.sqlite'
-    meshconfdb = '/home/drwho/mesh.sqlite'
+    meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+    #meshconfdb = '/home/drwho/mesh.sqlite'
 
     # Pretends to be index.html.
     def index(self):
@@ -109,16 +109,17 @@ class Gateways(object):
 
     # Method that does the deed of turning an interface into a gateway.
     def activate(self, interface=None):
+        print "DEBUG: value of interface == %s" % interface
         # Add a gateway route to the kernel routing table.  This route just
         # so happens to be the network interface the user selected on the
         # previous page.
-        route_command = ['/sbin/route', 'add', '-net', '0.0.0.0', 'netmask',
-                         '0.0.0.0', 'dev', interface]
-        process = subprocess.Popen(route_command)
+        #route_command = ['/sbin/route', 'add', '-net', '0.0.0.0', 'netmask',
+        #                 '0.0.0.0', 'dev', interface]
+        #process = subprocess.Popen(route_command)
 
         # Turn on NAT using iptables to the network interface in question.
         nat_command = ['/usr/sbin/iptables', '-t', 'nat', '-A', 'POSTROUTING',
-                      '-o', interface, '-j', 'MASQUERADE']
+                      '-o', str(interface), '-j', 'MASQUERADE']
         process = subprocess.Popen(nat_command)
 
         # Assemble a new invocation of babeld.
@@ -144,6 +145,7 @@ class Gateways(object):
         babeld_command = babeld_command + common_babeld_opts
         babeld_command.append(gateway_command)
         babeld_command = babeld_command + unique_babeld_opts + interfaces
+        print "DEBUG: babeld_command[] == %s" % str(babeld_command)
 
         # Kill the old instance of babeld.
         pid = ''
@@ -157,7 +159,7 @@ class Gateways(object):
 
         # Re-run babeld with the extra option to propagate the gateway route.
         process = subprocess.Popen(babeld_command)
-        time_sleep(self.babel_timeout)
+        time.sleep(self.babeld_timeout)
 
         # Update the network configuration database to reflect the fact that
         # the interface is now a gateway.  Search the table of Ethernet
