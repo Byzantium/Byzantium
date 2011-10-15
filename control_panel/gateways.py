@@ -59,7 +59,6 @@ class Gateways(object):
         cursor.close()
 
         # Render the HTML page.
-        cursor.close()
         try:
             page = templatelookup.get_template("/gateways/index.html")
             return page.render(title = "Network Gateway",
@@ -80,6 +79,7 @@ class Gateways(object):
     # the gateway on.  This method assumes that whichever Ethernet interface
     # chosen is already configured via DHCP through ifplugd.
     def tcpip(self, interface=None):
+        print "DEBUG: Value of interface is %s" % interface
         # MOOF MOOF MOOF - I left off here!
 
         # Run the "Are you sure?" page through the template interpeter.
@@ -170,119 +170,6 @@ class Gateways(object):
                 print "%s: %s" % (str(traceback.error.__class__.__name__),
                     traceback.error)
     wireless.exposed = True
-
-    # Implements step two of the interface configuration process: selecting
-    # IP address blocks for the mesh and client interfaces.  Draws upon class
-    # attributes where they exist but pseudorandomly chooses values where it
-    # needs to.
-    def tcpip(self, essid=None, channel=None):
-        # Store the ESSID and wireless channel in the class' attribute set if
-        # they were passed as args.
-        if essid:
-            self.essid = essid
-        if channel:
-            self.channel = channel
-
-        # Initialize the Python environment's randomizer.
-        random.seed()
-
-        # Connect to the network configuration database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-
-        # To run arping, the interface has to be up.  Check the database to
-        # see if it's up, and if not flip it on for a few seconds to test.
-        template = (self.mesh_interface, 'yes', )
-        cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=? AND enabled=?;", template)
-        result = cursor.fetchall()
-        if not len(result):
-            # Note that arping returns '2' if the interface isn't online!
-            command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
-            output = os.popen(command)
-        
-            # Sleep five seconds to give the hardware a chance to catch up.
-            time.sleep(5)
-       
-        # First pick an IP address for the mesh interface on the node.
-        # Go into a loop in which pseudorandom IP addresses are chosen and
-        # tested to see if they have been taken already or not.  Loop until we
-        # have a winner.
-        ip_in_use = 1
-        while ip_in_use:
-            # Pick a random IP address in 192.168/16.
-            addr = '192.168.'
-            addr = addr + str(random.randint(0, 254)) + '.'
-            addr = addr + str(random.randint(0, 254))
-
-            # Run arping to see if any node in range has claimed that IP address
-            # and capture the return code.
-            # Argument breakdown:
-            # -c 5: Send 5 packets
-            # -D: Detect specified address.  Return 1 if found, 0 if not,
-            # -f: Stop after the first positive response.
-            # -I Network interface to use.  Mandatory.
-            arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
-                      self.mesh_interface, addr]
-            ip_in_use = subprocess.call(arping)
-            
-            # arping returns 1 if the IP is in use, 0 if it's not.
-            if not ip_in_use:
-                self.mesh_ip = addr
-                break
-
-        # Next pick a distinct IP address for the client interface and its
-        # netblock.  This is potentially trickier depending on how large the
-        # mesh gets.
-        ip_in_use = 1
-        while ip_in_use:
-            # Pick a random IP address in a 10/24.
-            addr = '10.'
-            addr = addr + str(random.randint(0, 254)) + '.'
-            addr = addr + str(random.randint(0, 254)) + '.1'
-
-            # Run arping to see if any mesh node in range has claimed that IP
-            # address and capture the return code.
-            # Argument breakdown:
-            # -c 5: Send 5 packets
-            # -D: Detect specified address.  Return 1 if found, 0 if not,
-            # -f: Stop after the first positive response.
-            # -I Network interface to use.  Mandatory.
-            arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
-                      self.mesh_interface, addr]
-            ip_in_use = subprocess.call(arping)
-
-            # arping returns 1 if the IP is in use, 0 if it's not.
-            if not ip_in_use:
-                self.client_ip = addr
-                break
-
-        # Deactivate the interface again if it was down to begin with.
-        if not len(result):
-            command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
-            output = os.popen(command)
-
-        # Close the database connection.
-        connection.close()
-
-        # Run the "Are you sure?" page through the template interpeter.
-        try:
-            page = templatelookup.get_template("/network/confirm.html")
-            return page.render(title = "Confirm network address for interface.",
-                               purpose_of_page = "Confirm IP configuration.",
-                               interface = self.mesh_interface,
-                               mesh_ip = self.mesh_ip,
-                               mesh_netmask = self.mesh_netmask,
-                               client_ip = self.client_ip,
-                               client_netmask = self.client_netmask)
-        except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
-    tcpip.exposed = True
 
     # Configure the network interface.
     def set_ip(self):
