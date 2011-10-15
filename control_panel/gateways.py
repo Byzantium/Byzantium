@@ -5,6 +5,9 @@
 # License: GPLv3
 
 # TODO:
+# - In Gateways.activate(), add some code before running iptables to make sure
+#   that NAT rules don't exist already.
+#   iptables -t nat -n -L | grep MASQUERADE
 
 # Import external modules.
 import cherrypy
@@ -89,6 +92,7 @@ class Gateways(object):
     # the gateway on.  This method assumes that whichever Ethernet interface
     # chosen is already configured via DHCP through ifplugd.
     def tcpip(self, interface=None):
+        # Nope.  Not much here right now.  This is pretty much a yay or nay.
 
         # Run the "Are you sure?" page through the template interpeter.
         try:
@@ -109,14 +113,6 @@ class Gateways(object):
 
     # Method that does the deed of turning an interface into a gateway.
     def activate(self, interface=None):
-        print "DEBUG: value of interface == %s" % interface
-        # Add a gateway route to the kernel routing table.  This route just
-        # so happens to be the network interface the user selected on the
-        # previous page.
-        #route_command = ['/sbin/route', 'add', '-net', '0.0.0.0', 'netmask',
-        #                 '0.0.0.0', 'dev', interface]
-        #process = subprocess.Popen(route_command)
-
         # Turn on NAT using iptables to the network interface in question.
         nat_command = ['/usr/sbin/iptables', '-t', 'nat', '-A', 'POSTROUTING',
                       '-o', str(interface), '-j', 'MASQUERADE']
@@ -126,13 +122,14 @@ class Gateways(object):
         common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
                               '-C']
         gateway_command = '"redistribute if ' + interface + ' metric 128"'
+        common_babeld_opts.append(gateway_command)
         unique_babeld_opts = []
 
         # Set up a list of mesh interfaces for which babeld is already running.
         interfaces = []
         connection = sqlite3.connect(self.meshconfdb)
         cursor = connection.cursor()
-        cursor.execute("SELECT interface, enabled, protocol FROM meshes WHERE enabled='yes' AND protocol='babel';")
+        cursor.execute("SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';")
         results = cursor.fetchall()
         for i in results:
             interfaces.append(i[0][0])
@@ -143,7 +140,6 @@ class Gateways(object):
         babeld_command = []
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
-        babeld_command.append(gateway_command)
         babeld_command = babeld_command + unique_babeld_opts + interfaces
         print "DEBUG: babeld_command[] == %s" % str(babeld_command)
 
