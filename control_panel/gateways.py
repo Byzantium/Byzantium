@@ -15,7 +15,6 @@ import os
 import os.path
 import sqlite3
 import subprocess
-from subprocess import call
 
 # Import core control panel modules.
 from control_panel import *
@@ -51,6 +50,7 @@ class Gateways(object):
         # enabled but are known.  As before, each button gets is own button
         # in a table.
         cursor.execute("SELECT mesh_interface FROM wireless WHERE gateway='no';")
+        results = cursor.fetchall()
         if len(results):
             for interface in results:
                 wireless_buttons = wireless_buttons + "<td><input type='submit' name='interface' value='" + interface[0] + "' /></td>\n"
@@ -79,8 +79,6 @@ class Gateways(object):
     # the gateway on.  This method assumes that whichever Ethernet interface
     # chosen is already configured via DHCP through ifplugd.
     def tcpip(self, interface=None):
-        print "DEBUG: Value of interface is %s" % interface
-        # MOOF MOOF MOOF - I left off here!
 
         # Run the "Are you sure?" page through the template interpeter.
         try:
@@ -100,23 +98,32 @@ class Gateways(object):
 
 
     # Method that does the deed of turning an interface into a gateway.
-    # def activate(self, ):
+    def activate(self, interface=None):
+        # Turn on NAT using iptables to the network interface in question.
+        nat_command = ['', '', ]
+        process - subprocess.Popen(nat_command)
 
-        # Run the confirmation page through the template interpeter.
-        #try:
-        #    page = templatelookup.get_template("/gateways/done.html")
-        #    return page.render(title = "Enable gateway?",
-        #                       purpose_of_page = "Confirm gateway mode.",
-        #                       interface = interface)
-        #except:
-        #    traceback = RichTraceback()
-        #    for (filename, lineno, function, line) in traceback.traceback:
-        #        print "\n"
-        #        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-        #        print "Execution died on line %s\n" % line
-        #        print "%s: %s" % (str(traceback.error.__class__.__name__),
-        #            traceback.error)
-    #activate.exposed = True
+        # Kill babeld, then re-run it using an extra configuration option to
+        # announce the new route to the mesh.
+
+        # Update the network configuration database to reflect the fact that
+        # the interface is now a gateway.
+
+        # Display the confirmation of the operation to the user.
+        try:
+            page = templatelookup.get_template("/gateways/done.html")
+            return page.render(title = "Enable gateway?",
+                               purpose_of_page = "Confirm gateway mode.",
+                               interface = interface)
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "\n"
+                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+                print "Execution died on line %s\n" % line
+                print "%s: %s" % (str(traceback.error.__class__.__name__),
+                    traceback.error)
+    activate.exposed = True
 
     # Allows the user to enter the ESSID and wireless channel of the node's
     # wireless network gateway.  Takes as an argument the value of the
