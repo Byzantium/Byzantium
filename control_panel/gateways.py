@@ -119,8 +119,14 @@ class Gateways(object):
         process = subprocess.Popen(nat_command)
 
         # Assemble a new invocation of babeld.
+<<<<<<< HEAD
         common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
                               '-C', 'redistribute if', interface, 'metric 128']
+=======
+        common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D']
+        gateway_command = '-C "redistribute if ' + interface + ' metric 128"'
+        common_babeld_opts.append(gateway_command)
+>>>>>>> 0991f1875dfd58d72204e9f0c490bc352a0120d0
         unique_babeld_opts = []
 
         # Set up a list of mesh interfaces for which babeld is already running.
@@ -150,11 +156,9 @@ class Gateways(object):
         if pid:
             os.kill(int(pid), signal.SIGTERM)
             time.sleep(self.babeld_timeout)
-        print "DEBUG: Killed babeld."
 
         # Re-run babeld with the extra option to propagate the gateway route.
         process = subprocess.Popen(babeld_command)
-        print "DEBUG: Restarted babeld.  Sleeping."
         time.sleep(self.babeld_timeout)
 
         # Update the network configuration database to reflect the fact that
@@ -166,12 +170,10 @@ class Gateways(object):
         cursor.execute("SELECT interface FROM wired WHERE interface=?;",
                        template)
         results = cursor.fetchall()
-        print "DEBUG: Value of results is %s" % results
         if len(results):
             template = ('yes', interface, )
             cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
                             template)
-        print "DEBUG: Updated database network.sqlite."
         # Otherwise, it's a wireless interface.
         #else:
         #    template = ('yes', interface, )
