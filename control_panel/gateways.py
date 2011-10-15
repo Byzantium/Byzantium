@@ -132,7 +132,7 @@ class Gateways(object):
         cursor.execute("SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';")
         results = cursor.fetchall()
         for i in results:
-            interfaces.append(i[0][0])
+            interfaces.append(i[0])
         interfaces.append(interface)
         cursor.close()
 
@@ -152,9 +152,11 @@ class Gateways(object):
         if pid:
             os.kill(int(pid), signal.SIGTERM)
             time.sleep(self.babeld_timeout)
+        print "DEBUG: Killed babeld."
 
         # Re-run babeld with the extra option to propagate the gateway route.
         process = subprocess.Popen(babeld_command)
+        print "DEBUG: Restarted babeld.  Sleeping."
         time.sleep(self.babeld_timeout)
 
         # Update the network configuration database to reflect the fact that
@@ -166,14 +168,16 @@ class Gateways(object):
         cursor.execute("SELECT interface FROM wired WHERE interface=?;",
                        template)
         results = cursor.fetchall()
+        print "DEBUG: Value of results is %s" % results
         if len(results):
             template = ('yes', interface, )
             cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
                             template)
+        print "DEBUG: Updated database network.sqlite."
         # Otherwise, it's a wireless interface.
-        else:
-            template = ('yes', interface, )
-            cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
+        #else:
+        #    template = ('yes', interface, )
+        #    cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
 
         # Clean up.
         connection.commit()
