@@ -19,6 +19,9 @@
 <div id="main" align="right">
 <p>The network interface you want to turn into a gateway is: ${interface}</p>
 
+<!-- This variable will only be defined if the user selected a wireless interface. -->
+${iwconfigs}
+
 <form action="activate" method="post">
 <input type="submit" name="interface" value="${interface}">
 <input type="button" name="Cancel" value="Cancel" onclick="window.location='/'">

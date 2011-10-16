@@ -8,6 +8,9 @@
 # - In Gateways.activate(), add some code before running iptables to make sure
 #   that NAT rules don't exist already.
 #   iptables -t nat -n -L | grep MASQUERADE
+# - Add code to configure encryption on wireless gateways.
+# - Make it possible to specify IP configuration information on a wireless
+#   uplink.
 
 # Import external modules.
 import cherrypy
@@ -47,8 +50,11 @@ class Gateways(object):
     meshconfdb = '/var/db/controlpanel/mesh.sqlite'
     #meshconfdb = '/home/drwho/mesh.sqlite'
 
-    # Network interface chosen by the user to act as the uplink.
+    # Configuration information for the network device chosen by the user to
+    # act as the uplink.
     interface = ''
+    channel = 0
+    essid = ''
 
     # Used for sanity checking user input.
     frequency = 0
@@ -102,15 +108,33 @@ class Gateways(object):
     # Implements step two of the wired gateway configuration process: turning
     # the gateway on.  This method assumes that whichever Ethernet interface
     # chosen is already configured via DHCP through ifplugd.
-    def tcpip(self, interface=None):
-        # Nope.  Not much here right now.  This is pretty much a yay or nay.
+    def tcpip(self, interface=None, essid=None, channel=None):
+        # Define this variable in case wireless configuration information is
+        # passed into this method.
+        iwconfigs = ''
+
+        # Test to see if the interface argument has been passed.  If it hasn't
+        # then this method is being called from Gateways.wireless(), so
+        # populate it from the class attribute variable.
+        if interface is None:
+            interface = self.interface
+
+        # If an ESSID and channel were passed to this method, store them in
+        # class attributes.
+        if essid:
+            self.essid = essid
+            iwconfigs = '<p>Wireless network configuration:</p>\n'
+            iwconfigs = iwconfigs + '<p>ESSID: ' + essid + '</p>\n'
+        if channel:
+            self.channel = channel
+            iwconfigs = iwconfigs + '<p>Channel: ' + channel + '</p>\n'
 
         # Run the "Are you sure?" page through the template interpeter.
         try:
             page = templatelookup.get_template("/gateways/confirm.html")
             return page.render(title = "Enable gateway?",
                                purpose_of_page = "Confirm gateway mode.",
-                               interface = interface)
+                               interface = interface, iwconfigs = iwconfigs)
         except:
             traceback = RichTraceback()
             for (filename, lineno, function, line) in traceback.traceback:
@@ -135,11 +159,7 @@ class Gateways(object):
         channel = 0
         essid = ''
 
-        # This is a hidden class attribute setting, used for sanity checking
-        # later in the configuration process.
-        self.frequency = frequencies[channel - 1]
-
-        # Set up the warning in case the interface is already configured.
+        # Set up a warning in case the interface is already configured.
         warning = ''
 
         # If a network interface is marked as configured in the database, pull
