@@ -241,7 +241,6 @@ class Gateways(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
-        print "DEBUG: babeld_command[] == %s" % str(babeld_command)
 
         # Kill the old instance of babeld.
         pid = ''
