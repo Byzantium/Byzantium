@@ -194,8 +194,27 @@ class Gateways(object):
                     traceback.error)
     wireless.exposed = True
 
-    # Method that does the deed of turning an interface into a gateway.
+    # Method that does the deed of turning an interface into a gateway.  This
     def activate(self, interface=None):
+        # Test to see if wireless configuration attributes are set, and if they
+        # are, use iwconfig to set up the interface.
+        wireless = 0
+        if self.essid:
+            command = ['/sbin/iwconfig', interface, 'essid', self.essid]
+            process = subprocess.Popen(command)
+            wireless = 1
+
+        if self.channel:
+            command = ['/sbin/iwconfig', interface, 'channel', self.channel]
+            process = subprocess.Popen(command)
+            wireless = 1
+
+        # If we have to configure layers 1 and 2, then it's a safe bet that we
+        # should use DHCP to set up layer 3.
+        if wireless:
+            command = ['/sbin/dhcpcd', interface]
+            process = subprocess.Popen(command)
+
         # Turn on NAT using iptables to the network interface in question.
         nat_command = ['/usr/sbin/iptables', '-t', 'nat', '-A', 'POSTROUTING',
                       '-o', str(interface), '-j', 'MASQUERADE']
@@ -252,9 +271,9 @@ class Gateways(object):
             cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
                             template)
         # Otherwise, it's a wireless interface.
-        #else:
-        #    template = ('yes', interface, )
-        #    cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
+        else:
+            template = ('yes', interface, )
+            cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
 
         # Clean up.
         connection.commit()
