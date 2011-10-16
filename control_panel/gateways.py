@@ -27,11 +27,6 @@ import time
 # Import core control panel modules.
 from control_panel import *
 
-# Constants.
-# List of wi-fi channels and the frequencies the map to.
-frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
-               2.457, 2.462, 2.467, 2.472, 2.484]
-
 # Classes.
 # This class allows the user to turn a configured network interface on their
 # node into a gateway from the mesh to another network (usually the global Net).
