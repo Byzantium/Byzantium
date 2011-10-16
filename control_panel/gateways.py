@@ -24,6 +24,11 @@ import time
 # Import core control panel modules.
 from control_panel import *
 
+# Constants.
+# List of wi-fi channels and the frequencies the map to.
+frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
+               2.457, 2.462, 2.467, 2.472, 2.484]
+
 # Classes.
 # This class allows the user to turn a configured network interface on their
 # node into a gateway from the mesh to another network (usually the global Net).
@@ -41,6 +46,12 @@ class Gateways(object):
     # Path to mesh configuration database.
     meshconfdb = '/var/db/controlpanel/mesh.sqlite'
     #meshconfdb = '/home/drwho/mesh.sqlite'
+
+    # Network interface chosen by the user to act as the uplink.
+    interface = ''
+
+    # Used for sanity checking user input.
+    frequency = 0
 
     # Pretends to be index.html.
     def index(self):
@@ -110,6 +121,58 @@ class Gateways(object):
                     traceback.error)
     tcpip.exposed = True
 
+    # Allows the user to enter the ESSID and wireless channel of the wireless 
+    # network interface that will act as an uplink to another Network for the
+    # mesh.  Takes as an argument the value of the 'interface' variable passed
+    # from the form on /gateways/index.html.
+    def wireless(self, interface=None):
+        # Store the name of the interface in question in a class attribute for
+        # use later.
+        self.interface = interface
+
+        # Set up variables to hold the ESSID and channel of the wireless
+        # uplink.
+        channel = 0
+        essid = ''
+
+        # This is a hidden class attribute setting, used for sanity checking
+        # later in the configuration process.
+        self.frequency = frequencies[channel - 1]
+
+        # Set up the warning in case the interface is already configured.
+        warning = ''
+
+        # If a network interface is marked as configured in the database, pull
+        # its settings and insert them into the page rather than displaying the
+        # defaults.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+        template = (interface, )
+        cursor.execute("SELECT enabled, channel, essid FROM wireless WHERE mesh_interface=?;", template)
+        result = cursor.fetchall()
+        if result and (result[0][0] == 'yes'):
+            channel = result[0][1]
+            essid = result[0][2]
+            warning = '<p>WARNING: This interface is already configured!  Changing it now will break the local mesh!  You can hit cancel now without changing anything!</p>'
+        connection.close()
+        
+        # The forms in the HTML template do everything here, as well.  This
+        # method only accepts input for use later.
+        try:
+            page = templatelookup.get_template("/gateways/wireless.html")
+            return page.render(title = "Configure wireless uplink.",
+                           purpose_of_page = "Set wireless uplink parameters.",
+                           warning = warning, interface = interface,
+                           channel = channel, essid = essid)
+        except:
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print "\n"
+                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+                print "Execution died on line %s\n" % line
+                print "%s: %s" % (str(traceback.error.__class__.__name__),
+                    traceback.error)
+    wireless.exposed = True
 
     # Method that does the deed of turning an interface into a gateway.
     def activate(self, interface=None):
@@ -119,14 +182,8 @@ class Gateways(object):
         process = subprocess.Popen(nat_command)
 
         # Assemble a new invocation of babeld.
-<<<<<<< HEAD
         common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
                               '-C', 'redistribute if', interface, 'metric 128']
-=======
-        common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D']
-        gateway_command = '-C "redistribute if ' + interface + ' metric 128"'
-        common_babeld_opts.append(gateway_command)
->>>>>>> 0991f1875dfd58d72204e9f0c490bc352a0120d0
         unique_babeld_opts = []
 
         # Set up a list of mesh interfaces for which babeld is already running.
@@ -198,59 +255,6 @@ class Gateways(object):
                 print "%s: %s" % (str(traceback.error.__class__.__name__),
                     traceback.error)
     activate.exposed = True
-
-    # Allows the user to enter the ESSID and wireless channel of the node's
-    # wireless network gateway.  Takes as an argument the value of the
-    # 'interface' variable defined in the form on /network/index.html.
-    def wireless(self, interface=None):
-        # Store the name of the network interface chosen by the user in the
-        # object's attribute set and then generate the name of the client
-        # interface.
-        self.mesh_interface = interface
-        self.client_interface = interface + ':1'
-
-        # Default settings for /network/wireless.html page.
-        channel = 3
-        essid = 'Byzantium'
-
-        # This is a hidden class attribute setting, used for sanity checking
-        # later in the configuration process.
-        self.frequency = frequencies[channel - 1]
-
-        # Set up the warning in case the interface is already configured.
-        warning = ''
-
-        # If a network interface is marked as configured in the database, pull
-        # its settings and insert them into the page rather than displaying the
-        # defaults.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-        template = (interface, )
-        cursor.execute("SELECT enabled, channel, essid FROM wireless WHERE mesh_interface=?;", template)
-        result = cursor.fetchall()
-        if result and (result[0][0] == 'yes'):
-            channel = result[0][1]
-            essid = result[0][2]
-            warning = '<p>WARNING: This interface is already configured!  Changing it now will break the local mesh!  You can hit cancel now without changing anything!</p>'
-        connection.close()
-        
-        # The forms in the HTML template do everything here, as well.  This
-        # method only accepts input for use later.
-        try:
-            page = templatelookup.get_template("/network/wireless.html")
-            return page.render(title = "Configure wireless for Byzantium node.",
-                           purpose_of_page = "Set wireless network parameters.",
-                           warning = warning, interface = self.mesh_interface,
-                           channel = channel, essid = essid)
-        except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
-    wireless.exposed = True
 
     # Configure the network interface.
     def set_ip(self):
