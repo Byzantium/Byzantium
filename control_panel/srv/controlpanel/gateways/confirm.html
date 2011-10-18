@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <!-- This includes all of the stuff to set up an HTML page. -->
 <!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
-<!-- /network/index.html - Allows the user to choose a network interface to configure. -->
+<!-- /gateways/confirm.html - The user is given a chance to enable or cancel gateway setup. -->
 
 <html>
 <head>
@@ -17,22 +17,15 @@
 <%include file="/includes/leftbar.html" />
 
 <div id="main" align="right">
+<p>The network interface you want to turn into a gateway is: ${interface}</p>
 
-<!-- List of Ethernet interfaces. -->
-<h2>Ethernet interfaces</h2>
-<table border="1">
-<form action="tcpip" method="post">
-<tr>${ethernet_buttons}</tr>
-</form>
-</table>
+<!-- This variable will only be defined if the user selected a wireless interface. -->
+${iwconfigs}
 
-<!-- List of wireless network interfaces. -->
-<h2>Wireless network interfaces</h2>
-<table border="1">
-<form action="wireless" method="post">
-<tr>${wireless_buttons}</tr>
+<form action="activate" method="post">
+<input type="submit" name="interface" value="${interface}">
+<input type="button" name="Cancel" value="Cancel" onclick="window.location='/'">
 </form>
-</table>
 
 </div>
 </body>

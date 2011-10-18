@@ -18,6 +18,7 @@ from networktraffic import NetworkTraffic
 from networkconfiguration import NetworkConfiguration
 from meshconfiguration import MeshConfiguration
 from services import Services
+from gateways import Gateways
 
 templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=100)
@@ -29,6 +30,7 @@ class Status(object):
     network = NetworkConfiguration()
     mesh = MeshConfiguration()
     services = Services()
+    gateways = Gateways()
 
     # Pretends to be index.html.
     def index(self):

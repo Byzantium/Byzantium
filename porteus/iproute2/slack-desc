@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in.  You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+        |-----handy-ruler------------------------------------------------------|
+iproute2: iproute2 (IP routing utilities)
+iproute2:
+iproute2: These are tools used to administer many advanced IP routing features
+iproute2: in the kernel.  See Configure.help in the kernel documentation 
+iproute2: (search for iproute2) for more information on which kernel options
+iproute2: these tools are used with.
+iproute2: 
+iproute2: These utilities were written by Alexey Kuznetsov.  The current
+iproute2: maintainer of iproute2 is Stephen Hemminger.
+iproute2:
+iproute2:

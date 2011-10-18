@@ -1,0 +1,151 @@
+#!/bin/sh
+
+# Copyright 2005-2011  Patrick J. Volkerding, Sebeka, MN, USA
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Build this against 2.6.x kernel source and headers...
+
+VERSION=2.6.37
+BUILD=${BUILD:-1}
+
+#NUMJOBS=${NUMJOBS:-" -j7 "}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) export ARCH=i486 ;;
+    arm*) export ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) export ARCH=$( uname -m ) ;;
+  esac
+fi
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp}
+PKG=$TMP/package-iproute2
+
+rm -rf $PKG
+mkdir -p $TMP $PKG
+cd $TMP
+rm -rf iproute2-$VERSION
+tar xvf $CWD/iproute2-$VERSION.tar.bz2 || exit 1
+cd iproute2-$VERSION
+
+chown -R root:root .
+find . \
+  \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
+
+# Fix up path to bdb and iptables libs
+zcat $CWD/iproute2.fixup_dbpath_and_iptablespath.diff.gz | sed \
+  -e "s,@LIBDIR@,/usr/lib${LIBDIRSUFFIX},g" \
+  -e "s,@VERSION@,$VERSION,g" | patch -p1 || exit 1
+
+# Use our custom SLKCFLAGS
+sed -i "s/-O2 /-O2 -fPIC /" Makefile
+
+./configure  # This is okay, really :-)
+make $NUMJOBS || exit 1
+
+mkdir -p $PKG/usr
+make install LIBDIR=/usr/lib${LIBDIRSUFFIX} DESTDIR=$PKG/usr/ || exit 1
+
+# I can't seem to make this go to the right place on x86_64, but all the
+# relevant stuff looks correct :/
+[ "$ARCH" = "x86_64" ] && mv $PKG/usr/lib $PKG/usr/lib${LIBDIRSUFFIX} 
+
+# This stuff has always been installed under /sbin rather than
+# /usr/sbin, as the latter could possibly be network-mounted, and
+# these utilities may be needed to set up that network, so move
+# them appropriately, but leave symlinks in /usr/sbin so that
+# any scripts using absolute paths will work either way:
+mkdir $PKG/sbin
+mv $PKG/usr/sbin/* $PKG/sbin
+( cd $PKG/usr/sbin
+  for file in ../../sbin/* ; do
+    ln -sf $file .
+  done
+)
+
+mv $PKG/usr/etc $PKG
+# Don't clobber existing config files
+for file in $PKG/etc/iproute2/* ; do
+  mv $file ${file}.new
+done
+
+# Remove junk:
+[ -d $PKG/usr/usr ] && rm -r $PKG/usr/usr
+[ -d $PKG/usr/var ] && rm -r $PKG/usr/var
+
+mkdir -p $PKG/var/lib/arpd
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" \
+  | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null
+
+# Compress and if needed symlink the man pages:
+if [ -d $PKG/usr/man ]; then
+  ( cd $PKG/usr/man
+    for manpagedir in $(find . -type d -name "man*") ; do
+      ( cd $manpagedir
+        for eachpage in $( find . -type l -maxdepth 1) ; do
+          ln -s $( readlink $eachpage ).gz $eachpage.gz
+          rm $eachpage
+        done
+        gzip -9 *.?
+      )
+    done
+  )
+fi
+
+mkdir -p $PKG/usr/doc/iproute2-$VERSION
+cp -a COPYING RE* \
+  $PKG/usr/doc/iproute2-$VERSION
+
+# If there's a ChangeLog, installing at least part of the recent history
+# is useful, but don't let it get totally out of control:
+if [ -r ChangeLog ]; then
+  DOCSDIR=$(echo $PKG/usr/doc/${PKGNAM}-$VERSION)
+  cat ChangeLog | head -n 1000 > $DOCSDIR/ChangeLog
+  touch -r ChangeLog $DOCSDIR/ChangeLog
+fi
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+zcat $CWD/doinst.sh.gz > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $TMP/iproute2-$(echo $VERSION | tr - _)-$ARCH-$BUILD.txz
+

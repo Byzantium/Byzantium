@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<!-- This includes all of the stuff to set up an HTML page. -->
+<!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
+<!-- /gateways/done.html - Gateway configured.  Display results. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+</head>
+
+<body>
+<%include file="/includes/header.html" />
+<%include file="/includes/leftbar.html" />
+
+<div id="main" align="right">
+
+<p>${interface} is now configured as a gateway.</p>
+
+</div>
+</body>
+</html>
