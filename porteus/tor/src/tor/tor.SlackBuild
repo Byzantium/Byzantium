@@ -97,7 +97,7 @@ chmod -R u+w,go+r-w,a-s .
 
 # Configure wants to execute a test, so help it find the right libs at runtime (ugly hack)
 OLD_LDPATH="$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="/tmp/SBo/package-libevent/usr/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/tmp/SBo/package-libevent/usr/lib"
 
 CFLAGS="$SLKCFLAGS" \
 ./configure \
