@@ -4,7 +4,7 @@ set -e
 
 cd $1
 source ./$1.info
-for i in `cat ./$1.info | cut -d = -f 1` ; do
+for i in `cat ./$1.info | sed '$!N;s/\\[\n\r]\+/ /' | cut -d = -f 1` ; do
     export $i
 done
 
