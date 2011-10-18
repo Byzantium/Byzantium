@@ -1,9 +1,6 @@
 PRGNAM="tor"
 VERSION="0.2.2.33"
 HOMEPAGE="https://www.torproject.org/"
-# Tor download site removes old releases, so this is only reliable mirror
-# Except you're using Gentoo's distribution point, which rotates older releases
-# out just as fast.  --The Doctor
 DOWNLOAD="http://distfiles.gentoo.org/distfiles/tor-0.2.2.33.tar.gz"
 MD5SUM="ea99aba49694bb982d2fccc57a70d58e"
 DOWNLOAD_x86_64=""
