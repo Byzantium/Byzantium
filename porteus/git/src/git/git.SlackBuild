@@ -92,9 +92,6 @@ cp -a \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --build=$ARCH-slackware-linux
 
-export CC=/usr/bin/32/gcc
-. /etc/profile.d/32dev.sh
-
 make $NUMJOBS \
   prefix=/usr \
   mandir=/usr/man \
