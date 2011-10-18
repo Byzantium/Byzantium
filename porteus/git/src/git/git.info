@@ -1,7 +1,6 @@
 PRGNAM="git"
 VERSION="1.7.4.4"
 HOMEPAGE="https://apr.apache.org/"
-# Tor download site removes old releases, so this is only reliable mirror
 DOWNLOAD="http://distfiles.gentoo.org/distfiles/git-1.7.4.4.tar.bz2"
 MD5SUM="1313f71d62fa100b32fa313769a85f2a"
 DOWNLOAD_x86_64=""
