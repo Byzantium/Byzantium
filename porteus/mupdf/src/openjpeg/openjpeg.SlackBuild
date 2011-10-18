@@ -72,7 +72,7 @@ patch -p1 -i $CWD/openjpeg_fix_header_symlinks.patch
 
 mkdir -p build
 cd build
-  make \
+  cmake \
     -DCMAKE_C_FLAGS="$SLKCFLAGS" \
     -DCMAKE_CXX_FLAGS="$SLKCFLAGS" \
     -DCMAKE_INSTALL_PREFIX=/usr \
