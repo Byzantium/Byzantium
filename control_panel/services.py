@@ -320,8 +320,8 @@ class Services(object):
         try:
             page = templatelookup.get_template("/services/toggled.html")
             return page.render(title = "Byzantium Node Services",
-                               purpose_of_page = "Service toggled.", app = app,
-                               action = action, error = error)
+                               purpose_of_page = "Service toggled.",
+                               app = self.app, action = action, error = error)
         except:
             return exceptions.html_error_template().render()
     toggle_service.exposed = True
