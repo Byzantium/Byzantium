@@ -80,9 +80,6 @@ CFLAGS="$SLKCFLAGS" \
 make
 make install-strip DESTDIR=$PKG
 
-# Workaround for bad filename.
-mv $PKG/usr/lib/libevemt.so $PKG/usr/lib/libevent.so
-
 # man pages gone?
 #gzip -9 $PKG/usr/man/man?/*.?
 
