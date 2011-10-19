@@ -96,8 +96,8 @@ chmod -R u+w,go+r-w,a-s .
   [ -e libevent-2.0.so.5 ] || ln -s libevent.so libevent-2.0.so.5 )
 
 # Configure wants to execute a test, so help it find the right libs at runtime (ugly hack)
-OLD_LDPATH="$LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="/tmp/SBo/package-libevent/usr/lib:$LD_LIBRARY_PATH"
+#OLD_LDPATH="$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/tmp/SBo/package-libevent/usr/lib"
 
 CFLAGS="$SLKCFLAGS" \
 ./configure \
@@ -109,13 +109,11 @@ CFLAGS="$SLKCFLAGS" \
   --docdir=/usr/doc/$PRGNAM-$VERSION \
   --with-tor-user=$TOR_USER \
   --with-tor-group=$TOR_GROUP \
-  --with-libevent-dir=/tmp/SBo/package-libevent/usr/lib \
+  --with-libevent-dir=/tmp/SBo/package-libevent/usr \
   --build=$ARCH-slackware-linux
 
 make
 make install-strip DESTDIR=$PKG
-
-export LD_LIBRARY_PATH="$OLD_LDPATH"
 
 # Create/install stuff that makes tor work (better)
 mkdir -p $PKG/var/{run,log,lib}/tor
