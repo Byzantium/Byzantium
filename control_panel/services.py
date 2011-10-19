@@ -288,6 +288,9 @@ class Services(object):
     def toggle_service(self, action=None):
         print "DEBUG: Value of action == " + action
 
+        # Set up an error handling variable just in case.
+        error = ''
+
         # Set up a connection to the services.sqlite database.
         database = sqlite3.connect(self.servicedb)
         cursor = database.cursor()
