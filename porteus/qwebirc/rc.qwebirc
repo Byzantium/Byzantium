@@ -20,7 +20,8 @@ PID=/var/run/qwebirc.pid
 case "$1" in
 	'start')
 		# Start up the server.  It'll drop into the background on its own.
-		$BASE/run.py
+		cd $BASE
+		./run.py
 	
 		# Save the PID.
 		ps ax | grep [r]un.py | grep -v 'grep' | awk '{print $1}' > $PID

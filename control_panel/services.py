@@ -288,6 +288,9 @@ class Services(object):
     def toggle_service(self, action=None):
         print "DEBUG: Value of action == " + action
 
+        # Set up an error handling variable just in case.
+        error = ''
+
         # Set up a connection to the services.sqlite database.
         database = sqlite3.connect(self.servicedb)
         cursor = database.cursor()
@@ -320,8 +323,8 @@ class Services(object):
         try:
             page = templatelookup.get_template("/services/toggled.html")
             return page.render(title = "Byzantium Node Services",
-                               purpose_of_page = "Service toggled.", app = app,
-                               action = action, error = error)
+                               purpose_of_page = "Service toggled.",
+                               app = self.app, action = action, error = error)
         except:
             return exceptions.html_error_template().render()
     toggle_service.exposed = True

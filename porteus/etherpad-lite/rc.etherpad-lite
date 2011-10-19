@@ -13,8 +13,6 @@
 # Variables
 USER="etherpad"
 HOMEDIR="/opt/etherpad-lite"
-ENABLED="/etc/httpd/enabled_apps/etherpad.conf"
-DISABLED="/etc/httpd/disabled_apps/etherpad.conf"
 PID=/var/run/etherpad-lite.pid
 
 # Core code.
@@ -26,21 +24,9 @@ case "$1" in
 		/bin/su -l -c "bin/run.sh &" $USER
 	
 		# Store the PID in a file.
-		ps ax | grep [n]ode | awk '{print $1}' > $PID
-		
-		# Copy the appropriate config file into place and gracefully restart
-		# Apache.
-		cp $DISABLED $ENABLED
-		chmod 0644 $ENABLED
-		/usr/sbin/apachectl graceful
+		ps ax | grep [s]erver.js | awk '{print $1}' > $PID
 		;;
 	'stop')
-		# Remove the Apache sub-config file.
-		rm -f $ENABLED
-		
-		# Gracefully restart Apache.
-		/usr/sbin/apachectl graceful
-		
 		# Terminate Etherpad-Lite.
 		kill `cat $PID`
 		;;
