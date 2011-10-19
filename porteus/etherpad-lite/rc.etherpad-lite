@@ -24,7 +24,7 @@ case "$1" in
 		/bin/su -l -c "bin/run.sh &" $USER
 	
 		# Store the PID in a file.
-		ps ax | grep [n]ode | awk '{print $1}' > $PID
+		ps ax | grep [s]erver.js | awk '{print $1}' > $PID
 		;;
 	'stop')
 		# Terminate Etherpad-Lite.
