@@ -98,11 +98,11 @@ GET_LIBDAEMON_SO=`/bin/ls /tmp/SBo/package-libdaemon/usr/lib$LIBDIRSUFFIX/libdae
 GET_LIBGDBM_SO=`/bin/ls /tmp/package-gdbm/usr/lib$LIBDIRSUFFIX/libgdbm.so* | tail -1`
 ln -s "$GET_LIBGDBM_SO" /tmp/package-gdbm/usr/lib$LIBDIRSUFFIX/libgdbm.so || true
 
-OLDLDPATH="$LD_LIBRARY_PATH"
-LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/tmp/package-gdbm/usr/lib$LIBDIRSUFFIX"
-export LD_LIBRARY_PATH
+#OLDLDPATH="$LD_LIBRARY_PATH"
+#LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/tmp/package-gdbm/usr/lib$LIBDIRSUFFIX"
+#export LD_LIBRARY_PATH
 
-CFLAGS="$SLKCFLAGS" \
+CFLAGS="$SLKCFLAGS -I/tmp/package-gdbm/usr/lib$LIBDIRSUFFIX" \
 CXXFLAGS="$SLKCFLAGS" \
 LIBDAEMON_CFLAGS="-I/tmp/SBo/package-libdaemon/usr/include" \
 LIBDAEMON_LIBS="$GET_LIBDAEMON_SO" \
@@ -140,8 +140,6 @@ LIBDAEMON_LIBS="$GET_LIBDAEMON_SO" \
 
 make
 make install DESTDIR=$PKG
-
-export LD_LIBRARY_PATH="$OLDLDPATH"
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
