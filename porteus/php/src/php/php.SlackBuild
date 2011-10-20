@@ -220,6 +220,7 @@ chmod 644 $PKG/usr/doc/php-$VERSION/UPGRADING*
 
 mkdir -p $PKG/etc/php
 cp -a php.ini-development php.ini-production $CWD/php-fpm.conf $PKG/etc/php
+cp $CWD/php.ini $PKG/etc/php
 chmod 644 $PKG/etc/php/*
 chown root:root $PKG/etc/php/*
 
