@@ -92,7 +92,15 @@ cd $PRGNAM-$VERSION
 chown -R root:root .
 chmod -R a-s,u+w,go+r-w .
 
-GET_LIBDAEMON_SO=`/bin/ls /tmp/SBo/package-libdaemon/usr/lib64/libdaemon.so* | tail -1`
+set -x
+
+GET_LIBDAEMON_SO=`/bin/ls /tmp/SBo/package-libdaemon/usr/lib$LIBDIRSUFFIX/libdaemon.so* | tail -1`
+GET_LIBGDBM_SO=`/bin/ls /tmp/package-gdbm/usr/lib$LIBDIRSUFFIX/libgdbm.so* | tail -1`
+ln -s "$GET_LIBGDBM_SO" /tmp/package-gdbm/usr/lib$LIBDIRSUFFIX/libgdbm.so || true
+
+OLDLDPATH="$LD_LIBRARY_PATH"
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/tmp/package-gdbm/usr/lib$LIBDIRSUFFIX"
+export LD_LIBRARY_PATH
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
@@ -132,6 +140,8 @@ LIBDAEMON_LIBS="$GET_LIBDAEMON_SO" \
 
 make
 make install DESTDIR=$PKG
+
+export LD_LIBRARY_PATH="$OLDLDPATH"
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
