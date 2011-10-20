@@ -87,6 +87,8 @@ cat dnsmasq.conf.example > $PKG/etc/dnsmasq.conf.new
 mkdir -p $PKG/etc/rc.d
 zcat $CWD/rc.dnsmasq.gz > $PKG/etc/rc.d/rc.dnsmasq.new
 
+cat $CWD/../../dnsmasq.conf > $PKG/etc/dnsmasq.conf
+
 mkdir -p $PKG/usr/doc/dnsmasq-$VERSION
 cp -a \
   COPYING FAQ doc.html setup.html \
