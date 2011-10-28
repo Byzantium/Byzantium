@@ -92,7 +92,7 @@ chmod -R u+w,go+r-w,a-s .
 
 # Help ./configure find the right libevent files
 ( cd /tmp/SBo/package-libevent/usr/lib ;
-  [ -e libevent.so ] || ln -s `/bin/ls libevent-*.so.* | tail -1` libevemt.so ;
+  [ -e libevent.so ] || ln -s `/bin/ls libevent-*.so.* | tail -1` libevent.so ;
   [ -e libevent-2.0.so.5 ] || ln -s libevent.so libevent-2.0.so.5 )
 
 # Configure wants to execute a test, so help it find the right libs at runtime (ugly hack)
