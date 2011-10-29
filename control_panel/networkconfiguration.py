@@ -438,7 +438,7 @@ class NetworkConfiguration(object):
                         continue
 
             # "Victory is mine!"
-            # --Stewie, _Family Guy_
+            #     --Stewie, _Family Guy_
             break
 
         # Call ifconfig and set up the network configuration information.
