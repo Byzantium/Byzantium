@@ -5,8 +5,8 @@
 # License: GPLv3
 
 # TODO:
-# - Make it so that the toggle buttons in Services.index() don't display the name
-#   of the service again, but 'enable' or 'disable' as appropriate.
+# - Make it so that the toggle buttons in Services.index() don't display the
+#   name of the service again, but 'enable' or 'disable' as appropriate.
 # - In Services.toggle_webapp(), if there is an error give the user the option
 #   to un-do the last change, forcibly kill Apache (just in case), clear out the
 #   PID file, and start Apache to get it back into a consistent state.  This
@@ -165,7 +165,8 @@ class Services(object):
         # of the app that was passed to this method.  Note the status attached
         # to the name.
         template = (self.app, )
-        cursor.execute("SELECT name, status FROM webapps WHERE name=?;", template)
+        cursor.execute("SELECT name, status FROM webapps WHERE name=?;",
+                       template)
         result = cursor.fetchall()
         status = result[0][1]
 
@@ -194,10 +195,9 @@ class Services(object):
             return exceptions.html_error_template().render()
     webapps.exposed = True
 
-    # The method that does the actual heavy lifting of moving an Apache sub-config
-    # file into or out of /etc/httpd/conf/conf.d.  Takes one argument, the name
-    # of the app.  This should never be called from anywhere other than
-    # Services.webapps().
+    # The method that updates the services.sqlite database to flag a given web
+    # application as accessible to mesh users or not.  Takes one argument, the
+    # name of the app.
     def toggle_webapp(self, action=None):
         # Set up a generic error catching variable for this page.
         error = ''
@@ -207,7 +207,7 @@ class Services(object):
         cursor = database.cursor()
 
         if action == 'activate':
-            status = self.status
+            status = 'active'
             action = 'activated'
         else:
             status = 'disabled'
@@ -216,6 +216,7 @@ class Services(object):
         # Update the database with the new status.
         template = (status, self.app, )
         cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
+        database.commit()
 
         # Detach the system services database.
         cursor.close()
@@ -303,8 +304,8 @@ class Services(object):
         results = cursor.fetchall()
         self.initscript = results[0][1]
 
-        # Construct the command line ahead of time to make the code a bit simpler
-        # in the long run.
+        # Construct the command line ahead of time to make the code a bit
+        # simpler in the long run.
         initscript = '/etc/rc.d/' + self.initscript
         if self.status == 'active':
             output = subprocess.Popen([initscript, 'stop'])
@@ -313,8 +314,8 @@ class Services(object):
 
         # Unfortunately, many of the initscripts are inconsistent in that they
         # either don't generate /var/run/foo.pid files with predictable names
-        # or they don't generate them at all (but some support a 'status' argument
-        # on the command line).
+        # or they don't generate them at all (but some support a 'status'
+        # argument on the command line).
         # MOOF MOOF MOOF
 
         # Detach the system services database.
