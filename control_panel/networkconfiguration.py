@@ -524,8 +524,6 @@ class NetworkConfiguration(object):
         # Test for successful generation of the file.
         error = False
         if not os.path.exists(self.hosts_file):
-            # Set an error message and put the old file back.
-            # MOOF MOOF MOOF - Error message goes here.
             os.rename(old_hosts_file, self.hosts_file)
             error = True
         return
