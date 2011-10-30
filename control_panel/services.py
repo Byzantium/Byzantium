@@ -34,8 +34,8 @@ from control_panel import *
 # interfaces.
 class Services(object):
     # Database used to store states of services and webapps.
-    servicedb = '/var/db/controlpanel/services.sqlite'
-    #servicedb = '/home/drwho/services.sqlite'
+    #servicedb = '/var/db/controlpanel/services.sqlite'
+    servicedb = '/home/drwho/services.sqlite'
 
     # Static class attributes.
     pid = '/var/run/httpd/httpd.pid'
@@ -85,10 +85,10 @@ class Services(object):
                 # turn the web app off or on.
                 if status == 'active':
                     # Give the option to deactivate the app.
-                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
+                    webapp_row = webapp_row + "<td><button type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
                 else:
                     # Give the option to activate the app.
-                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
+                    webapp_row = webapp_row + "<td><button type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' >Activate</button></td>"
 
                 # Set the closing tag of the row.
                 webapp_row = webapp_row + "</tr>\n"
