@@ -38,8 +38,6 @@ class Services(object):
     #servicedb = '/home/drwho/services.sqlite'
 
     # Static class attributes.
-    enabled_configs = '/etc/httpd/enabled_apps'
-    disabled_configs = '/etc/httpd/disabled_apps'
     pid = '/var/run/httpd/httpd.pid'
 
     # These attributes will be used as scratch variables to keep from running
