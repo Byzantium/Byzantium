@@ -10,8 +10,6 @@
 #   (not counting lo) but it's wise to plan for the future.
 # - Find a way to prune network interfaces that have vanished.
 #   MOOF MOOF MOOF - Stubbed in.
-# - In NetworkConfiguration.make_hosts(), add code to display an error message
-#   on the control panel if the /etc/hosts.mesh file can't be created.
 
 # Import external modules.
 import cherrypy
