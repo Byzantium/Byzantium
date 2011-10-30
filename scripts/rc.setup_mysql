@@ -45,6 +45,7 @@ if [ -d "$MYSQL_DIR/mysql" ]; then
 # For unknown reasons, this only works back-assward.
 echo "grant all on etherpad.* to 'etherpad'@'localhost' identified by '$ETHERPAD_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
 echo "grant all on statusnet.* to 'statusnet'@'localhost' identified by '$STATUSNET_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "flush privileges;" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
 
 
 EOF
