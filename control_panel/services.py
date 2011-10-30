@@ -120,10 +120,10 @@ class Services(object):
                 # turn the web app off or on.
                 if status == 'active':
                     # Give the option to deactivate the app.
-                    services_row = services_row + "<td><input type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
+                    services_row = services_row + "<td><button type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
                 else:
                     # Give the option to activate the app.
-                    services_row = services_row + "<td><input type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
+                    services_row = services_row + "<td><button type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' >Activate</button></td>"
 
                 # Set the closing tag of the row.
                 services_row = services_row + "</tr>\n"
