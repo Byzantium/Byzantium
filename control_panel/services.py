@@ -5,13 +5,6 @@
 # License: GPLv3
 
 # TODO:
-# - Make it so that the toggle buttons in Services.index() don't display the
-#   name of the service again, but 'enable' or 'disable' as appropriate.
-# - In Services.toggle_webapp(), if there is an error give the user the option
-#   to un-do the last change, forcibly kill Apache (just in case), clear out the
-#   PID file, and start Apache to get it back into a consistent state.  This
-#   should go into an error handler method (Services.apache_fixer()) with its
-#   own HTML file.
 # - List the initscripts in a config file to make them easier to edit?
 # - Come up with a method for determining whether or not a system service was
 #   successfully deactivated.  Not all services have initscripts, and of those
