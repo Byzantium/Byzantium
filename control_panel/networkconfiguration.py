@@ -41,8 +41,8 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 class NetworkConfiguration(object):
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
-    netconfdb = '/var/db/controlpanel/network.sqlite'
-    #netconfdb = '/home/drwho/network.sqlite'
+    #netconfdb = '/var/db/controlpanel/network.sqlite'
+    netconfdb = '/home/drwho/network.sqlite'
 
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
@@ -385,6 +385,9 @@ class NetworkConfiguration(object):
 
     # Configure the network interface.
     def set_ip(self):
+        # Set up the error catcher variable.
+        error = ''
+
         # If we've made it this far, the user's decided to (re)configure a
         # network interface.  Full steam ahead, damn the torpedoes!
 
@@ -463,7 +466,9 @@ class NetworkConfiguration(object):
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
-        self.make_hosts(self.client_ip)
+        success = self.make_hosts(self.client_ip)
+        if not success:
+            error = error + "<p>WARNING!  /etc/hosts.mesh not generated!  Something went wrong!</p>"
         self.configure_dnsmasq(self.client_ip)
 
         # Render and display the page.
@@ -474,7 +479,7 @@ class NetworkConfiguration(object):
                                interface = self.mesh_interface,
                                ip_address = self.mesh_ip,
                                netmask = self.mesh_netmask,
-                               client_ip = self.client_ip,
+                               client_ip = self.client_ip, error = error,
                                client_netmask = self.client_netmask)
         except:
             traceback = RichTraceback()
@@ -516,11 +521,13 @@ class NetworkConfiguration(object):
             hosts.write(line)
         hosts.close()
 
-        # Test for successful generation.
+        # Test for successful generation of the file.
+        error = False
         if not os.path.exists(self.hosts_file):
             # Set an error message and put the old file back.
             # MOOF MOOF MOOF - Error message goes here.
             os.rename(old_hosts_file, self.hosts_file)
+            error = True
         return
 
     # Generates an /etc/dnsmasq.conf.include file for the node.  Takes two
