@@ -34,16 +34,16 @@ from control_panel import *
 # interfaces.
 class Services(object):
     # Database used to store states of services and webapps.
-    servicedb = '/var/db/controlpanel/services.sqlite'
-    #servicedb = '/home/drwho/services.sqlite'
+    #servicedb = '/var/db/controlpanel/services.sqlite'
+    servicedb = '/home/drwho/services.sqlite'
 
     # Static class attributes.
     enabled_configs = '/etc/httpd/enabled_apps'
     disabled_configs = '/etc/httpd/disabled_apps'
     pid = '/var/run/httpd/httpd.pid'
 
-    # These attributes will be used as scratch variables to keep from running the
-    # same SQL queries over and over again.
+    # These attributes will be used as scratch variables to keep from running
+    # the same SQL queries over and over again.
     app = ''
     status = ''
     initscript = ''
@@ -201,6 +201,9 @@ class Services(object):
     # of the app.  This should never be called from anywhere other than
     # Services.webapps().
     def toggle_webapp(self, action=None):
+        # Set up a generic error catching variable for this page.
+        error = ''
+
         # Set up a connection to the services.sqlite database.
         database = sqlite3.connect(self.servicedb)
         cursor = database.cursor()
