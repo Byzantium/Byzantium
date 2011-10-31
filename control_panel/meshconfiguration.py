@@ -302,7 +302,7 @@ class MeshConfiguration(object):
         results = cursor.fetchall()
         for i in results:
             if i[0] != self.interface:
-                interfaces.append(i)
+                interfaces.append(i[0])
 
         # If there are no mesh interfaces configured anymore, then the node
         # is offline.
@@ -329,6 +329,7 @@ class MeshConfiguration(object):
         # If there is at least one wireless network interface still configured,
         # then re-run babeld.
         if len(interfaces):
+            print "DEBUG: value of babeld_command is %s" % babeld_command
             process = subprocess.Popen(babeld_command)
             time.sleep(self.babeld_timeout)
 
