@@ -38,11 +38,11 @@ class MeshConfiguration(object):
     babeld_pid = '/var/run/babeld.pid'
     babeld_timeout = 3
 
-    #netconfdb = '/var/db/controlpanel/network.sqlite'
-    netconfdb = '/home/drwho/network.sqlite'
+    netconfdb = '/var/db/controlpanel/network.sqlite'
+    #netconfdb = '/home/drwho/network.sqlite'
 
-    #meshconfdb = '/var/db/controlpanel/mesh.sqlite'
-    meshconfdb = '/home/drwho/mesh.sqlite'
+    meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+    #meshconfdb = '/home/drwho/mesh.sqlite'
 
     # Class attributes which apply to a network interface.  By default they
     # are blank but will be populated from the mesh.sqlite database if the
