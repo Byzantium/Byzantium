@@ -7,19 +7,27 @@
 <head>
 <meta charset="utf-8" />
 <title>${title}</title>
+<link rel="stylesheet" href="/controlpanel/css/reset.css" />
+<link rel="stylesheet" href="/controlpanel/css/style.css" />
+<link rel="stylesheet" href="/controlpanel/css/text.css" />
 </head>
 
+
 <body>
-<%include file="/includes/header.html" />
-<%include file="/includes/leftbar.html" />
+<div id="container">
 
-<div id="main" align="right">
+<div id="header"><%include file="/includes/header.html" /></div>
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
 
+<div id="mainInfo">
 <p>Mesh interface ${interface} IP configuration: ${ip_address}/${netmask}</p>
 
 <p>Mesh clients: ${client_ip}/${client_netmask}</p>
 
 <p>Now, <a href="/mesh">configure mesh routing</a>.</p>
+
+</div>
+<div id="footer"></div>
 
 </div>
 </body>

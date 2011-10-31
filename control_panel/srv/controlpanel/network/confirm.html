@@ -8,24 +8,33 @@
 <head>
 <meta charset="utf-8" />
 <title>${title}</title>
+<link rel="stylesheet" href="/controlpanel/css/reset.css" />
+<link rel="stylesheet" href="/controlpanel/css/style.css" />
+<link rel="stylesheet" href="/controlpanel/css/text.css" />
 </head>
 
+
 <body>
+<div id="container">
+
 <!-- Pull in the code for the top part of the page that says what this page is for. -->
-<%include file="/includes/header.html" />
+<div id="header"><%include file="/includes/header.html" /></div>
 
 <!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
-<%include file="/includes/leftbar.html" />
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
 
-<div id="main" align="right">
+<div id="mainInfo">
 <p>The network interface you want to enable is: ${interface}</p>
 <p>The mesh IP address is: ${mesh_ip}/${mesh_netmask}</p>
 <p>The client interface IP address is: ${client_ip}/${client_netmask}</p>
 
 <form action="set_ip" method="post">
 <input type="submit" value="Configure">
-<input type="button" name="Cancel" value="Cancel" onclick="window.location='/'">
+<input type="button" name="Cancel" value="Cancel" onClick="window.location='/'">
 </form>
+
+</div>
+<div id="footer"></div>
 
 </div>
 </body>

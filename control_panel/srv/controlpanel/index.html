@@ -7,45 +7,55 @@
 <head>
 <meta charset="utf-8" />
 <title>${title}</title>
+<link rel="stylesheet" href="css/reset.css" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/text.css" />
 </head>
 
+
 <body>
+<div id="container">
 <!-- Pull in the code for the top part of the page that says what this page is for. -->
-<%include file="/includes/header.html" />
+<div id="header"><%include file="/includes/header.html" /></div>
+
 
 <!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
-<%include file="/includes/leftbar.html" />
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
 
 <!-- This is where all of the content of the status page goes. -->
-<div id="main" align="right">
-<table border="1">
-<tr>
-<td>Node uptime:</td>
-<td>${uptime}</td>
-</tr>
-</table>
-
-<table border="1">
-<tr>
-<td>1 minute load</td>
-<td>5 minute load</td>
-<td>15 minute load</td>
-<td>memory (in kb)</td>
-<td>memory used (in kb)</td>
-<td>swap (in kb)</td>
-<td>swap used (in kb)</td>
-</tr>
-<tr>
-<td>${one_minute_load}</td>
-<td>${five_minute_load}</td>
-<td>${fifteen_minute_load}</td>
-<td>${ram}</td>
-<td>${ram_used}</td>
-<td>${swap}</td>
-<td>${swap_used}</td>
-</tr>
-</table>
-
+	<div id="nodeuptime">
+		<table border="1">
+		<tr>
+		<td>Node uptime:</td>
+		<td>${uptime}</td>
+		</tr>
+		</table>
+    </div>
+    
+    <div id="mainInfo">
+    	<table border="1">
+		<tr>
+		<td>1 minute load</td>
+		<td>5 minute load</td>
+		<td>15 minute load</td>
+		<td>memory (in kb)</td>
+		<td>memory used (in kb)</td>
+		<td>swap (in kb)</td>
+		<td>swap used (in kb)</td>
+		</tr>
+		<tr>
+		<td>${one_minute_load}</td>
+		<td>${five_minute_load}</td>
+		<td>${fifteen_minute_load}</td>
+		<td>${ram}</td>
+		<td>${ram_used}</td>
+		<td>${swap}</td>
+		<td>${swap_used}</td>
+		</tr>
+		</table>
+       </div> 
+ 
+	<div id="footer"></div>
+</div>
 </body>
-<!-- In case you haven't figured it out, I suck at web design. -The Doctor -->
 </html>
