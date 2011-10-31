@@ -1,0 +1,57 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/*
+  Forces backgrounds to span full width,
+  even if there is horizontal scrolling.
+  Increase this if your layout is wider.
+
+  Note: IE6 works fine without this fix.
+*/
+
+body {
+  min-width: 960px;
+  background-color: #33A1C9;
+}
+
+/* `Container
+----------------------------------------------------------------------------------------------------*/
+
+
+container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 95%;
+  background-color: #F0F8FF;
+  border: 2px solid #800000;
+  
+}	
+
+header {
+  background-color: #33A1C9;
+  height: 100px;  
+  text-align: center;
+}
+
+leftcolumn {
+  float: left;
+  width: 24%;
+  padding: 10px;
+  margin: 0;	
+}
+
+info {
+	float: right;
+	width: 76%;
+	margin: 10px;
+}
+
+ 
+
+footer  {
+  clear: both;	
+  background-color: #33A1C9;
+  height: 100px;  
+  text-align: center;
+}
+
