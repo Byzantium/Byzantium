@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
+<!-- /mesh/removefrommesh.html - The user elects to remove a wireless interface from the mesh. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+</head>
+
+<body>
+<!-- Pull in the code for the top part of the page that says what this page is for. -->
+<%include file="/includes/header.html" />
+
+<!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
+<%include file="/includes/leftbar.html" />
+
+<div id="main" align="right">
+
+<p>You have selected interface ${interface} to remove from the mesh.</p>
+
+<p>Click the "Remove" button to disable that interface or the "Cancel" button to abort!</p>
+<form action="disable" method="post">
+<input type="submit" value="Remove" />
+<input type="reset" value="Cancel" />
+</form>
+
+</div>
+</body>
+</html>
