@@ -279,8 +279,6 @@ class Services(object):
     # the name of the app.  This should never be called from anywhere other than
     # Services.services().
     def toggle_service(self, action=None):
-        print "DEBUG: Value of action == " + action
-
         # Set up an error handling variable just in case.
         error = ''
 
