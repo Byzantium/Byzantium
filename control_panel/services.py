@@ -228,8 +228,6 @@ class Services(object):
     # looks in the configuration database and switches 'enabled' to 'disabled'
     # or vice versa depending on what it finds.
     def services(self, service=None):
-        print "DEBUG: Entered Services.services()."
-
         # Save the name of the app in a class attribute to save effort later.
         self.app = service
 
@@ -292,6 +290,11 @@ class Services(object):
                        template)
         results = cursor.fetchall()
         self.initscript = results[0][1]
+
+        if action == 'activate':
+            status = 'active'
+        else:
+            status = 'disabled'
 
         # Construct the command line ahead of time to make the code a bit
         # simpler in the long run.
