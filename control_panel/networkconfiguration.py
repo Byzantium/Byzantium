@@ -39,8 +39,8 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 class NetworkConfiguration(object):
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
-    #netconfdb = '/var/db/controlpanel/network.sqlite'
-    netconfdb = '/home/drwho/network.sqlite'
+    netconfdb = '/var/db/controlpanel/network.sqlite'
+    #netconfdb = '/home/drwho/network.sqlite'
 
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
