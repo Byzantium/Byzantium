@@ -210,8 +210,6 @@ class Services(object):
         template = (status, self.app, )
         cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
         database.commit()
-
-        # Detach the system services database.
         cursor.close()
 
         # Render the HTML page and send it to the browser.
@@ -305,7 +303,9 @@ class Services(object):
         else:
             output = subprocess.Popen([initscript, 'start'])
 
-        # Detach the system services database.
+        # Update the status of the service in the database.
+        template = (status, self.app, )
+        cursor.execute("UPDATE daemons SET status=? WHERE name=?;", template)
         database.commit()
         cursor.close()
 
