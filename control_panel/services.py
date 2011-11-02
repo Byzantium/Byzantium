@@ -104,9 +104,11 @@ class Services(object):
                 # Set up the first cell in the row, the name of the webapp.
                 if status == 'active':
                     # White on green means that it's active.
+                    print "DEBUG: App %s is active." % name
                     services_row = services_row + "<td style='background-color:green; color:white;' >" + name + "</td>"
                 else:
                     # White on red means that it's not active.
+                    print "DEBUG: App %s is not active." % name
                     services_row = services_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
 
                 # Set up the second cell in the row, the toggle that will either
@@ -297,16 +299,22 @@ class Services(object):
         print "DEBUG: Value of initscript is %s." % results[0][1]
         self.initscript = results[0][1]
 
+        if action == 'activate':
+            status = 'active'
+        else:
+            status = 'disabled'
+
         # Construct the command line ahead of time to make the code a bit
         # simpler in the long run.
         initscript = '/etc/rc.d/' + self.initscript
+        print "DEBUG: Value of self.status is %s." % self.status
         if self.status == 'active':
             output = subprocess.Popen([initscript, 'stop'])
         else:
             output = subprocess.Popen([initscript, 'start'])
 
         # Update the status of the service in the database.
-        template = (self.status, self.app, )
+        template = (status, self.app, )
         cursor.execute("UPDATE daemons SET status=? WHERE name=?;", template)
         database.commit()
         cursor.close()
