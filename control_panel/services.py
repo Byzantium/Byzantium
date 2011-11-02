@@ -293,6 +293,8 @@ class Services(object):
         cursor.execute("SELECT name, initscript FROM daemons WHERE name=?;",
                        template)
         results = cursor.fetchall()
+        print "DEBUG: Value of results is %s." % str(results)
+        print "DEBUG: Value of initscript is %s." % results[0][1]
         self.initscript = results[0][1]
 
         # Construct the command line ahead of time to make the code a bit
@@ -304,7 +306,7 @@ class Services(object):
             output = subprocess.Popen([initscript, 'start'])
 
         # Update the status of the service in the database.
-        template = (status, self.app, )
+        template = (self.status, self.app, )
         cursor.execute("UPDATE daemons SET status=? WHERE name=?;", template)
         database.commit()
         cursor.close()
