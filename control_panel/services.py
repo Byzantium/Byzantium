@@ -305,13 +305,8 @@ class Services(object):
         else:
             output = subprocess.Popen([initscript, 'start'])
 
-        # Unfortunately, many of the initscripts are inconsistent in that they
-        # either don't generate /var/run/foo.pid files with predictable names
-        # or they don't generate them at all (but some support a 'status'
-        # argument on the command line).
-        # MOOF MOOF MOOF
-
         # Detach the system services database.
+        database.commit()
         cursor.close()
 
         # Render the HTML page and send it to the browser.
