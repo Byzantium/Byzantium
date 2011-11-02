@@ -104,11 +104,9 @@ class Services(object):
                 # Set up the first cell in the row, the name of the webapp.
                 if status == 'active':
                     # White on green means that it's active.
-                    print "DEBUG: App %s is active." % name
                     services_row = services_row + "<td style='background-color:green; color:white;' >" + name + "</td>"
                 else:
                     # White on red means that it's not active.
-                    print "DEBUG: App %s is not active." % name
                     services_row = services_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
 
                 # Set up the second cell in the row, the toggle that will either
@@ -230,8 +228,6 @@ class Services(object):
     # looks in the configuration database and switches 'enabled' to 'disabled'
     # or vice versa depending on what it finds.
     def services(self, service=None):
-        print "DEBUG: Entered Services.services()."
-
         # Save the name of the app in a class attribute to save effort later.
         self.app = service
 
@@ -281,8 +277,6 @@ class Services(object):
     # the name of the app.  This should never be called from anywhere other than
     # Services.services().
     def toggle_service(self, action=None):
-        print "DEBUG: Value of action == " + action
-
         # Set up an error handling variable just in case.
         error = ''
 
@@ -295,8 +289,6 @@ class Services(object):
         cursor.execute("SELECT name, initscript FROM daemons WHERE name=?;",
                        template)
         results = cursor.fetchall()
-        print "DEBUG: Value of results is %s." % str(results)
-        print "DEBUG: Value of initscript is %s." % results[0][1]
         self.initscript = results[0][1]
 
         if action == 'activate':
@@ -307,7 +299,6 @@ class Services(object):
         # Construct the command line ahead of time to make the code a bit
         # simpler in the long run.
         initscript = '/etc/rc.d/' + self.initscript
-        print "DEBUG: Value of self.status is %s." % self.status
         if self.status == 'active':
             output = subprocess.Popen([initscript, 'stop'])
         else:
