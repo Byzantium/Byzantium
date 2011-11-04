@@ -80,28 +80,34 @@ class MeshConfiguration(object):
             interfaces = ''
             active_interfaces = ''
             for i in results:
+                # Is the network interface is already configured?
                 if i[1] == 'yes':
                     # See if the interface is already in the mesh configuration
                     # database, and if it's not insert it.
                     template = (i[0], )
-                    meshconfcursor.execute("SELECT interface FROM meshes WHERE interface=?;", template)
+                    meshconfcursor.execute("SELECT interface, enabled FROM meshes WHERE interface=?;", template)
                     interface_found = meshconfcursor.fetchall()
                     if not interface_found:
                         template = ('no', i[0], 'babel', )
                         meshconfcursor.execute("INSERT INTO meshes VALUES (?, ?, ?);", template)
                         meshconfconn.commit()
 
-                    # This is a network interface that's ready to configure, so
-                    # add it to the HTML template as a button.
-                    interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' />\n"
+                        # This is a network interface that's ready to configure,
+                        # so add it to the HTML template as a button.
+                        interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' />\n"
+                     else:
+                         # If the interface is enabled, add it to the row of
+                         # active interfaces with a different color.
+                         if interface_found[1] == 'yes':
+                             active_interfaces = active_interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:green;' />\n"
 
                 else:
-                    # This interface isn't ready yet but it's in the database,
+                    # This interface isn't configured but it's in the database,
                     # so add it to the template as an unclickable button.
                     # While it might not be a good idea to put unusable buttons
                     # into the page, it would tell the user that the interfaces
                     # were detected.
-                    active_interfaces = active_interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:grey;' />\n"
+                    interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:grey;' />\n"
             meshconfcursor.close()
 
         # Clean up our connections to the configuration databases.
