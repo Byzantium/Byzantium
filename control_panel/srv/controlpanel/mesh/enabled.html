@@ -7,22 +7,31 @@
 <head>
 <meta charset="utf-8" />
 <title>${title}</title>
+<link rel="stylesheet" href="/css/reset.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/text.css" />
 </head>
 
+
 <body>
+<div id="container">
+
 <!-- Pull in the code for the top part of the page that says what this page is for. -->
-<%include file="/includes/header.html" />
+<div id="header"><%include file="/includes/header.html" /></div>
 
 <!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
-<%include file="/includes/leftbar.html" />
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
 
-<!-- This is where all of the content of the network traffic report page goes. -->
-<div id="main" align="right">
+<div id="mainInfo">
 
 <!-- Either an error message or a successful result will be displayed here. -->
 <p>${error}</p>
 <p>${output}</p>
 
 </div>
+<div id="footer"></div>
+
+</div>
 </body>
 </html>
+>

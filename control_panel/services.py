@@ -5,13 +5,6 @@
 # License: GPLv3
 
 # TODO:
-# - Make it so that the toggle buttons in Services.index() don't display the name
-#   of the service again, but 'enable' or 'disable' as appropriate.
-# - In Services.toggle_webapp(), if there is an error give the user the option
-#   to un-do the last change, forcibly kill Apache (just in case), clear out the
-#   PID file, and start Apache to get it back into a consistent state.  This
-#   should go into an error handler method (Services.apache_fixer()) with its
-#   own HTML file.
 # - List the initscripts in a config file to make them easier to edit?
 # - Come up with a method for determining whether or not a system service was
 #   successfully deactivated.  Not all services have initscripts, and of those
@@ -38,12 +31,10 @@ class Services(object):
     #servicedb = '/home/drwho/services.sqlite'
 
     # Static class attributes.
-    enabled_configs = '/etc/httpd/enabled_apps'
-    disabled_configs = '/etc/httpd/disabled_apps'
     pid = '/var/run/httpd/httpd.pid'
 
-    # These attributes will be used as scratch variables to keep from running the
-    # same SQL queries over and over again.
+    # These attributes will be used as scratch variables to keep from running
+    # the same SQL queries over and over again.
     app = ''
     status = ''
     initscript = ''
@@ -87,10 +78,10 @@ class Services(object):
                 # turn the web app off or on.
                 if status == 'active':
                     # Give the option to deactivate the app.
-                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
+                    webapp_row = webapp_row + "<td><button type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
                 else:
                     # Give the option to activate the app.
-                    webapp_row = webapp_row + "<td><input type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
+                    webapp_row = webapp_row + "<td><button type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' >Activate</button></td>"
 
                 # Set the closing tag of the row.
                 webapp_row = webapp_row + "</tr>\n"
@@ -122,10 +113,10 @@ class Services(object):
                 # turn the web app off or on.
                 if status == 'active':
                     # Give the option to deactivate the app.
-                    services_row = services_row + "<td><input type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' title='deactivate' ></td>"
+                    services_row = services_row + "<td><button type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
                 else:
                     # Give the option to activate the app.
-                    services_row = services_row + "<td><input type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' title='activate' ></td>"
+                    services_row = services_row + "<td><button type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' >Activate</button></td>"
 
                 # Set the closing tag of the row.
                 services_row = services_row + "</tr>\n"
@@ -167,7 +158,8 @@ class Services(object):
         # of the app that was passed to this method.  Note the status attached
         # to the name.
         template = (self.app, )
-        cursor.execute("SELECT name, status FROM webapps WHERE name=?;", template)
+        cursor.execute("SELECT name, status FROM webapps WHERE name=?;",
+                       template)
         result = cursor.fetchall()
         status = result[0][1]
 
@@ -196,17 +188,19 @@ class Services(object):
             return exceptions.html_error_template().render()
     webapps.exposed = True
 
-    # The method that does the actual heavy lifting of moving an Apache sub-config
-    # file into or out of /etc/httpd/conf/conf.d.  Takes one argument, the name
-    # of the app.  This should never be called from anywhere other than
-    # Services.webapps().
+    # The method that updates the services.sqlite database to flag a given web
+    # application as accessible to mesh users or not.  Takes one argument, the
+    # name of the app.
     def toggle_webapp(self, action=None):
+        # Set up a generic error catching variable for this page.
+        error = ''
+
         # Set up a connection to the services.sqlite database.
         database = sqlite3.connect(self.servicedb)
         cursor = database.cursor()
 
         if action == 'activate':
-            status = self.status
+            status = 'active'
             action = 'activated'
         else:
             status = 'disabled'
@@ -215,8 +209,7 @@ class Services(object):
         # Update the database with the new status.
         template = (status, self.app, )
         cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
-
-        # Detach the system services database.
+        database.commit()
         cursor.close()
 
         # Render the HTML page and send it to the browser.
@@ -235,8 +228,6 @@ class Services(object):
     # looks in the configuration database and switches 'enabled' to 'disabled'
     # or vice versa depending on what it finds.
     def services(self, service=None):
-        print "DEBUG: Entered Services.services()."
-
         # Save the name of the app in a class attribute to save effort later.
         self.app = service
 
@@ -286,8 +277,6 @@ class Services(object):
     # the name of the app.  This should never be called from anywhere other than
     # Services.services().
     def toggle_service(self, action=None):
-        print "DEBUG: Value of action == " + action
-
         # Set up an error handling variable just in case.
         error = ''
 
@@ -302,21 +291,23 @@ class Services(object):
         results = cursor.fetchall()
         self.initscript = results[0][1]
 
-        # Construct the command line ahead of time to make the code a bit simpler
-        # in the long run.
+        if action == 'activate':
+            status = 'active'
+        else:
+            status = 'disabled'
+
+        # Construct the command line ahead of time to make the code a bit
+        # simpler in the long run.
         initscript = '/etc/rc.d/' + self.initscript
         if self.status == 'active':
             output = subprocess.Popen([initscript, 'stop'])
         else:
             output = subprocess.Popen([initscript, 'start'])
 
-        # Unfortunately, many of the initscripts are inconsistent in that they
-        # either don't generate /var/run/foo.pid files with predictable names
-        # or they don't generate them at all (but some support a 'status' argument
-        # on the command line).
-        # MOOF MOOF MOOF
-
-        # Detach the system services database.
+        # Update the status of the service in the database.
+        template = (status, self.app, )
+        cursor.execute("UPDATE daemons SET status=? WHERE name=?;", template)
+        database.commit()
         cursor.close()
 
         # Render the HTML page and send it to the browser.

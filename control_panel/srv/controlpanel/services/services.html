@@ -6,16 +6,20 @@
 <head>
 <meta charset="utf-8" />
 <title>${title}</title>
+<link rel="stylesheet" href="/css/reset.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/text.css" />
 </head>
 
 <body>
+<div id="container">
 <!-- Pull in the code for the top part of the page that says what this page is for. -->
-<%include file="/includes/header.html" />
+<div id="header"><%include file="/includes/header.html" /></div>
 
 <!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
-<%include file="/includes/leftbar.html" />
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
 
-<div id="main" align="right">
+<div id="mainInfo">
 
 <p>You have chosen to ${action} the ${app} system service.</p>
 <p>${warning}  Are you sure you want to do this?</p>
@@ -26,6 +30,8 @@
 <input type="reset" value="Cancel" />
 </form>
 
+</div>
+<div id="footer"></div>
 </div>
 </body>
 </html>

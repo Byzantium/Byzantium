@@ -1,7 +1,11 @@
 <!DOCTYPE HTML>
-<!-- This includes all of the stuff to set up an HTML page. -->
 <!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
-<!-- /network/done.html - Interface configured.  Display results. -->
+<!-- /mesh/disabled.html - The user picks which mesh networking protocol (if there is a choice) to run on the
+     wireless interface. -->
+
+<!DOCTYPE HTML>
+<!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
+<!-- /mesh/removefrommesh.html - The user elects to remove a wireless interface from the mesh. -->
 
 <html>
 <head>
@@ -22,11 +26,10 @@
 
 
 <div id="mainInfo">
+
+<!-- Either an error message or a successful result will be displayed here. -->
 <p>${error}</p>
-
-<p>Mesh interface ${interface} IP configuration: ${ip_address}/${netmask}</p>
-
-<p>Now, <a href="/mesh">configure mesh routing</a>.</p>
+<p>${output}</p>
 
 </div>
 <div id="footer"></div>

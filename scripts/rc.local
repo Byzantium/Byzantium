@@ -16,6 +16,10 @@
 # Test for SSL cert and generate if necessary.
 /etc/rc.d/rc.ssl
 
+# Run the MySQL setup script.  If it's been run successfully in the past it'll
+# be a NOP.
+/etc/rc.d/rc.setup_mysql
+
 # Start Apache.
 /etc/rc.d/rc.httpd start
 

@@ -10,8 +10,6 @@
 #   (not counting lo) but it's wise to plan for the future.
 # - Find a way to prune network interfaces that have vanished.
 #   MOOF MOOF MOOF - Stubbed in.
-# - In NetworkConfiguration.make_hosts(), add code to display an error message
-#   on the control panel if the /etc/hosts.mesh file can't be created.
 
 # Import external modules.
 import cherrypy
@@ -385,6 +383,9 @@ class NetworkConfiguration(object):
 
     # Configure the network interface.
     def set_ip(self):
+        # Set up the error catcher variable.
+        error = ''
+
         # If we've made it this far, the user's decided to (re)configure a
         # network interface.  Full steam ahead, damn the torpedoes!
 
@@ -438,7 +439,7 @@ class NetworkConfiguration(object):
                         continue
 
             # "Victory is mine!"
-            # --Stewie, _Family Guy_
+            #     --Stewie, _Family Guy_
             break
 
         # Call ifconfig and set up the network configuration information.
@@ -463,7 +464,9 @@ class NetworkConfiguration(object):
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
-        self.make_hosts(self.client_ip)
+        success = self.make_hosts(self.client_ip)
+        if not success:
+            error = error + "<p>WARNING!  /etc/hosts.mesh not generated!  Something went wrong!</p>"
         self.configure_dnsmasq(self.client_ip)
 
         # Render and display the page.
@@ -474,7 +477,7 @@ class NetworkConfiguration(object):
                                interface = self.mesh_interface,
                                ip_address = self.mesh_ip,
                                netmask = self.mesh_netmask,
-                               client_ip = self.client_ip,
+                               client_ip = self.client_ip, error = error,
                                client_netmask = self.client_netmask)
         except:
             traceback = RichTraceback()
@@ -516,11 +519,11 @@ class NetworkConfiguration(object):
             hosts.write(line)
         hosts.close()
 
-        # Test for successful generation.
+        # Test for successful generation of the file.
+        error = False
         if not os.path.exists(self.hosts_file):
-            # Set an error message and put the old file back.
-            # MOOF MOOF MOOF - Error message goes here.
             os.rename(old_hosts_file, self.hosts_file)
+            error = True
         return
 
     # Generates an /etc/dnsmasq.conf.include file for the node.  Takes two

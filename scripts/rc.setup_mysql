@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# rc.setup_mysql - Initscript that runs whenever Byzantium boots and checks to
+#    see if the requisite MySQL databases exist, and if they don't executes the
+#    necessary commands to do so.  This is for Byzantium nodes that don't use
+#    persistent storage.
+
+# Variables.
+MYSQL_DIR="/var/lib/mysql"
+MYSQL_PASSWORD="byzantium12345"
+LOCKDOWN="/etc/lockdown.sql"
+DATABASE_DIR="/srv/httpd/databases"
+ETHERPAD_PASSWORD="byzantiumpad12345"
+STATUSNET_PASSWORD="byzantiummicroblog12345"
+
+# Test for the presence of the database 'mysql'.  If found, exit.
+if [ -d "$MYSQL_DIR/mysql" ]; then
+    echo "MySQL is already set up."
+    exit 1
+    fi
+
+# If we've made it this far, by definition MySQL hasn't been set up.  Full
+# speed ahead!
+
+# Install the default MySQL database structure.
+/usr/bin/mysql_install_db --user=mysql
+
+# If MySQL isn't running, start it.
+/etc/rc.d/rc.mysqld start
+
+# Set a (bad) default root password on the MySQL database server.
+/usr/bin/mysqladmin -u root password "$MYSQL_PASSWORD"
+
+# Perform a basic lockdown on MySQL.  Yes, this is ripped directly from
+# mysql_secure_installation - that utility seems designed specifically to
+# thwart automation.
+/usr/bin/mysql -h localhost -u root --password=$MYSQL_PASSWORD < $LOCKDOWN
+
+# Create databases for apps that need them.
+/usr/bin/mysqladmin -u root --password=$MYSQL_PASSWORD create etherpad
+/usr/bin/mysqladmin -u root --password=$MYSQL_PASSWORD create statusnet
+/usr/bin/mysql -h localhost -u root --password=$MYSQL_PASSWORD etherpad < $DATABASE_DIR/etherpad.sql
+/usr/bin/mysql -h localhost -u root --password=$MYSQL_PASSWORD statusnet < $DATABASE_DIR/statusnet.sql
+
+# For unknown reasons, this only works back-assward.
+echo "grant all on etherpad.* to 'etherpad'@'localhost' identified by '$ETHERPAD_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "grant all on statusnet.* to 'statusnet'@'localhost' identified by '$STATUSNET_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "flush privileges;" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+
+
+EOF
