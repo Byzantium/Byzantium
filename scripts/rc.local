@@ -25,3 +25,6 @@
 
 # Start dnsmasq.
 /etc/rc.d/rc.dnsmasq start
+
+# Start the control panel.
+/etc/rc.d/rc.byzantium start
