@@ -6,7 +6,7 @@
 
 PRGNAM=wifidog			# replace with name of program
 VERSION=${VERSION:-20090925}	# replace with version of program
-BUILD=${BUILD:-1}
+BUILD=${BUILD:-2}
 TAG=${TAG:-_SBo}		# the "_SBo" is required
 
 # Automatically determine the architecture we're building on:
@@ -75,6 +75,11 @@ CXXFLAGS="$SLKCFLAGS" \
 make
 make install DESTDIR=$PKG
 
+# Copy the init script and config file into place.
+mkdir -p $PKG/etc/rc.d
+cp wifidog.conf $PKG/etc/wifidog.conf.new
+cp scripts/init.d/wifidog $PKG/etc/rc.d/rc.wifidog.new
+
 # Strip binaries and libraries - this can be done with 'make install-strip'
 # in many source trees, and that's usually acceptable if so, but if not,
 # use this:
@@ -84,6 +89,7 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
 # Copy the slack-desc (and a custom doinst.sh if necessary) into ./install
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 # Make the package; be sure to leave it in $OUTPUT
 # If package symlinks need to be created during install *before*
