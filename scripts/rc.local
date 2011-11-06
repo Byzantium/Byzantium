@@ -10,6 +10,12 @@
 # Terminate GPM if it started.
 /etc/rc.d/rc.gpm stop
 
+# Terminate cupsd.
+/etc/rc.d/rc.cups stop
+
+# Make rc.sshd executable.
+chmod +x /etc/rc.d/rc.sshd
+
 # Use ifplugd to watch any Ethernet interfaces on this node.
 /etc/rc.d/rc.ifplugd start
 
