@@ -59,3 +59,5 @@ echo "GRANT ALL ON statusnet.* TO 'statusnet'@'localhost' IDENTIFIED BY '$STATUS
 
 echo "FLUSH PRIVILEGES;" | /usr/bin/mysql --defaults-file=$TEMPCONFIG 
 
+# Delete the temporary configuration file.
+rm -f $TEMPCONFIG
