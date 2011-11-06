@@ -15,51 +15,47 @@ STATUSNET_PASSWORD="byzantiummicroblog12345"
 
 LOCKDOWN="$DATABASE_DIR/lockdown.sql"
 
+TEMPCONFIG="/tmp/.mysql.cnf"
+
 # Test for the presence of the database 'mysql'.  If found, exit.
 if [ -d "$MYSQL_DIR/mysql" ]; then
     echo "MySQL is already set up."
     exit 1
     fi
 
+# See if the temporary configuration file exists.  If it doesn't, create it.
+if [ ! -f "$TEMPCONFIG" ]; then
+    touch $TEMPCONFIG
+    chmod 0600 $TEMPCONFIG
+    echo "[mysql]" >> $TEMPCONFIG
+    echo "user=root" >> $TEMPCONFIG
+    echo "password=$MYSQL_PASSWORD" >> $TEMPCONFIG
+    fi
+
 # If we've made it this far, by definition MySQL hasn't been set up.  Full
 # speed ahead!
 
 # Install the default MySQL database structure.
-echo "DEBUG: Running mysql_install_db.  We know this works."
 /usr/bin/mysql_install_db --user=mysql 1>/dev/null 2>/dev/null
 
 # If MySQL isn't running, start it.
 /etc/rc.d/rc.mysqld start
 
 # Set a (bad) default root password on the MySQL database server.
-echo "DEBUG: Setting root password to $MYSQL_PASSWORD."
 /usr/bin/mysqladmin -u root password $MYSQL_PASSWORD
-echo -n "DEBUG: Testing to see what the value of MYSQL_PASSWORD looks like: "
-echo $MYSQL_PASSWORD
 
 # Perform a basic lockdown on MySQL.  Yes, this is ripped directly from
 # mysql_secure_installation - that utility seems designed specifically to
 # thwart automation.
-echo "DEBUG: Running $LOCKDOWN."
-/usr/bin/mysql -h localhost -u root --password=$MYSQL_PASSWORD < $LOCKDOWN
-echo -n "DEBUG: Testing to see what the value of LOCKDOWN looks like: "
-echo $LOCKDOWN
+/usr/bin/mysql --defaults-file=$TEMPCONFIG < $LOCKDOWN
 
-# Create databases for apps that need them.
-/usr/bin/mysqladmin -u root --password=$MYSQL_PASSWORD create etherpad
-/usr/bin/mysqladmin -u root --password=$MYSQL_PASSWORD create statusnet
-echo -n "DEBUG: Testing to see what --password=MYSQL_PASSWORD looks like: "
-echo -- --password=$MYSQL_PASSWORD
-
-echo "DEBUG: Running database generation scripts."
-/usr/bin/mysql -h localhost -u root --password=$MYSQL_PASSWORD etherpad < $DATABASE_DIR/etherpad.sql
-/usr/bin/mysql -h localhost -u root --password=$MYSQL_PASSWORD statusnet < $DATABASE_DIR/statusnet.sql
+/usr/bin/mysql --defaults-file=$TEMPCONFIG < $DATABASE_DIR/etherpad.sql
+/usr/bin/mysql --defaults-file=$TEMPCONFIG < $DATABASE_DIR/statusnet.sql
 
 # For unknown reasons, this only works back-assward.
-echo "DEBUG: Creating application users and setting access privileges."
-echo "GRANT ALL ON etherpad.* TO 'etherpad'@'localhost' IDENTIFIED BY '$ETHERPAD_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "GRANT ALL ON etherpad.* TO 'etherpad'@'localhost' IDENTIFIED BY '$ETHERPAD_PASSWORD';" | /usr/bin/mysql --defaults-file=$TEMPCONFIG 
 
-echo "GRANT ALL ON statusnet.* TO 'statusnet'@'localhost' IDENTIFIED BY '$STATUSNET_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "GRANT ALL ON statusnet.* TO 'statusnet'@'localhost' IDENTIFIED BY '$STATUSNET_PASSWORD';" | /usr/bin/mysql --defaults-file=$TEMPCONFIG 
 
-echo "FLUSH PRIVILEGES;" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "FLUSH PRIVILEGES;" | /usr/bin/mysql --defaults-file=$TEMPCONFIG 
 
