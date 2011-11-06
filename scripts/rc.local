@@ -7,6 +7,9 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
+# Terminate GPM if it started.
+/etc/rc.d/rc.gpm stop
+
 # Use ifplugd to watch any Ethernet interfaces on this node.
 /etc/rc.d/rc.ifplugd start
 

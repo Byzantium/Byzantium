@@ -25,7 +25,7 @@ if [ -d "$MYSQL_DIR/mysql" ]; then
 # speed ahead!
 
 # Install the default MySQL database structure.
-/usr/bin/mysql_install_db --user=mysql
+/usr/bin/mysql_install_db --user=mysql 2>&1 /dev/null
 
 # If MySQL isn't running, start it.
 /etc/rc.d/rc.mysqld start
