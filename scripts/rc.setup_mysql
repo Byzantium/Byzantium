@@ -7,11 +7,13 @@
 
 # Variables.
 MYSQL_DIR="/var/lib/mysql"
-MYSQL_PASSWORD="byzantium12345"
-LOCKDOWN="/etc/lockdown.sql"
 DATABASE_DIR="/srv/httpd/databases"
+
+MYSQL_PASSWORD="byzantium12345"
 ETHERPAD_PASSWORD="byzantiumpad12345"
 STATUSNET_PASSWORD="byzantiummicroblog12345"
+
+LOCKDOWN="$DATABASE_DIR/lockdown.sql"
 
 # Test for the presence of the database 'mysql'.  If found, exit.
 if [ -d "$MYSQL_DIR/mysql" ]; then
@@ -44,8 +46,8 @@ if [ -d "$MYSQL_DIR/mysql" ]; then
 
 # For unknown reasons, this only works back-assward.
 echo "grant all on etherpad.* to 'etherpad'@'localhost' identified by '$ETHERPAD_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+
 echo "grant all on statusnet.* to 'statusnet'@'localhost' identified by '$STATUSNET_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+
 echo "flush privileges;" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
 
-
-EOF
