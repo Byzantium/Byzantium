@@ -1,0 +1,14 @@
+<html>
+<head>
+<title>Login Page</title>
+%%REFRESH%%
+</head>
+<body>
+<h1>Login Page</h1>
+<br />
+<p>Content.... Blah</p>
+<p>Blah blah</p>
+<br />
+<div align="center">%%BUTTON=Login%%</div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+wifidog-auth-lite
+
+README Document
+
+Alexandre Carmel-Veilleux
+<acv@miniguru.ca>
+
+INTRODUCTION
+============
+
+	Wifidog-auth-lite was initially a one-off project for
+Ile Sans Fil. The primary goal was to have NoCatSplash like
+behavior during a single one-day event Ile Sans Fil was being
+paid to provide wifi at.
+	This was in the beginning, when the gateway was still
+somewhat unstable and ISF was flat broke money-wise. And so
+we agreed to provide wifi and then when it came to the auth
+server, we weren't ready.
+	I volunteered to write this package and did so in a
+few hours, litteraly at the 11th hour in fact. I volunteered
+because at the time I was quite possibly the only one who
+know precisely how little the Gateway needed to get going.
+While the technical consensus was to trim down the Auth
+Server. Whereas I knew that a file containing only the
+following lines would successfully authenticate a user:
+
+-------------------
+Auth: 1
+Messages: |Bogus
+-------------------
+
+	And so I wrote that code, the event was held (that
+is a story in its own right) and then the code was quickly
+forgotten, rotted and then broke. It was no longer needed.
+	And now, I'm giving the code a second-life as a
+minimal implementation of the WifiDog protocol. The focus
+this time around will be two-fold:
+
+	1. Debugging gateway protocol interactions.
+
+	2. Providing a lightweight PHP4 base for anyone
+	   to start from when implementing their own
+	   auth server.
+
+	It's important to note that it is not a goal to
+develop an alternate auth server for Ile Sans Fil or even
+a new primary auth server to replace wifidog-auth. Highly
+motivated groupd will find the base useful but users that
+don't possess programming skills will be much better served
+trying to get wifidog-auth working then trying to make
+wifidog-auth-lite behave as they wish.
+	Wireless groups however will find that the debugging
+tools included very useful if they're having any network
+communications problem in their environment.
+	Incidental goals of this project will include the
+production of a detailed protocol specification and of tools
+to simulate a gateway to test auth servers.
