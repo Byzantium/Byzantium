@@ -25,13 +25,13 @@ if [ -d "$MYSQL_DIR/mysql" ]; then
 # speed ahead!
 
 # Install the default MySQL database structure.
-/usr/bin/mysql_install_db --user=mysql 2>&1 /dev/null
+/usr/bin/mysql_install_db --user=mysql 1>/dev/null 2>/dev/null
 
 # If MySQL isn't running, start it.
 /etc/rc.d/rc.mysqld start
 
 # Set a (bad) default root password on the MySQL database server.
-/usr/bin/mysqladmin -u root password "$MYSQL_PASSWORD"
+/usr/bin/mysqladmin -u root password $MYSQL_PASSWORD
 
 # Perform a basic lockdown on MySQL.  Yes, this is ripped directly from
 # mysql_secure_installation - that utility seems designed specifically to
@@ -41,13 +41,14 @@ if [ -d "$MYSQL_DIR/mysql" ]; then
 # Create databases for apps that need them.
 /usr/bin/mysqladmin -u root --password=$MYSQL_PASSWORD create etherpad
 /usr/bin/mysqladmin -u root --password=$MYSQL_PASSWORD create statusnet
+
 /usr/bin/mysql -h localhost -u root --password=$MYSQL_PASSWORD etherpad < $DATABASE_DIR/etherpad.sql
 /usr/bin/mysql -h localhost -u root --password=$MYSQL_PASSWORD statusnet < $DATABASE_DIR/statusnet.sql
 
 # For unknown reasons, this only works back-assward.
-echo "grant all on etherpad.* to 'etherpad'@'localhost' identified by '$ETHERPAD_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "GRANT ALL ON etherpad.* TO 'etherpad'@'localhost' IDENTIFIED BY '$ETHERPAD_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
 
-echo "grant all on statusnet.* to 'statusnet'@'localhost' identified by '$STATUSNET_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "GRANT ALL ON statusnet.* TO 'statusnet'@'localhost' IDENTIFIED BY '$STATUSNET_PASSWORD';" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
 
-echo "flush privileges;" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
+echo "FLUSH PRIVILEGES;" | /usr/bin/mysql -h localhost -u root --password=$PASSWORD
 
