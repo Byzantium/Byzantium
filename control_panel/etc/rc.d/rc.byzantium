@@ -10,4 +10,4 @@
 
 # Start the Byzantium control panel in a loop to ensure that it stays running.
 # Consider using supervise to keep an eye on it.
-python /usr/local/sbin/control_panel.py
+python /usr/local/sbin/control_panel.py &
