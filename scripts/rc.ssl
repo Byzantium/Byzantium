@@ -38,7 +38,10 @@ $OPENSSL req -new -key $PRIVATE_KEY -out $CERT_SIGN_REQ -sha1 -batch
 echo "Signing certificate."
 $OPENSSL x509 -req -days 365 -in $CERT_SIGN_REQ -signkey $PRIVATE_KEY -out $CERT -sha1
 
-echo "Diffie-Hellman parameters."
-$OPENSSL dhparam -2 -out $DH 2048
+#echo "Diffie-Hellman parameters."
+#$OPENSSL dhparam -2 -out $DH 2048
+
+echo "MOOF MOOF MOOF: Temporarily disabled the generation of Diffie-Hellman parameters"
+echo "for the purposes of testing.  They take a long, long time."
 
 chmod 0644 $PRIVATE_KEY $CERT_SIGN_REQ $CERT
