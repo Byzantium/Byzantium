@@ -15,21 +15,10 @@ STATUSNET_PASSWORD="byzantiummicroblog12345"
 
 LOCKDOWN="$DATABASE_DIR/lockdown.sql"
 
-TEMPCONFIG="/root/.my.cnf"
-
 # Test for the presence of the database 'mysql'.  If found, exit.
 if [ -d "$MYSQL_DIR/mysql" ]; then
     echo "MySQL is already set up."
     exit 1
-    fi
-
-# See if the temporary configuration file exists.  If it doesn't, create it.
-if [ ! -f "$TEMPCONFIG" ]; then
-    touch $TEMPCONFIG
-    chmod 0600 $TEMPCONFIG
-    echo "[mysql]" >> $TEMPCONFIG
-    echo "user=root" >> $TEMPCONFIG
-    echo "password=$MYSQL_PASSWORD" >> $TEMPCONFIG
     fi
 
 # If we've made it this far, by definition MySQL hasn't been set up.  Full
@@ -60,5 +49,3 @@ echo "FLUSH PRIVILEGES;" | /usr/bin/mysql -u root
 # Set a (bad) default root password on the MySQL database server.
 /usr/bin/mysqladmin -u root password $MYSQL_PASSWORD
 
-# Delete the temporary configuration file.
-rm -f $TEMPCONFIG
