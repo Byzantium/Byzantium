@@ -1,14 +1,13 @@
 <html>
-<head>
-<title>Login Page</title>
-%%REFRESH%%
-</head>
-<body>
-<h1>Login Page</h1>
-<br />
-<p>Content.... Blah</p>
-<p>Blah blah</p>
-<br />
-<div align="center">%%BUTTON=Login%%</div>
-</body>
+	<head>
+		<title>Login Page</title>
+		%%REFRESH%%
+		<link rel="stylesheet" type="text/css" href="authpuppy.css" />
+	</head>
+	<body>
+		<div id="page-header"><img alt="Logo" src="header-logo.png" /> Network Login</div>
+		<div id="page-name">Login Page</div>
+		<div id="content">Content.... Blah</div>
+		<div class="button" id="login">%%BUTTON=Login%%</div>
+	</body>
 </html>

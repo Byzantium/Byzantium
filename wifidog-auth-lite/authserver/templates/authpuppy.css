@@ -1,0 +1,44 @@
+/* CSS Stylesheet For The Byzantium Implementation Of Authpuppy */
+
+body {
+	color: #000000;
+	background-color: #ffffff;
+	font-family: Arial,Sans,Lucidia;
+}
+a:link {
+	color: #0000dd;
+	text-decoration: underline;
+}
+a:active {
+	color: #00dd00;
+	background-color: #0000dd;
+	text-decoration: underline;
+}
+a:visited {
+	color: #555555;
+	text-decoration: underline;
+}
+#page-header {
+	color: #333333;
+	background-color: #dddddd;
+	font-size: 40pt;
+	height: 15%;
+	width: 100%;
+	padding: 5px;
+	min-height: 10em;
+	display: table-cell;
+	vertical-align: middle;
+}
+#page-name {
+	font-size: 5%;
+}
+#content {
+	margin-left: auto;
+	margin-right: auto;
+	text-align: left;
+}
+.button #login {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}

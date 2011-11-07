@@ -1,10 +1,10 @@
 <html>
-<head>
-<title>Portal</title>
-</head>
-<body>
-<h1>Portal Page</h1>
-<br />
-<p>Yay, it worked</p>
-</body>
+	<head>
+		<title>Portal</title>
+		<link rel="stylesheet" type="text/css" href="authpuppy.css" />
+	</head>
+	<body>
+		<div id="page-heading">Portal Page</div>
+		<div id="content">Yay, it worked</div>
+	</body>
 </html>
