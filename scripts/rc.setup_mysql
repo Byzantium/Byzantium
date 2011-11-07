@@ -15,7 +15,7 @@ STATUSNET_PASSWORD="byzantiummicroblog12345"
 
 LOCKDOWN="$DATABASE_DIR/lockdown.sql"
 
-TEMPCONFIG="/root/.mysql.cnf"
+TEMPCONFIG="/root/.my.cnf"
 
 # Test for the presence of the database 'mysql'.  If found, exit.
 if [ -d "$MYSQL_DIR/mysql" ]; then
