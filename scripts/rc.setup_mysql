@@ -41,14 +41,15 @@ if [ ! -f "$TEMPCONFIG" ]; then
 # If MySQL isn't running, start it.
 /etc/rc.d/rc.mysqld start
 
-# Set a (bad) default root password on the MySQL database server.
-/usr/bin/mysqladmin -u root password $MYSQL_PASSWORD
-
 # Perform a basic lockdown on MySQL.  Yes, this is ripped directly from
 # mysql_secure_installation - that utility seems designed specifically to
 # thwart automation.
-/usr/bin/mysql --defaults-file=$TEMPCONFIG < $LOCKDOWN
+/usr/bin/mysql -u root < $LOCKDOWN
 
+# Set a (bad) default root password on the MySQL database server.
+/usr/bin/mysqladmin -u root password $MYSQL_PASSWORD
+
+# Create the applications' databases.
 /usr/bin/mysql --defaults-file=$TEMPCONFIG < $DATABASE_DIR/etherpad.sql
 /usr/bin/mysql --defaults-file=$TEMPCONFIG < $DATABASE_DIR/statusnet.sql
 

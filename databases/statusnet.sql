@@ -19,12 +19,6 @@
 -- Table structure for table `avatar`
 --
 
---
--- Create the statusnet database.
---
-CREATE DATABASE statusnet;
-USE statusnet;
-
 DROP TABLE IF EXISTS `avatar`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
