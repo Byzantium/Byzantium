@@ -47,8 +47,8 @@ if [ ! -f "$TEMPCONFIG" ]; then
 /usr/bin/mysql -u root < $LOCKDOWN
 
 # Create the applications' databases.
-/usr/bin/mysql --defaults-file=$TEMPCONFIG < $DATABASE_DIR/etherpad.sql
-/usr/bin/mysql --defaults-file=$TEMPCONFIG < $DATABASE_DIR/statusnet.sql
+/usr/bin/mysql -u root < $DATABASE_DIR/etherpad.sql
+/usr/bin/mysql -u root < $DATABASE_DIR/statusnet.sql
 
 # For unknown reasons, this only works back-assward.
 echo "GRANT ALL ON etherpad.* TO 'etherpad'@'localhost' IDENTIFIED BY '$ETHERPAD_PASSWORD';" | /usr/bin/mysql -u root
