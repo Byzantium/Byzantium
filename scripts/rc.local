@@ -29,7 +29,10 @@ chmod +x /etc/rc.d/rc.sshd
 # be a NOP.
 /etc/rc.d/rc.setup_mysql
 
-# Start Apache.
+# Try to start Apache again in caes the lack of SSL certs caused it to fail the
+# first time.  Trying to run the script a second time in the event Apache
+# already started up won't hurt anything because it'll detect the already
+# running instance and error out.
 /etc/rc.d/rc.httpd start
 
 # Start dnsmasq.
