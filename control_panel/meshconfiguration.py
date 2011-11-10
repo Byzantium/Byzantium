@@ -80,7 +80,7 @@ class MeshConfiguration(object):
             interfaces = ''
             active_interfaces = ''
             for i in results:
-                # Is the network interface is already configured?
+                # Is the network interface already configured?
                 if i[1] == 'yes':
                     # See if the interface is already in the mesh configuration
                     # database, and if it's not insert it.
