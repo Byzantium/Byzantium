@@ -15,6 +15,10 @@
 #   to remove it from the mesh.  Do that in the MeshConfiguration.index()
 #   method.
 # - Refactor code to split PID getting into a helper method.
+# - Add support for other mesh routing protocols for interoperability.  This
+#   will involve the user picking the routing protocol after picking the
+#   network interface.  This will also likely involve selecting multiple mesh
+#   routing protocols (i.e., babel+others).
 
 # Import external modules.
 import cherrypy
