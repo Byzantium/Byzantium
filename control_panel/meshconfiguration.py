@@ -98,12 +98,10 @@ class MeshConfiguration(object):
 
                         # This is a network interface that's ready to configure,
                         # so add it to the HTML template as a button.
-                        interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' />\n"
+                        interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:white;' />\n"
                     else:
                         # If the interface is enabled, add it to the row of
                         # active interfaces with a different color.
-                        print "DEBUG: value of interface_found[0] is %s." % interface_found[0][0]
-                        print "DEBUG: value of interface_found[1] is %s." % interface_found[0][1]
                         if interface_found[0][1] == 'yes':
                             active_interfaces = active_interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:green;' />\n"
                         else:
@@ -116,7 +114,7 @@ class MeshConfiguration(object):
                     # While it might not be a good idea to put unusable buttons
                     # into the page, it would tell the user that the interfaces
                     # were detected.
-                    interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:grey;' />\n"
+                    interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:orange;' />\n"
             meshconfcursor.close()
 
         # Clean up our connections to the configuration databases.
