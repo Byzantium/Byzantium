@@ -30,6 +30,13 @@ if [ -d "$MYSQL_DIR/mysql" ]; then
 # If MySQL isn't running, start it.
 /etc/rc.d/rc.mysqld start
 
+# Configure the lockdown script for this node.  For now, this means resetting
+# the root@localhost account's password to a hardcoded one.
+echo -n "UPDATE mysql.user SET Password=PASSWORD('" >> $LOCKDOWN
+echo -n $MYSQL_PASSWORD >> $LOCKDOWN
+echo "') WHERE User='root';" >> $LOCKDOWN
+echo "FLUSH PRIVILEGES;" >> $LOCKDOWN
+
 # Perform a basic lockdown on MySQL.  Yes, this is ripped directly from
 # mysql_secure_installation - that utility seems designed specifically to
 # thwart automation.
