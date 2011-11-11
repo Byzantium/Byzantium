@@ -465,8 +465,8 @@ class NetworkConfiguration(object):
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
-        success = self.make_hosts(self.client_ip)
-        if not success:
+        problem = self.make_hosts(self.client_ip)
+        if problem:
             error = error + "<p>WARNING!  /etc/hosts.mesh not generated!  Something went wrong!</p>"
         self.configure_dnsmasq(self.client_ip)
 
