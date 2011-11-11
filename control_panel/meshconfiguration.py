@@ -42,11 +42,11 @@ class MeshConfiguration(object):
     babeld_pid = '/var/run/babeld.pid'
     babeld_timeout = 3
 
-    netconfdb = '/var/db/controlpanel/network.sqlite'
-    #netconfdb = '/home/drwho/network.sqlite'
+    #netconfdb = '/var/db/controlpanel/network.sqlite'
+    netconfdb = '/home/drwho/network.sqlite'
 
-    meshconfdb = '/var/db/controlpanel/mesh.sqlite'
-    #meshconfdb = '/home/drwho/mesh.sqlite'
+    #meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+    meshconfdb = '/home/drwho/mesh.sqlite'
 
     # Class attributes which apply to a network interface.  By default they
     # are blank but will be populated from the mesh.sqlite database if the
@@ -99,11 +99,16 @@ class MeshConfiguration(object):
                         # This is a network interface that's ready to configure,
                         # so add it to the HTML template as a button.
                         interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' />\n"
-                     else:
-                         # If the interface is enabled, add it to the row of
-                         # active interfaces with a different color.
-                         if interface_found[1] == 'yes':
-                             active_interfaces = active_interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:green;' />\n"
+                    else:
+                        # If the interface is enabled, add it to the row of
+                        # active interfaces with a different color.
+                        print "DEBUG: value of interface_found[0] is %s." % interface_found[0][0]
+                        print "DEBUG: value of interface_found[1] is %s." % interface_found[0][1]
+                        if interface_found[0][1] == 'yes':
+                            active_interfaces = active_interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:green;' />\n"
+                        else:
+                            # The mesh interface hasn't been configured.
+                            interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' />\n"
 
                 else:
                     # This interface isn't configured but it's in the database,
