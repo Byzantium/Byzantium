@@ -7,7 +7,8 @@
 # TODO:
 # - Figure out what columns in the network configuration database to index.
 #   It's doubtful that a Byzantium node would have more than three interfaces
-#   (not counting lo) but it's wise to plan for the future.
+#   (not counting lo) but it's wise to plan for the future.  Profile based on
+#   which columns are SELECTed from most often.
 # - Find a way to prune network interfaces that have vanished.
 #   MOOF MOOF MOOF - Stubbed in.
 
@@ -503,10 +504,9 @@ class NetworkConfiguration(object):
             os.rename(self.hosts_file, old_hosts_file)
 
         # We can make a few assumptions given only the starting IP address of
-        # the client IP block.  Each node only has a /24 netblock for clients,
-        # so we only have to generate 254 entries for that file (.2-254).
-        # First, split the last octet off of the IP address passed to this
-        # method.
+        # the client IP block.  Each node has a /24 netblock for clients, so
+        # we only have to generate 254 entries for that file (.2-254).  First,
+        # split the last octet off of the IP address passed to this method.
         (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
         prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 
@@ -524,7 +524,7 @@ class NetworkConfiguration(object):
         if not os.path.exists(self.hosts_file):
             os.rename(old_hosts_file, self.hosts_file)
             error = True
-        return
+        return error
 
     # Generates an /etc/dnsmasq.conf.include file for the node.  Takes two
     # args, the starting IP address.
