@@ -39,8 +39,8 @@ echo "') WHERE User='root';" >> $LOCKDOWN
 echo "FLUSH PRIVILEGES;" >> $LOCKDOWN
 
 # Create the applications' databases.
-/usr/bin/mysql -u root < $DATABASE_DIR/etherpad.sql
-/usr/bin/mysql -u root < $DATABASE_DIR/statusnet.sql
+/usr/bin/mysql -h localhost -u root < $DATABASE_DIR/etherpad.sql
+/usr/bin/mysql -h localhost -u root < $DATABASE_DIR/statusnet.sql
 
 # Create the script that will set up the application accounts.
 touch $APPS
@@ -54,14 +54,14 @@ echo -n $STATUSNET_PASSWORD >> $APPS
 echo "';" >> $APPS
 
 # Set up the application accounts and passwords.
-/usr/bin/mysql -u root < $APPS
+/usr/bin/mysql -h localhost -u root < $APPS
 
 # Perform a basic lockdown on MySQL.  Yes, this is ripped directly from
 # mysql_secure_installation - that utility seems designed specifically to
 # thwart automation.  Note that this will also lock down the root accounts, so
 # anything that has to be done to the MySQL databases has to take place before
 # this point.
-/usr/bin/mysql -u root < $LOCKDOWN
+/usr/bin/mysql -h localhost -u root < $LOCKDOWN
 
 # Clean up after ourselves.
 rm -f $APPS
