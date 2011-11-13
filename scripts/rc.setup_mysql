@@ -30,6 +30,7 @@ if [ -d "$MYSQL_DIR/mysql" ]; then
 
 # If MySQL isn't running, start it.
 /etc/rc.d/rc.mysqld start
+sleep 10
 
 # Configure the lockdown script for this node.  For now, this means resetting
 # the root@localhost account's password to a hardcoded one.
