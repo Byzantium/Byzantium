@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+         |-----handy-ruler------------------------------------------------------|
+sweetspot: sweetspot (IP-based Captive Portal)
+sweetspot:
+sweetspot: Sweetspot is an Open Source implementation of the Network Access
+sweetspot: Controller software that could be used in conjunction with Captive
+sweetspot: Portal authentication and accounting technique in wired or wireless
+sweetspot: LANs (AKA hotspots).
+sweetspot:
+sweetspot: http://sweetspot.sourceforge.net/
+sweetspot:
+sweetspot:
+sweetspot:
