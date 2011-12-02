@@ -95,6 +95,11 @@ cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 
+# Copy the custom configuration file into the fakeroot before building the package.
+mkdir -p $PKG/etc/sweetspot
+cp $CWD/etc/sweetspot/sweetspot.conf $PKG/etc/sweetspot
+chmod 0644 $PKG/etc/sweetspot/sweetspot.conf
+
 # Make the package; be sure to leave it in $OUTPUT
 # If package symlinks need to be created during install *before*
 # your custom contents of doinst.sh runs, then add the -p switch to
