@@ -58,7 +58,7 @@ class NetworkConfiguration(object):
     gateway = 'no'
 
     # Set the netmasks aside so everything doesn't run together.
-    mesh_netmask = '255.255.255.255'
+    mesh_netmask = '255.255.0.0'
     client_netmask = '255.255.255.0'
 
     # Attributes for flat files that this object maintains for the client side
