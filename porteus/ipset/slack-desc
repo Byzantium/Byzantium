@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+     |-----handy-ruler------------------------------------------------------|
+ipset: ipset (administration tool for IP sets)
+ipset:
+ipset: IP sets are a framework inside the Linux 2.4.x and 2.6.x kernel, which
+ipset: can be administered by the ipset utility. Depending on the type,
+ipset: currently an IP set may store IP addresses, (TCP/UDP) port numbers
+ipset: or IP addresses with MAC addresses in a way, which ensures lightning
+ipset: speed when matching an entry against a set. 
+ipset:
+ipset: Homepage: http://ipset.netfilter.org/
+ipset:
+ipset:
