@@ -45,11 +45,17 @@ port = ''
 class CaptivePortal(object):
     # index(): Pretends to be / and /index.html.
     def index(self):
+        # Identify the primary language the client's web browser supports.
         clientlang = cherrypy.request.headers['Accept-Language']
         clientlang = clientlang.split(',')[0]
         if debug:
             print "DEBUG: Current browser language: %s" % clientlang
-        return "Hello, world!"
+
+        # Piece together the filename of the /index.html file to return based
+        # on the primary language.
+        indexhtml = "index.html." + clientlang
+        page = templatelookup.get_template(indexhtml)
+        return page.render()
     index.exposed = True
 
     # This will be the catch-all URI for captive portal.  Everything will

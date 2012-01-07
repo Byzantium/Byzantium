@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Welcome to Byzantium.</title>
+</head>
+<body>
+<p>You have connected to Byzantium, an ad-hoc wireless mesh network.  If you're seeing this, then chances are that
+Internet access where you are has either been cut off, or is compromised somehow, and someone has decided that it's too
+dangerous to use.</p>
+
+<p>If there is no gateway from the mesh to the Internet, then you will not have access to most online services.  Byzantium
+has a number of replacements for commonly used websites (such as Twitter, Gchat, and Etherpad) that we hope will help people
+exchange information and organize.  Please be careful: You can never be certain of who you're talking to, so use discretion
+when posting information, and unless you are absolutely certain of who someone is, do not give your real name or location.
+The life you save could be your own.</p>
+
+<p>If there is a gateway to the Internet, this node will inform you of this fact, and you will be able to access the rest of
+the Internet normally.</p>
+
+<p>Be careful, and good luck.</p>
+</body>
+</html>
