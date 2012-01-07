@@ -19,7 +19,7 @@ if [ -z "$ARCH" ]; then
   esac
 fi
 
-CWD=$(pwd)
+CWD="$(pwd)"
 TMP=${TMP:-/tmp/SBo}	# For consistency's sake, use this
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}	# Drop the package in /tmp
@@ -47,7 +47,7 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+tar xvf "$CWD/$PRGNAM-$VERSION.tar.gz"
 cd $PRGNAM-$VERSION
 chown -R root:root .
 find . \
@@ -89,11 +89,11 @@ cp -a \
   TODO \
   $PKG/usr/doc/$PRGNAM-$VERSION
 find doc ! -iname 'Makefile*' -exec cp '{}' $PKG/usr/doc/$PRGNAM-$VERSION \;
-cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat "$CWD/$PRGNAM.SlackBuild" > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 # Copy the slack-desc (and a custom doinst.sh if necessary) into ./install
 mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
+cat "$CWD/slack-desc" > $PKG/install/slack-desc
 
 # Make the package; be sure to leave it in $OUTPUT
 # If package symlinks need to be created during install *before*
