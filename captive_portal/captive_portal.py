@@ -34,16 +34,23 @@ configdir = '/etc/captiveportal'
 appconfig = os.path.join(configdir,'captiveportal.conf')
 cachedir = '/tmp/portalcache'
 
+# Command line arguments.
+debug = False
+interface = ''
+address = ''
+port = ''
+
 # The CaptivePortal class implements the actual captive portal stuff - the
 # HTML front-end and the IP tables interface.
 class CaptivePortal(object):
+    # index(): Pretends to be / and /index.html.
     def index(self):
+        clientlang = cherrypy.request.headers['Accept-Language']
+        clientlang = clientlang.split(',')[0]
+        if debug:
+            print "DEBUG: Current browser language: %s" % clientlang
         return "Hello, world!"
     index.exposed = True
-
-    if debug:
-        print "Request from client:"
-        print cherrypy.request
 
 # Helper methods used by the core code.
 # usage: Prints online help.  Takes no args, returns nothing.
@@ -58,86 +65,79 @@ def usage():
     print "\t-d / --debug: Enable debugging mode."
 
 # Core code.
-def main():
-    debug = False
-    interface = ''
-    address = ''
-    port = ''
+# Acquire the command line args.
+# h - Display online help.
+# i: - Interface to listen on.
+# a: - Address to listen on so we can figure out the network info later.
+# p: - Port to listen on.  Defaults to 31337.
+# d - Debugging mode.  This is new code.
+shortopts = 'hi:a:p:d'
+longopts = ['help', 'interface=', 'address=', 'port=', 'debug']
+try:
+    (opts, args) = getopt.getopt(sys.argv[1:], shortopts, longopts)
+except get.GetoptError:
+    print "ERROR: Bad command line argument."
+    usage()
+    exit(2)
 
-    # Acquire the command line args.
-    # h - Display online help.
-    # i: - Interface to listen on.
-    # a: - Address to listen on so we can figure out the network info later.
-    # p: - Port to listen on.  Defaults to 31337.
-    # d - Debugging mode.  This is new code.
-    shortopts = 'hi:a:p:d'
-    longopts = ['help', 'interface=', 'address=', 'port=', 'debug']
-    try:
-        (opts, args) = getopt.getopt(sys.argv[1:], shortopts, longopts)
-    except get.GetoptError:
-        print "ERROR: Bad command line argument."
+# Parse the command line args.
+for opt, arg in opts:
+    # Is the user asking for help?
+    if opt in ('-h', '--help'):
         usage()
-        exit(2)
+        exit(1)
 
-    # Parse the command line args.
-    for opt, arg in opts:
-        # Is the user asking for help?
-        if opt in ('-h', '--help'):
-            usage()
-            exit(1)
+    # User specifying the network interface to listen on.  This will be
+    # more helpful in bookkeeping than anything else.
+    if opt in ('-i', '--interface'):
+        interface = arg.rstrip()
 
-        # User specifying the network interface to listen on.  This will be
-        # more helpful in bookkeeping than anything else.
-        if opt in ('-i', '--interface'):
-            interface = arg.rstrip()
+    # User specifying the IP address to listen on.  This is more useful
+    # for network math than anything else.
+    if opt in ('-a', '--address'):
+        address = arg.rstrip()
 
-        # User specifying the IP address to listen on.  This is more useful
-        # for network math than anything else.
-        if opt in ('-a', '--address'):
-            address = arg.rstrip()
+    # User specifies the port to listen on.  This has a default.
+    if opt in ('-p', '--port'):
+        port = arg.rstrip()
+    else:
+        port = 31337
 
-        # User specifies the port to listen on.  This has a default.
-        if opt in ('-p', '--port'):
-            port = arg.rstrip()
-        else:
-            port = 31337
+    # User turns on debugging mode.
+    if opt in ('-d', '--debug'):
+        debug = True
+        print "Debugging mode on."
 
-        # User turns on debugging mode.
-        if opt in ('-d', '--debug'):
-            debug = True
+# If some arguments are missing, ABEND.
+if not interface:
+    print "ERROR: Missing command line argument."
+    exit(2)
+if not address:
+    print "ERROR: Missing command line argument."
+    exit(2)
 
-    # If some arguments are missing, ABEND.
-    if not interface:
-        print "ERROR: Missing command line argument."
-        exit(2)
-    if not address:
-        print "ERROR: Missing command line argument."
-        exit(2)
+# Set up the location the templates will be served out of.
+templatelookup = TemplateLookup(directories=[filedir],
+                module_directory=cachedir, collection_size=50)
 
-    # Set up the location the templates will be served out of.
-    templatelookup = TemplateLookup(directories=[filedir],
-                 module_directory=cachedir, collection_size=50)
+# Attach the captive portal object to the URL tree.
+root = CaptivePortal()
 
-    # Attach the captive portal object to the URL tree.
-    root = CaptivePortal()
+# Mount the object for the root of the URL tree, which happens to be the
+# system status page.  Use the application config file to set it up.
+if debug:
+    print "Mounting web app in %s to /." % appconfig
+cherrypy.tree.mount(root, "/", appconfig)
 
-    # Mount the object for the root of the URL tree, which happens to be the
-    # system status page.  Use the application config file to set it up.
-    if debug:
-        print "Mounting web app in %s to /." % appconfig
-    cherrypy.tree.mount(root, "/", appconfig)
+# Configure a few things about the web server so we don't have to fuss
+# with an extra config file, namely, the port and IP address to listen on.
+cherrypy.server.socket_port = port
+cherrypy.server.socket_host = address
 
-    # Configure a few things about the web server so we don't have to fuss
-    # with an extra config file, namely, the port and IP address to listen on.
-    cherrypy.server.socket_port = port
-    cherrypy.server.socket_host = address
-
-    # Start the web server.
-    if debug:
-        print "Starting web server."
-    cherrypy.engine.start()
+# Start the web server.
+if debug:
+    print "Starting web server."
+cherrypy.engine.start()
 
 # Insert opening anthem from Blaster Master here.
-if __name__=="__main__":
-    main()
 # Fin.
