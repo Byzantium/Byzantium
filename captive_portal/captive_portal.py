@@ -77,7 +77,7 @@ class CaptivePortal(object):
             print "DEBUG: Client's IP address: %s" % clientip
 
         # Set up the command string to add the client to the IP tables ruleset.
-        addclient = ['/usr/local/bin/captive-portal.sh', 'add', clientip,
+        addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip,
                    interface]
         iptables = subprocess.call(addclient)
 
@@ -175,7 +175,7 @@ cherrypy.server.socket_port = port
 cherrypy.server.socket_host = address
 
 # Initialize the IP tables ruleset for the node.
-initialize_iptables = ['/usr/local/bin/captive-portal.sh', 'initialize',
+initialize_iptables = ['/usr/local/sbin/captive-portal.sh', 'initialize',
                        address, interface]
 iptables = subprocess.call(initialize_iptables)
 
