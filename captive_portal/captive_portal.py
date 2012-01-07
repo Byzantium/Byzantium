@@ -58,6 +58,15 @@ class CaptivePortal(object):
         return page.render()
     index.exposed = True
 
+    # whitelist(): Takes the form input from /index.html/*, adds the IP address
+    # of the client to IP tables, and then flips the browser to the node's
+    # frontpage.  Takes one argument, a value for the variable 'accepted'.
+    # Returns an HTML page with an HTTP refresh as its sole content to the
+    # client.
+    def whitelist(self, accepted=None):
+
+    whitlelist.exposed = True
+
     # This will be the catch-all URI for captive portal.  Everything will
     # fall back to CaptivePortal.index().
     # MOOF MOOF MOOF

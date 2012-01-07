@@ -1,35 +1,94 @@
 #!/bin/bash
 
-# I've hard-coded the IP address and network address of the client network in this example.
-# Those should probably be parameterized so that they can be configured by the control-panel system.
+# Project Byzantium: captive-portal.sh
+# This script does the heavy lifting of IP tables manipulation under the
+# captive portal's hood.  It should only be used by the control panel.
+
+# Written by Sitwon and The Doctor.
+# License: GPLv3
 
 IPTABLES=/usr/sbin/iptables
 
-# Create a new chain for captive portal users
-$IPTABLES -N internet -t mangle
+# Set up the choice tree of options passed to this script.
+case "$1" in
+    'initialize')
+        # $2: IP address of the client interface.  Assumes final octet is .1.
 
-# These two rules exempt traffic which does not originate from the client network
-$IPTABLES -t mangle -A PREROUTING -p tcp ! -s 192.168.21.0/24 -j RETURN
-$IPTABLES -t mangle -A PREROUTING -p udp ! -s 192.168.21.0/24 -j RETURN
+        # Initialize the IP tables ruleset by creating a new chain for captive
+        # portal users.
+        $IPTABLES -N internet -t mangle
 
-# Traffic not exempted by above rules are kicked to the captive portal chain
-$IPTABLES -t mangle -A PREROUTING -j internet
+        # Convert the IP address of the client interface into a netblock.
+        CLIENTNET=`echo $2 | sed's/1$/0\/24/'`
 
-# This would be used to pre-load the captive portal chain with accepted users
-#awk 'BEGIN { FS="\t"; } { system("$IPTABLES -t mangle -A internet -m mac--mac-source "$4" -j RETURN"); }' /var/lib/users
+        # Exempt traffic which does not originate from the client network.
+        $IPTABLES -t mangle -A PREROUTING -p tcp ! -s $CLIENTNET -j RETURN
+        $IPTABLES -t mangle -A PREROUTING -p udp ! -s $CLIENTNET -j RETURN
 
-# Traffic not coming from an accepted user gets marked 99
-$IPTABLES -t mangle -A internet -j MARK --set-mark 99
-# When a user is accepted a rule is inserted above this one to match them and RETURN
+        # Traffic not exempted by the above rules gets kicked to the captive
+        # portal chain.  When a use clicks through a rule is inserted above
+        # this one that matches them with a RETURN.
+        $IPTABLES -t mangle -A PREROUTING -j internet
 
-# Traffic which has been marked 99 and is headed for TCP/80 should be redirected to the localhost (captive portal web server)
-$IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 -j DNAT --to-destination 192.168.21.1
-# All other traffic which is marked 99 is just dropped
-$IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
+        # Traffic not coming from an accepted user gets marked 99.
+        $IPTABLES -t mangle -A internet -j MARK --set-mark 99
 
-# Allow incomming traffic that is headed for our captive portal web server or local DNS server
-$IPTABLES -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
-$IPTABLES -t filter -A INPUT -p udp --dport 53 -j ACCEPT
-# But reject anything else that is comming from an unrecognized user
-$IPTABLES -t filter -A INPUT -m mark --mark 99 -j DROP
+        # $2 is actually the IP address of the client interface, so let's make
+        # it a bit more clear.
+        CLIENTIP=$2
 
+        # Traffic which has been marked 99 and is headed for 80/TCP or 443/TCP
+        # should be redirected to the captive portal web server.
+        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 \
+        -j DNAT --to-destination $CLIENTIP
+        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 \
+        -j DNAT --to-destination $CLIENTIP
+
+        # All other traffic which is marked 99 is just dropped
+        $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
+
+        # Allow incomming traffic that is headed for our apps.
+        $IPTABLES -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 443 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 9001 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p udp --dport 53 -j ACCEPT
+
+        # But reject anything else that is comming from unrecognized users.
+        $IPTABLES -t filter -A INPUT -m mark --mark 99 -j DROP
+        ;;
+    'add')
+        # $2: IP address of client.
+        CLIENT=$2
+
+        # Isolate the MAC address of the client in question.
+        CLIENTMAC=`arp -n | grep ':' | grep $CLIENT | awk '{print $3}'`
+
+        # Add the MAC address of the client to the whitelist, so it'll be able
+        # to access the mesh even if its IP address changes.
+        $IPTABLES -t mangle -A internet -m mac --mac-source $CLIENTMAC -j RETURN
+        ;;
+    'remove')
+        # $2: IP address of client.
+        CLIENT=$2
+
+        # Isolate the MAC address of the client in question.
+        CLIENTMAC=`arp -n | grep ':' | grep $CLIENT | awk '{print $3}'`
+
+        # Delete the MAC address of the client from the whitelist.
+        $IPTABLES -t mangle -D internet -m mac --mac-source $CLIENTMAC -j RETURN
+        ;;
+    'purge')
+        # Purge all of the IP tables rules.
+        $IPTABLES -F
+        $IPTABLES -X
+        $IPTABLES -t nat -F
+        $IPTABLES -t nat -X
+        $IPTABLES -t mangle -F
+        $IPTABLES -t mangle -X
+        $IPTABLES -t filter -F
+        $IPTABLES -t filter -X
+        ;;
+    *)
+        echo "USAGE: $0 {initialize <IP>|add <IP>|remove <IP>|purge}"
+        exit 0
+    esac
