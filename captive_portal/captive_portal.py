@@ -41,6 +41,10 @@ class CaptivePortal(object):
         return "Hello, world!"
     index.exposed = True
 
+    if debug:
+        print "Request from client:"
+        print cherrypy.request
+
 # Helper methods used by the core code.
 # usage: Prints online help.  Takes no args, returns nothing.
 def usage():
