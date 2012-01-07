@@ -31,13 +31,15 @@ import getopt
 # Global variables.
 filedir = '/srv/captiveportal'
 configdir = '/etc/captiveportal'
-globalconfig = os.path.join(configdir,'captiveportalGlobal.conf')
-appconfig = os.path.join(configdir,'captiveportall.conf')
+appconfig = os.path.join(configdir,'captiveportal.conf')
 cachedir = '/tmp/portalcache'
 
 # The CaptivePortal class implements the actual captive portal stuff - the
 # HTML front-end and the IP tables interface.
-#class CaptivePortal(object):
+class CaptivePortal(object):
+    def index(self):
+        return "Hello, world!"
+    index.exposed = True
 
 # Helper methods used by the core code.
 # usage: Prints online help.  Takes no args, returns nothing.
@@ -54,6 +56,9 @@ def usage():
 # Core code.
 def main():
     debug = False
+    interface = ''
+    address = ''
+    port = ''
 
     # Acquire the command line args.
     # h - Display online help.
@@ -109,11 +114,6 @@ def main():
     templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=50)
 
-    # Read in the name and location of the appserver's global config file.
-    if debug:
-        print "Opening CherryPy global configuration file %s." % globalconfig
-    cherrypy.config.update(globalconfig)
-
     # Attach the captive portal object to the URL tree.
     root = CaptivePortal()
 
@@ -122,6 +122,11 @@ def main():
     if debug:
         print "Mounting web app in %s to /." % appconfig
     cherrypy.tree.mount(root, "/", appconfig)
+
+    # Configure a few things about the web server so we don't have to fuss
+    # with an extra config file, namely, the port and IP address to listen on.
+    cherrypy.server.socket_port = port
+    cherrypy.server.socket_host = address
 
     # Start the web server.
     if debug:
