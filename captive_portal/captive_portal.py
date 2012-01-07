@@ -52,6 +52,13 @@ class CaptivePortal(object):
         return "Hello, world!"
     index.exposed = True
 
+    # This will be the catch-all URI for captive portal.  Everything will
+    # fall back to CaptivePortal.index().
+    # MOOF MOOF MOOF
+    #def default (self, *args):
+    #    self.index()
+    #default.exposed = True
+
 # Helper methods used by the core code.
 # usage: Prints online help.  Takes no args, returns nothing.
 def usage():
