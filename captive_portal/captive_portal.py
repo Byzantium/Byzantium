@@ -29,9 +29,9 @@ import sys
 import getopt
 
 # Global variables.
-filedir = '/srv/captive_portal'
-configdir = '/etc/captive_portal'
-globalconfig = os.path.join(configdir,'captive_portalGlobal.conf')
+filedir = '/srv/captiveportal'
+configdir = '/etc/captiveportal'
+globalconfig = os.path.join(configdir,'captiveportalGlobal.conf')
 appconfig = os.path.join(configdir,'captiveportall.conf')
 cachedir = '/tmp/portalcache'
 
@@ -53,6 +53,8 @@ def usage():
 
 # Core code.
 def main():
+    debug = False
+
     # Acquire the command line args.
     # h - Display online help.
     # i: - Interface to listen on.
