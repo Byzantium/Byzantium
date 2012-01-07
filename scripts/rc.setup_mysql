@@ -14,6 +14,7 @@ ETHERPAD_PASSWORD="byzantiumpad12345"
 STATUSNET_PASSWORD="byzantiummicroblog12345"
 
 LOCKDOWN="$DATABASE_DIR/lockdown.sql"
+APPS="/tmp/apps.sql"
 
 # Test for the presence of the database 'mysql'.  If found, exit.
 if [ -d "$MYSQL_DIR/mysql" ]; then
@@ -24,28 +25,44 @@ if [ -d "$MYSQL_DIR/mysql" ]; then
 # If we've made it this far, by definition MySQL hasn't been set up.  Full
 # speed ahead!
 
-# Install the default MySQL database structure.
+# Install the default MySQL databases.
 /usr/bin/mysql_install_db --user=mysql 1>/dev/null 2>/dev/null
 
 # If MySQL isn't running, start it.
 /etc/rc.d/rc.mysqld start
+sleep 10
+
+# Configure the lockdown script for this node.  For now, this means resetting
+# the root@localhost account's password to a hardcoded one.
+echo -n "UPDATE mysql.user SET Password=PASSWORD('" >> $LOCKDOWN
+echo -n $MYSQL_PASSWORD >> $LOCKDOWN
+echo "') WHERE User='root';" >> $LOCKDOWN
+echo "FLUSH PRIVILEGES;" >> $LOCKDOWN
+
+# Create the applications' databases.
+/usr/bin/mysql -h localhost -u root < $DATABASE_DIR/etherpad.sql
+/usr/bin/mysql -h localhost -u root < $DATABASE_DIR/statusnet.sql
+
+# Create the script that will set up the application accounts.
+touch $APPS
+
+echo -n "GRANT ALL ON etherpad.* TO 'etherpad'@'localhost' IDENTIFIED BY '" >> $APPS
+echo -n $ETHERPAD_PASSWORD >> $APPS
+echo "';" >> $APPS
+
+echo -n "GRANT ALL ON statusnet.* TO 'statusnet'@'localhost' IDENTIFIED BY '" >> $APPS
+echo -n $STATUSNET_PASSWORD >> $APPS
+echo "';" >> $APPS
+
+# Set up the application accounts and passwords.
+/usr/bin/mysql -h localhost -u root < $APPS
 
 # Perform a basic lockdown on MySQL.  Yes, this is ripped directly from
 # mysql_secure_installation - that utility seems designed specifically to
-# thwart automation.
-/usr/bin/mysql -u root < $LOCKDOWN
+# thwart automation.  Note that this will also lock down the root accounts, so
+# anything that has to be done to the MySQL databases has to take place before
+# this point.
+/usr/bin/mysql -h localhost -u root < $LOCKDOWN
 
-# Create the applications' databases.
-/usr/bin/mysql -u root < $DATABASE_DIR/etherpad.sql
-/usr/bin/mysql -u root < $DATABASE_DIR/statusnet.sql
-
-# For unknown reasons, this only works back-assward.
-echo "GRANT ALL ON etherpad.* TO 'etherpad'@'localhost' IDENTIFIED BY '$ETHERPAD_PASSWORD';" | /usr/bin/mysql -u root
-
-echo "GRANT ALL ON statusnet.* TO 'statusnet'@'localhost' IDENTIFIED BY '$STATUSNET_PASSWORD';" | /usr/bin/mysql -u root
-
-echo "FLUSH PRIVILEGES;" | /usr/bin/mysql -u root
-
-# Set a (bad) default root password on the MySQL database server.
-/usr/bin/mysqladmin -u root password $MYSQL_PASSWORD
-
+# Clean up after ourselves.
+rm -f $APPS

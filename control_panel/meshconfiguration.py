@@ -15,6 +15,10 @@
 #   to remove it from the mesh.  Do that in the MeshConfiguration.index()
 #   method.
 # - Refactor code to split PID getting into a helper method.
+# - Add support for other mesh routing protocols for interoperability.  This
+#   will involve the user picking the routing protocol after picking the
+#   network interface.  This will also likely involve selecting multiple mesh
+#   routing protocols (i.e., babel+others).
 
 # Import external modules.
 import cherrypy
@@ -80,7 +84,7 @@ class MeshConfiguration(object):
             interfaces = ''
             active_interfaces = ''
             for i in results:
-                # Is the network interface is already configured?
+                # Is the network interface already configured?
                 if i[1] == 'yes':
                     # See if the interface is already in the mesh configuration
                     # database, and if it's not insert it.
@@ -94,12 +98,15 @@ class MeshConfiguration(object):
 
                         # This is a network interface that's ready to configure,
                         # so add it to the HTML template as a button.
-                        interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' />\n"
-                     else:
-                         # If the interface is enabled, add it to the row of
-                         # active interfaces with a different color.
-                         if interface_found[1] == 'yes':
-                             active_interfaces = active_interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:green;' />\n"
+                        interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:white;' />\n"
+                    else:
+                        # If the interface is enabled, add it to the row of
+                        # active interfaces with a different color.
+                        if interface_found[0][1] == 'yes':
+                            active_interfaces = active_interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:green;' />\n"
+                        else:
+                            # The mesh interface hasn't been configured.
+                            interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' />\n"
 
                 else:
                     # This interface isn't configured but it's in the database,
@@ -107,7 +114,7 @@ class MeshConfiguration(object):
                     # While it might not be a good idea to put unusable buttons
                     # into the page, it would tell the user that the interfaces
                     # were detected.
-                    interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:grey;' />\n"
+                    interfaces = interfaces + "<input type='submit' name='interface' value='" + i[0] + "' style='background-color:orange;' />\n"
             meshconfcursor.close()
 
         # Clean up our connections to the configuration databases.
