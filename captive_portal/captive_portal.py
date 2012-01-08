@@ -17,6 +17,8 @@
 #    0: Normal termination.
 #    1: Insufficient CLI args.
 #    2: Bad CLI args.
+#    3: Bad IP tables commands during initialization.
+#    4: Bad parameters passed to IP tables during initialization.
 
 # v0.1 - Initial release.
 
@@ -27,6 +29,8 @@ from mako.lookup import TemplateLookup
 import os
 import sys
 import getopt
+import subprocess
+from subprocess import call
 
 # Global variables.
 filedir = '/srv/captiveportal'
@@ -162,8 +166,23 @@ cherrypy.server.socket_port = port
 cherrypy.server.socket_host = address
 
 # Initialize the IP tables ruleset for the node.
-initialize = ['/usr/local/bin/captive-portal.sh', 'initialize', address,
-              interface]
+initialize_iptables = ['/usr/local/bin/captive-portal.sh', 'initialize',
+                       address, interface]
+iptables = subprocess.call(initialize_iptables)
+
+# Now do some error checking in case IP tables went pear-shaped.  This appears
+# oddly specific, but /usr/sbin/iptables treats these two kinds of errors
+# differently, and that makes a difference during troubleshooting.
+if iptables == 1:
+    print "ERROR: Unknown IP tables error during firewall initialization."
+    print "Packet filters NOT configured.  Examine the rules in captive-portal.sh."
+    exit(3)
+
+if iptables == 2:
+    print "ERROR: Invalid or incorrect options passed to iptables in captive-portal.sh"
+    print "Packet filters NOT configured.  Examine the rules in captive-portal.sh."
+    print "Parameters passed to captive-portal.sh: initialize, %s, %s" % address, interface
+    exit(4)
 
 # Start the web server.
 if debug:
