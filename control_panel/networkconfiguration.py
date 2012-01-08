@@ -11,6 +11,8 @@
 #   which columns are SELECTed from most often.
 # - Find a way to prune network interfaces that have vanished.
 #   MOOF MOOF MOOF - Stubbed in.
+# - Refactor exit signal checking for captive_portal.py to suck less than a
+#   bunch of nested IF statements.
 
 # Import external modules.
 import cherrypy
@@ -462,6 +464,24 @@ class NetworkConfiguration(object):
         cursor.execute("UPDATE wireless SET enabled=?, channel=?, essid=?, mesh_interface=?, client_interface=? WHERE mesh_interface=?;", template)
         connection.commit()
         cursor.close()
+
+        # Start the captive portal daemon.  This will also initialize the IP
+        # tables ruleset for the client interface.
+        # MOOF MOOF MOOF - Daemon runs in debug mode by default.  For now.
+        captive_portal_daemon = ['/usr/local/sbin/captive_portal.py', '-i',
+                                 self.mesh_interface, '-a', self.client_ip,
+                                 '-d' ]
+        captive_portal_return = subprocess.Popen(captive_portal_daemon)
+
+        # Now do some error checking.
+        if captive_portal_return == 1:
+            error = error + "<p>WARNING!  captive_portal.py exited with code 2 - insufficient command line arguments passed to daemon!</p>"
+        if captive_portal_return == 2:
+            error = error + "<p>WARNING!  captive_portal.py exited with code 2 - bad arguments passed to daemon!</p>"
+        if captive_portal_return == 3:
+            error = error + "<p>WARNING!  captive_portal.py exited with code 3 - bad IP tables commands during firewall initialization!</p>"
+        if captive_portal_return == 4:
+            error = error + "<p>WARNING!  captive_portal.py exited with code 3 - bad parameters passed to IP tables!</p>"
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
