@@ -19,5 +19,8 @@ The life you save could be your own.</p>
 the Internet normally.</p>
 
 <p>Be careful, and good luck.</p>
+<form action="whitelist" method="post">
+<input type="submit" name="accepted" value="OK"></input>
+</form>
 </body>
 </html>

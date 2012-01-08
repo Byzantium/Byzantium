@@ -22,6 +22,9 @@
 
 # v0.1 - Initial release.
 
+# TODO:
+# - Write a 404 handler that redirects everything to /index.html.<lang>
+
 # Modules.
 import cherrypy
 from mako.template import Template
@@ -69,7 +72,7 @@ class CaptivePortal(object):
     # client.
     def whitelist(self, accepted=None):
         # Extract the client's IP address from the client headers.
-        clientip = cherrypy.request.remoteAddr
+        clientip = cherrypy.request.headers['Remote-Addr']
         if debug:
             print "DEBUG: Client's IP address: %s" % clientip
 
@@ -88,13 +91,6 @@ class CaptivePortal(object):
         # Fire the redirect at the client.
         return redirect
     whitelist.exposed = True
-
-    # This will be the catch-all URI for captive portal.  Everything will
-    # fall back to CaptivePortal.index().
-    # MOOF MOOF MOOF
-    #def default (self, *args):
-    #    self.index()
-    #default.exposed = True
 
 # Helper methods used by the core code.
 # usage: Prints online help.  Takes no args, returns nothing.
@@ -179,10 +175,9 @@ cherrypy.server.socket_port = port
 cherrypy.server.socket_host = address
 
 # Initialize the IP tables ruleset for the node.
-#initialize_iptables = ['/usr/local/bin/captive-portal.sh', 'initialize',
-#                       address, interface]
-#iptables = subprocess.call(initialize_iptables)
-iptables = 0
+initialize_iptables = ['/usr/local/bin/captive-portal.sh', 'initialize',
+                       address, interface]
+iptables = subprocess.call(initialize_iptables)
 
 # Now do some error checking in case IP tables went pear-shaped.  This appears
 # oddly specific, but /usr/sbin/iptables treats these two kinds of errors
