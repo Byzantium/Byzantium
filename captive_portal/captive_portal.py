@@ -34,7 +34,7 @@ configdir = '/etc/captiveportal'
 appconfig = os.path.join(configdir,'captiveportal.conf')
 cachedir = '/tmp/portalcache'
 
-# Command line arguments.
+# Command line arguments to the server.
 debug = False
 interface = ''
 address = ''
@@ -58,12 +58,17 @@ class CaptivePortal(object):
         return page.render()
     index.exposed = True
 
-    # whitelist(): Takes the form input from /index.html/*, adds the IP address
+    # whitelist(): Takes the form input from /index.html.*, adds the IP address
     # of the client to IP tables, and then flips the browser to the node's
     # frontpage.  Takes one argument, a value for the variable 'accepted'.
     # Returns an HTML page with an HTTP refresh as its sole content to the
     # client.
     def whitelist(self, accepted=None):
+        # Extract the client's IP address from the client headers.
+        clientip = cherrypy.request.remoteAddr
+
+        # Set up the command string to add the client to the IP tables ruleset.
+        command = ['/usr/local/bin/captive-portal.sh', clientip]
 
     whitlelist.exposed = True
 
@@ -148,7 +153,7 @@ root = CaptivePortal()
 # Mount the object for the root of the URL tree, which happens to be the
 # system status page.  Use the application config file to set it up.
 if debug:
-    print "Mounting web app in %s to /." % appconfig
+    print "DEBUG: Mounting web app in %s to /." % appconfig
 cherrypy.tree.mount(root, "/", appconfig)
 
 # Configure a few things about the web server so we don't have to fuss
@@ -156,9 +161,13 @@ cherrypy.tree.mount(root, "/", appconfig)
 cherrypy.server.socket_port = port
 cherrypy.server.socket_host = address
 
+# Initialize the IP tables ruleset for the node.
+initialize = ['/usr/local/bin/captive-portal.sh', 'initialize', address,
+              interface]
+
 # Start the web server.
 if debug:
-    print "Starting web server."
+    print "DEBUG: Starting web server."
 cherrypy.engine.start()
 
 # Insert opening anthem from Blaster Master here.
