@@ -70,11 +70,24 @@ class CaptivePortal(object):
     def whitelist(self, accepted=None):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.remoteAddr
+        if debug:
+            print "DEBUG: Client's IP address: %s" % clientip
 
         # Set up the command string to add the client to the IP tables ruleset.
-        command = ['/usr/local/bin/captive-portal.sh', clientip]
+        addclient = ['/usr/local/bin/captive-portal.sh', 'add', clientip,
+                   interface]
+        iptables = subprocess.call(addclient)
 
-    whitlelist.exposed = True
+        # Assemble some HTML to redirect the client to the node's frontpage.
+        redirect = """<html><head><meta http-equiv="refresh" content="0; url=https://""" + address + """/" /></head> <body></body> </html>"""
+
+        if debug:
+            print "DEBUG: Generated HTML refresh is:"
+            print redirect
+
+        # Fire the redirect at the client.
+        return redirect
+    whitelist.exposed = True
 
     # This will be the catch-all URI for captive portal.  Everything will
     # fall back to CaptivePortal.index().
@@ -149,7 +162,7 @@ if not address:
 
 # Set up the location the templates will be served out of.
 templatelookup = TemplateLookup(directories=[filedir],
-                module_directory=cachedir, collection_size=50)
+                 module_directory=cachedir, collection_size=100)
 
 # Attach the captive portal object to the URL tree.
 root = CaptivePortal()
@@ -166,9 +179,10 @@ cherrypy.server.socket_port = port
 cherrypy.server.socket_host = address
 
 # Initialize the IP tables ruleset for the node.
-initialize_iptables = ['/usr/local/bin/captive-portal.sh', 'initialize',
-                       address, interface]
-iptables = subprocess.call(initialize_iptables)
+#initialize_iptables = ['/usr/local/bin/captive-portal.sh', 'initialize',
+#                       address, interface]
+#iptables = subprocess.call(initialize_iptables)
+iptables = 0
 
 # Now do some error checking in case IP tables went pear-shaped.  This appears
 # oddly specific, but /usr/sbin/iptables treats these two kinds of errors
