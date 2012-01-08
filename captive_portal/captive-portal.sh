@@ -55,10 +55,13 @@ case "$1" in
         $IPTABLES -t filter -A FORWARD -i $INTERFACE -m mark --mark 99 -j DROP
 
         # Allow incomming traffic that is headed for our apps.
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -p tcp --dport 53 -j ACCEPT
         $IPTABLES -t filter -A INPUT -i $INTERFACE -p tcp --dport 80 -j ACCEPT
         $IPTABLES -t filter -A INPUT -i $INTERFACE -p tcp --dport 443 -j ACCEPT
         $IPTABLES -t filter -A INPUT -i $INTERFACE -p tcp --dport 9001 -j ACCEPT
         $IPTABLES -t filter -A INPUT -i $INTERFACE -p udp --dport 53 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -p udp --dport 67 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -p udp --dport 6696 -j ACCEPT
 
         # But reject anything else that is comming from unrecognized users.
         $IPTABLES -t filter -A INPUT -i $INTERFACE -m mark --mark 99 -j DROP
