@@ -468,10 +468,15 @@ class NetworkConfiguration(object):
         # Start the captive portal daemon.  This will also initialize the IP
         # tables ruleset for the client interface.
         # MOOF MOOF MOOF - Daemon runs in debug mode by default.  For now.
-        captive_portal_daemon = ['/usr/local/sbin/captive_portal.py', '-i',
-                                 self.mesh_interface, '-a', self.client_ip,
-                                 '-d' ]
-        captive_portal_return = subprocess.Popen(captive_portal_daemon)
+        #captive_portal_daemon = ['/usr/local/sbin/captive_portal.py', '-i',
+        #                         self.mesh_interface, '-a', self.client_ip,
+        #                         '-d' ]
+        #captive_portal_return = subprocess.Popen(captive_portal_daemon)
+        captive_portal_return = 0
+        # MOOF MOOF MOOF - Commented out because we have yet to get the IP
+        # tables rules working properly.  It was decided that it would be
+        # better to get something out there for people to play with and leave
+        # some bugs open for the next release.
 
         # Now do some error checking.
         if captive_portal_return == 1:
