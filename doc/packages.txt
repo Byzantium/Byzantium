@@ -1,0 +1,22 @@
+A partial list of packages without which Byzantium Linux would not be possible.  Special thanks to:
+
+Github - https://github.com/
+Porteus Linux - http://porteus.org/
+Slackware Linux (without which there would be no Porteus) -
+    http://slackware.com/
+CherryPy / Twisted /  Mako / MarkupSafe / Python
+    http://cherrypy.org/
+    http://twistedmatrix.com/trac/
+    http://makotemplates.org/
+    http://pypi.python.org/pypi/MarkupSafe
+    http://python.org/
+Babel - http://www.pps.jussieu.fr/~jch/software/babel/
+dnsmasq - http://thekelleys.org.uk/dnsmasq/doc.html
+Etherpad-Lite - https://github.com/Pita/etherpad-lite
+qwebirc - http://qwebirc.org/
+ngircd - http://ngircd.barton.de/
+Apache - https://httpd.apache.org/
+node.js - http://nodejs.org/
+rrdtool - http://oss.oetiker.ch/rrdtool/
+SQLite - http://www.sqlite.org/
+
