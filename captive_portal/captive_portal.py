@@ -24,12 +24,14 @@
 # v0.2 - Added a --test option that doesn't actually do anything to the system
 #        the daemon's running on, it just prints what the command would be.
 #        Makes debugging easier and helps with testing. (Github ticket #87)
+#      - Added a 404 error handler that redirects the client to /. (Github
+#        ticket #85)
 
 # TODO:
-# - Write a 404 handler that redirects everything to /index.html.<lang>
 
 # Modules.
 import cherrypy
+from cherrypy import _cperror
 from mako.template import Template
 from mako.lookup import TemplateLookup
 import os
@@ -100,6 +102,35 @@ class CaptivePortal(object):
         return redirect
     whitelist.exposed = True
 
+    # error_page_404(): Registered with CherryPy as the default handler for
+    # HTTP 404 errors (file or resource not found).  Takes four arguments (this
+    # is required by CherryPy), returns some HTML generated at runtime that
+    # redirects the client to http://<IP address>/, where it'll be caught by
+    # CaptivePortal.index().  I wish there was an easier way to do this (like
+    # calling self.index() directly) but the stable's fresh out of ponies.  We
+    # don't use any of the arguments passed to this method so I reference a few
+    # of them in debug mode.
+    def error_page_404(status, message, traceback, version):
+        # Extract the client's IP address from the client headers.
+        clientip = cherrypy.request.headers['Remote-Addr']
+        if debug:
+            print "DEBUG: Client's IP address: %s" % clientip
+            print "DEBUG: Value of status is: %s" % status
+            print "DEBUG: Value of message is: %s" % message
+
+        # Assemble some HTML to redirect the client to the captive portal's
+        # /index.html-* page.
+        redirect = """<html><head><meta http-equiv="refresh" content="0; url=https://""" + address + """/" /></head> <body></body> </html>"""
+
+        if debug:
+            print "DEBUG: Generated HTML refresh is:"
+            print redirect
+            print "DEBUG: Redirecting client to /."
+
+        # Fire the redirect at the client.
+        return redirect
+    cherrypy.config.update({'error_page.404':error_page_404})
+
 # Helper methods used by the core code.
 # usage: Prints online help.  Takes no args, returns nothing.
 def usage():
@@ -125,11 +156,11 @@ def usage():
 # p: - Port to listen on.  Defaults to 31337.
 # d - Debugging mode.
 # t - Test mode.
-shortopts = 'hi:a:p:d:t'
+shortopts = 'hi:a:p:dt'
 longopts = ['help', 'interface=', 'address=', 'port=', 'debug', 'test']
 try:
     (opts, args) = getopt.getopt(sys.argv[1:], shortopts, longopts)
-except get.GetoptError:
+except getopt.GetoptError:
     print "ERROR: Bad command line argument."
     usage()
     exit(2)
