@@ -197,6 +197,7 @@ cherrypy.server.socket_host = address
 # Initialize the IP tables ruleset for the node.
 initialize_iptables = ['/usr/local/sbin/captive-portal.sh', 'initialize',
                        address, interface]
+iptables = 0
 if test:
     print "Command that would be executed:"
     print str(initialize_iptables)
