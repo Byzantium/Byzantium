@@ -26,6 +26,7 @@
 #        Makes debugging easier and helps with testing. (Github ticket #87)
 #      - Added a 404 error handler that redirects the client to /. (Github
 #        ticket #85)
+#      - The daemon prints its PID when it starts up.
 
 # TODO:
 
@@ -248,6 +249,10 @@ if iptables == 2:
     print "Packet filters NOT configured.  Examine the rules in captive-portal.sh."
     print "Parameters passed to captive-portal.sh: initialize, %s, %s" % address, interface
     exit(4)
+
+# Print the PID of this instance of the captive portal daemon.
+pid = os.getpid()
+print pid
 
 # Start the web server.
 if debug:
