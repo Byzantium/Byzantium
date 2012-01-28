@@ -21,6 +21,9 @@
 #    4: Bad parameters passed to IP tables during initialization.
 
 # v0.1 - Initial release.
+# v0.2 - Added a --test option that doesn't actually do anything to the system
+#        the daemon's running on, it just prints what the command would be.
+#        Makes debugging easier and helps with testing. (Github ticket #87)
 
 # TODO:
 # - Write a 404 handler that redirects everything to /index.html.<lang>
@@ -43,6 +46,7 @@ cachedir = '/tmp/portalcache'
 
 # Command line arguments to the server.
 debug = False
+test = False
 interface = ''
 address = ''
 port = ''
@@ -79,7 +83,11 @@ class CaptivePortal(object):
         # Set up the command string to add the client to the IP tables ruleset.
         addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip,
                    interface]
-        iptables = subprocess.call(addclient)
+        if test:
+            print "Command that would be executed:"
+            print str(addclient)
+        else:
+            iptables = subprocess.call(addclient)
 
         # Assemble some HTML to redirect the client to the node's frontpage.
         redirect = """<html><head><meta http-equiv="refresh" content="0; url=https://""" + address + """/" /></head> <body></body> </html>"""
@@ -95,14 +103,19 @@ class CaptivePortal(object):
 # Helper methods used by the core code.
 # usage: Prints online help.  Takes no args, returns nothing.
 def usage():
+    print
     print "This daemon implements the captive portal functionality of Byzantium Linux."
     print "Specifically, it acts as the front end to IP tables and automates the addition"
     print "of mesh clients to the whitelist."
+    print
     print "\t-h / --help: Display online help."
-    print "\t-i / --interface: The name of the interface this daemon listens on."
-    print "\t-a / --address: The IP address of the interface this daemon listens on."
+    print "\t-i / --interface: The name of the interface the daemon listens on."
+    print "\t-a / --address: The IP address of the interface the daemon listens on."
     print "\t-p / --port: Port to listen on.  Defaults to 31337/TCP."
     print "\t-d / --debug: Enable debugging mode."
+    print "\t-t / --test: Disables actually doing anything, it just prints what would"
+    print "\tbe done.  Used for testing commands without altering the test system."
+    print
 
 # Core code.
 # Acquire the command line args.
@@ -110,9 +123,10 @@ def usage():
 # i: - Interface to listen on.
 # a: - Address to listen on so we can figure out the network info later.
 # p: - Port to listen on.  Defaults to 31337.
-# d - Debugging mode.  This is new code.
-shortopts = 'hi:a:p:d'
-longopts = ['help', 'interface=', 'address=', 'port=', 'debug']
+# d - Debugging mode.
+# t - Test mode.
+shortopts = 'hi:a:p:d:t'
+longopts = ['help', 'interface=', 'address=', 'port=', 'debug', 'test']
 try:
     (opts, args) = getopt.getopt(sys.argv[1:], shortopts, longopts)
 except get.GetoptError:
@@ -148,6 +162,12 @@ for opt, arg in opts:
         debug = True
         print "Debugging mode on."
 
+    # User turns on test mode, which prints the commands but doesn't actually
+    # run them.
+    if opt in ('-t', '--test'):
+        test = True
+        print "Command testing mode on."
+
 # If some arguments are missing, ABEND.
 if not interface:
     print "ERROR: Missing command line argument."
@@ -177,11 +197,15 @@ cherrypy.server.socket_host = address
 # Initialize the IP tables ruleset for the node.
 initialize_iptables = ['/usr/local/sbin/captive-portal.sh', 'initialize',
                        address, interface]
-iptables = subprocess.call(initialize_iptables)
+if test:
+    print "Command that would be executed:"
+    print str(initialize_iptables)
+else:
+    iptables = subprocess.call(initialize_iptables)
 
 # Now do some error checking in case IP tables went pear-shaped.  This appears
 # oddly specific, but /usr/sbin/iptables treats these two kinds of errors
-# differently, and that makes a difference during troubleshooting.
+# differently and that makes a difference during troubleshooting.
 if iptables == 1:
     print "ERROR: Unknown IP tables error during firewall initialization."
     print "Packet filters NOT configured.  Examine the rules in captive-portal.sh."
