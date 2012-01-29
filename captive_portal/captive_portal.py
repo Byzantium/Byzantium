@@ -19,14 +19,19 @@
 #    2: Bad CLI args.
 #    3: Bad IP tables commands during initialization.
 #    4: Bad parameters passed to IP tables during initialization.
+#    5: Daemon already running on this network interface.
 
 # v0.1 - Initial release.
 # v0.2 - Added a --test option that doesn't actually do anything to the system
 #        the daemon's running on, it just prints what the command would be.
 #        Makes debugging easier and helps with testing. (Github ticket #87)
-#      - Added a 404 error handler that redirects the client to /. (Github
+#      - Added a 404 error handler that redirects the client to / on the same
+#        port that the captive portal daemon is listening on. (Github
 #        ticket #85)
-#      - The daemon prints its PID when it starts up.
+#      - Figured out how to make CherryPy respond to the usual signals (i.e.,
+#        SIGTERM) and call a cleanup function to take care of things before
+#        terminating.  It took a couple of hours of hacking but I finally found
+#        something that worked.
 
 # TODO:
 
@@ -46,6 +51,7 @@ filedir = '/srv/captiveportal'
 configdir = '/etc/captiveportal'
 appconfig = os.path.join(configdir,'captiveportal.conf')
 cachedir = '/tmp/portalcache'
+pidfile = ''
 
 # Command line arguments to the server.
 debug = False
@@ -106,11 +112,11 @@ class CaptivePortal(object):
     # error_page_404(): Registered with CherryPy as the default handler for
     # HTTP 404 errors (file or resource not found).  Takes four arguments (this
     # is required by CherryPy), returns some HTML generated at runtime that
-    # redirects the client to http://<IP address>/, where it'll be caught by
-    # CaptivePortal.index().  I wish there was an easier way to do this (like
-    # calling self.index() directly) but the stable's fresh out of ponies.  We
-    # don't use any of the arguments passed to this method so I reference a few
-    # of them in debug mode.
+    # redirects the client to http://<IP address>:<port>/, where it'll be
+    # caught by CaptivePortal.index().  I wish there was an easier way to do
+    # this (like calling self.index() directly) but the stable's fresh out of
+    # ponies.  We don't use any of the arguments passed to this method so I
+    # reference a few of them in debug mode.
     def error_page_404(status, message, traceback, version):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
@@ -121,7 +127,7 @@ class CaptivePortal(object):
 
         # Assemble some HTML to redirect the client to the captive portal's
         # /index.html-* page.
-        redirect = """<html><head><meta http-equiv="refresh" content="0; url=https://""" + address + """/" /></head> <body></body> </html>"""
+        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + address + ":" + str(port) + """/" /></head> <body></body> </html>"""
 
         if debug:
             print "DEBUG: Generated HTML refresh is:"
@@ -149,8 +155,23 @@ def usage():
     print "\tbe done.  Used for testing commands without altering the test system."
     print
 
+# cleanup: Deletes the PID file for an instance of the daemon, removes whatever
+#          hooks are installed in the system.  Takes no args, returns nothing.
+def cleanup():
+    if debug:
+        print "DEBUG: Entered cleanup()."
+
+    # Delete the PID file for this instance of the daemon.
+    if test:
+        print "TEST: Deleting pidfile %s." %  pidfile
+    os.remove(pidfile)
+
+    if debug:
+        print "DEBUG: Exiting captive_portal.py."
+    cherrypy.engine.exit()
+
 # Core code.
-# Acquire the command line args.
+# Set up the command line arguments.
 # h - Display online help.
 # i: - Interface to listen on.
 # a: - Address to listen on so we can figure out the network info later.
@@ -202,11 +223,34 @@ for opt, arg in opts:
 
 # If some arguments are missing, ABEND.
 if not interface:
-    print "ERROR: Missing command line argument."
+    print "ERROR: Missing command line argument 'interface'."
     exit(2)
 if not address:
-    print "ERROR: Missing command line argument."
+    print "ERROR: Missing command line argument 'address'."
     exit(2)
+
+# Create the filename for this instance's PID file.
+if test:
+    pidfile = '/tmp/captive_portal.'
+else:
+    pidfile = '/var/run/captive_portal.'
+pidfile = pidfile + interface
+if debug:
+    print "DEBUG: Name of PID file is: %s" % pidfile
+
+# If a PID file already exists for this network interface, ABEND.
+if os.path.exists(pidfile):
+    print "ERROR: A pidfile already exists for network interface %s." % pidfile
+    print "ERROR: Is a daemon already running on this interface?"
+    exit(5)
+
+# Write the PID file of this instance to the PID file.
+if debug:
+    print "DEBUG: Creating pidfile for network interface %s." % str(interface)
+    print "DEBUG: PID of process is %s." % str(os.getpid())
+pid = open(pidfile, "w")
+pid.write(str(os.getpid()))
+pid.close()
 
 # Set up the location the templates will be served out of.
 templatelookup = TemplateLookup(directories=[filedir],
@@ -250,14 +294,16 @@ if iptables == 2:
     print "Parameters passed to captive-portal.sh: initialize, %s, %s" % address, interface
     exit(4)
 
-# Print the PID of this instance of the captive portal daemon.
-pid = os.getpid()
-print pid
-
 # Start the web server.
 if debug:
     print "DEBUG: Starting web server."
+if hasattr(cherrypy.engine, 'signal_handler'):
+    cherrypy.engine.signal_handler.subscribe()
 cherrypy.engine.start()
+cherrypy.engine.block()
 
-# Insert opening anthem from Blaster Master here.
+# Clean up after ourselves.
+cleanup()
+
+# [Insert opening anthem from Blaster Master here.]
 # Fin.
