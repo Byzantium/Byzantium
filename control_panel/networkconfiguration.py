@@ -477,13 +477,31 @@ class NetworkConfiguration(object):
 
         # Now do some error checking.
         if captive_portal_return == 1:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 2 - insufficient command line arguments passed to daemon!</p>"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 1 - insufficient command line arguments passed to daemon!</p>"
         if captive_portal_return == 2:
             error = error + "<p>WARNING!  captive_portal.py exited with code 2 - bad arguments passed to daemon!</p>"
         if captive_portal_return == 3:
             error = error + "<p>WARNING!  captive_portal.py exited with code 3 - bad IP tables commands during firewall initialization!</p>"
         if captive_portal_return == 4:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 3 - bad parameters passed to IP tables!</p>"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 4 - bad parameters passed to IP tables!</p>"
+        if captive_portal_return == 5:
+            error = error + "<p>WARNING!  captive_portal.py exited with code 5 - daemon already running on interface!</p>"
+
+        # If the captive portal daemon started successfully, get its PID.
+        # MOOF MOOF MOOF: Note that we have to take into account both regular
+        # and test mode.
+        if not captive_portal_return:
+            pidfile = 'captive_portal.' + self.mesh_interface
+            if os.path.exists('/var/run/' + pidfile):
+                process_id = '/var/run/' + pidfile
+            if os.path.exists('/tmp/' + pidfile):
+                process_id = '/tmp/' + pidfile
+            pidfile = open(process_id, 'r')
+            portal_pid = pidfile.readline()
+            pidfile.close()
+
+            if not portal_pid:
+                portal_pid = "ERROR: captive_portal.py failed, returned code " + str(captive_portal_return) + "."
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
@@ -497,9 +515,10 @@ class NetworkConfiguration(object):
             page = templatelookup.get_template("/network/done.html")
             return page.render(title = "Network interface configured.",
                                purpose_of_page = "Configured!",
-                               interface = self.mesh_interface,
+                               error = error, interface = self.mesh_interface,
                                ip_address = self.mesh_ip,
                                netmask = self.mesh_netmask,
+                               portal_pid = portal_pid,
                                client_ip = self.client_ip, error = error,
                                client_netmask = self.client_netmask)
         except:
