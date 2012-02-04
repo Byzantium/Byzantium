@@ -519,7 +519,7 @@ class NetworkConfiguration(object):
                                ip_address = self.mesh_ip,
                                netmask = self.mesh_netmask,
                                portal_pid = portal_pid,
-                               client_ip = self.client_ip, error = error,
+                               client_ip = self.client_ip,
                                client_netmask = self.client_netmask)
         except:
             traceback = RichTraceback()
