@@ -478,28 +478,32 @@ class NetworkConfiguration(object):
         # Now do some error checking.
         if captive_portal_return == 1:
             error = error + "<p>WARNING!  captive_portal.py exited with code 1 - insufficient command line arguments passed to daemon!</p>"
-        if captive_portal_return == 2:
+        elif captive_portal_return == 2:
             error = error + "<p>WARNING!  captive_portal.py exited with code 2 - bad arguments passed to daemon!</p>"
-        if captive_portal_return == 3:
+        elif captive_portal_return == 3:
             error = error + "<p>WARNING!  captive_portal.py exited with code 3 - bad IP tables commands during firewall initialization!</p>"
-        if captive_portal_return == 4:
+        elif captive_portal_return == 4:
             error = error + "<p>WARNING!  captive_portal.py exited with code 4 - bad parameters passed to IP tables!</p>"
-        if captive_portal_return == 5:
+        elif captive_portal_return == 5:
             error = error + "<p>WARNING!  captive_portal.py exited with code 5 - daemon already running on interface!</p>"
-
-        # If the captive portal daemon started successfully, get its PID.
-        # MOOF MOOF MOOF: Note that we have to take into account both regular
-        # and test mode.
-        if not captive_portal_return:
+        else:
+            # If the captive portal daemon started successfully, get its PID.
+            # MOOF MOOF MOOF: Note that we have to take into account both
+	    # regular and test mode.
+      	    portal_pid = 0
             pidfile = 'captive_portal.' + self.mesh_interface
+	    process_id = ''
             if os.path.exists('/var/run/' + pidfile):
                 process_id = '/var/run/' + pidfile
+		print "DEBUG: Value of process_id is %s." % process_id
             if os.path.exists('/tmp/' + pidfile):
                 process_id = '/tmp/' + pidfile
+		print "DEBUG: Value of process_id is %s." % process_id
+	    print "DEBUG: value of process_id is %s." % process_id
             pidfile = open(process_id, 'r')
             portal_pid = pidfile.readline()
             pidfile.close()
-
+            print "DEBUG: value of portal_pid is %s." % portal_pid
             if not portal_pid:
                 portal_pid = "ERROR: captive_portal.py failed, returned code " + str(captive_portal_return) + "."
 
