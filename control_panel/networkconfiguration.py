@@ -219,13 +219,13 @@ class NetworkConfiguration(object):
         headers = procnetdev.readline()
         if not headers:
             procnetdev.close()
-            return 'lo'
+            return ['lo']
 
         # Begin parsing the contents of /proc/net/dev and extracting the names
         # of the interfaces.
         if test:
             print "Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
-            return 'lo'
+            return ['lo']
         else:
             for line in procnetdev:
                 interface = line.split()[0]
@@ -394,7 +394,7 @@ class NetworkConfiguration(object):
             # -f: Stop after the first positive response.
             # -I Network interface to use.  Mandatory.
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
-                      self.mesh_interface, addr]
+                      str(self.mesh_interface), addr]
             if test:
                 print "NetworkConfiguration.tcpip() command to probe for a client interface IP address is %s" % arping
                 time.sleep(5)
@@ -460,13 +460,15 @@ class NetworkConfiguration(object):
         # Set up the error catcher variable.
         error = ''
 
+        # Define the PID of the captive portal daemon in the topmost context
+        # of this method.
+        portal_pid = 0
+
         # If we've made it this far, the user's decided to (re)configure a
         # network interface.  Full steam ahead, damn the torpedoes!
-
         # First, take the wireless NIC offline so its mode can be changed.
         if debug:
             print "DEBUG: Deactivating wireless interface."
-
         command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
         if test:
             print "NetworkConfiguration.set_ip() command to deactivate a wireless interface: %s" % command
@@ -481,10 +483,9 @@ class NetworkConfiguration(object):
         if debug:
             print "DEBUG: Going into wireless configuration loop."
         while True:
-            # Set wireless mode.
+            # Set wireless interface mode.
             if debug:
                 print "DEBUG: Configuring wireless interface for ad-hoc mode."
-
             command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
             if test:
                 print "NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s" % command
@@ -492,6 +493,8 @@ class NetworkConfiguration(object):
                 output = os.popen(command)
 
             # Set ESSID.
+            if debug:
+                print "DEBUG: Configuring ESSID of wireless interface."
             command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
             if test:
                 print "NetworkConfiguration.set_ip() command to set the ESSID: %s" % command
@@ -499,6 +502,8 @@ class NetworkConfiguration(object):
                 output = os.popen(command)
 
             # Set wireless channel.
+            if debug:
+                print "DEBUG: Configuring channel of wireless interface."
             command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
             if test:
                 print "NetworkConfiguration.set_ip() command to set the channel: %s" % command
@@ -595,7 +600,7 @@ class NetworkConfiguration(object):
         if debug:
             print "Starting captive portal daemon."
         captive_portal_daemon = ['/usr/local/sbin/captive_portal.py', '-i',
-                                 self.mesh_interface, '-a', self.client_ip,
+                                 str(self.mesh_interface), '-a', self.client_ip,
                                  '-d' , '-t']
         captive_portal_return = 0
         if test:
@@ -626,7 +631,6 @@ class NetworkConfiguration(object):
 
             # If the captive portal daemon started successfully, get its PID.
             # Note that we have to take into account both regular and test mode.
-            portal_pid = 0
             captive_portal_pidfile = 'captive_portal.' + self.mesh_interface
 
             if os.path.exists('/var/run/' + captive_portal_pidfile):
@@ -639,14 +643,15 @@ class NetworkConfiguration(object):
                     print "DEBUG: Unable to find PID file %s of captive portal daemon." % captive_portal_pidfile
 
             if debug:
-                print "DEBUG: value of captive_portal_pidfile is %s." % captive_portal_pidfile 
                 print "DEBUG: Trying to open %s." % captive_portal_pidfile
-
             pidfile = open(captive_portal_pidfile, 'r')
             portal_pid = pidfile.readline()
             pidfile.close()
             if debug:
                 print "DEBUG: value of portal_pid is %s." % portal_pid
+            if test:
+                print "Faking PID of captive_portal.py."
+                portal_pid = "Insert clever PID for captive_portal.py here."
 
             if not portal_pid:
                 portal_pid = "ERROR: captive_portal.py failed, returned code " + str(captive_portal_return) + "."
@@ -695,12 +700,18 @@ class NetworkConfiguration(object):
 
         # See if the /etc/hosts.mesh backup file exists.  If it does, delete it.
         old_hosts_file = self.hosts_file + '.bak'
-        if os.path.exists(old_hosts_file):
-            os.remove(old_hosts_file)
+        if test:
+            print "Deleted old /etc/hosts.mesh.bak."
+        else:
+            if os.path.exists(old_hosts_file):
+                os.remove(old_hosts_file)
 
         # Back up the old hosts.mesh file.
-        if os.path.exists(self.hosts_file):
-            os.rename(self.hosts_file, old_hosts_file)
+        if test:
+            print "Renamed /etc/hosts.mesh file to /etc/hosts.mesh.bak."
+        else:
+            if os.path.exists(self.hosts_file):
+                os.rename(self.hosts_file, old_hosts_file)
 
         # We can make a few assumptions given only the starting IP address of
         # the client IP block.  Each node has a /24 netblock for clients, so
@@ -710,13 +721,17 @@ class NetworkConfiguration(object):
         prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 
         # Generate the contents of the new hosts.mesh file.
-        hosts = open(self.hosts_file, "w")
-        line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
-        hosts.write(line)
-        for i in range(2, 255):
-            line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
+        if test:
+            print "Pretended to generate new /etc/hosts.mesh file."
+            return
+        else:
+            hosts = open(self.hosts_file, "w")
+            line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
             hosts.write(line)
-        hosts.close()
+            for i in range(2, 255):
+                line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
+                hosts.write(line)
+            hosts.close()
 
         # Test for successful generation of the file.
         error = False
@@ -744,12 +759,20 @@ class NetworkConfiguration(object):
 
         # If an include file already exists, move it out of the way.
         oldfile = self.dnsmasq_include_file + '.bak'
-        if os.path.exists(oldfile):
-            os.remove(oldfile)
+        if test:
+            print "Deleting old /etc/dnsmasq.conf.include.bak file."
+        else:
+            if os.path.exists(oldfile):
+                os.remove(oldfile)
 
         # Back up the old dnsmasq.conf.include file.
-        if os.path.exists(self.dnsmasq_include_file):
-            os.rename(self.dnsmasq_include_file, oldfile)
+        if test:
+            print "Backing up /etc/dnsmasq.conf.include file."
+            print "Now returning to save time."
+            return
+        else:
+            if os.path.exists(self.dnsmasq_include_file):
+                os.rename(self.dnsmasq_include_file, oldfile)
 
         # Generate the new include file.
         file = open(self.dnsmasq_include_file, 'w')
