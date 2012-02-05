@@ -11,8 +11,6 @@
 #   which columns are SELECTed from most often.
 # - Find a way to prune network interfaces that have vanished.
 #   MOOF MOOF MOOF - Stubbed in.
-# - Refactor exit signal checking for captive_portal.py to suck less than a
-#   bunch of nested IF statements.
 
 # Import external modules.
 import cherrypy
@@ -42,8 +40,11 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 class NetworkConfiguration(object):
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
-    netconfdb = '/var/db/controlpanel/network.sqlite'
-    #netconfdb = '/home/drwho/network.sqlite'
+    if debug:
+        netconfdb = '/home/drwho/network.sqlite'
+        print "DEBUG: Location of NetworkConfiguration.netconfdb is %s." % netconfdb
+    else:
+        netconfdb = '/var/db/controlpanel/network.sqlite'
 
     # Class attributes which make up a network interface.  By default they are
     # blank, but will be populated from the network.sqlite database if the
@@ -70,18 +71,25 @@ class NetworkConfiguration(object):
 
     # Pretends to be index.html.
     def index(self):
+        if debug:
+            print "DEBUG: Entering NetworkConfiguration.index()."
+
         # Reinitialize this class' attributes in case the user wants to
         # reconfigure an interface.  It'll be used to set the default values
         # of the HTML fields.
         self.reinitialize_attributes()
 
         # Get a list of all network interfaces on the node (sans loopback).
+        if debug:
+            print "DEBUG: Enumerating network interfaces."
         interfaces = self.enumerate_network_interfaces()
 
         # MOOF MOOF MOOF - call to stub implementation.  We can use the list
         # immediately above (interfaces) as the list to compare the database
         # against.
         # Test to see if any network interfaces have gone away.
+        #if debug:
+        #    print "DEBUG: Pruning missing network interfaces."
         #self.prune(interfaces)
 
         # Split the network interface list into two other lists, one for
@@ -173,6 +181,8 @@ class NetworkConfiguration(object):
 
     # Used to reset this class' attributes to a known state.
     def reinitialize_attributes(self):
+        if debug:
+            print "DEBUG: Reinitializing class attributes of NetworkConfiguration()."
         self.mesh_interface = ''
         self.client_interface = ''
         self.channel = ''
@@ -189,9 +199,13 @@ class NetworkConfiguration(object):
     # the kernel is deleted.  Takes one argument, the list of interfaces the
     # kernel believes are present.
     # def prune(self, interfaces=None):
+    #    if debug:
+    #        print "DEBUG: Entered NetworkConfiguration.prune()"
 
     # Utility method to enumerate all of the network interfaces on a node.
     def enumerate_network_interfaces(self):
+        if debug:
+            print "DEBUG: Entered NetworkConfiguration.enumerate_network_interfaces()."
         interfaces = []
 
         # Enumerate network interfaces.
@@ -222,6 +236,9 @@ class NetworkConfiguration(object):
     # Takes as an argument the value of the 'interface' variable defined in
     # the form on /network/index.html.
     def wireless(self, interface=None):
+        if debug:
+            print "DEBUG: Entered NetworkConfiguration.wireless()."
+
         # Store the name of the network interface chosen by the user in the
         # object's attribute set and then generate the name of the client
         # interface.
@@ -252,7 +269,7 @@ class NetworkConfiguration(object):
             essid = result[0][2]
             warning = '<p>WARNING: This interface is already configured!  Changing it now will break the local mesh!  You can hit cancel now without changing anything!</p>'
         connection.close()
-        
+
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
         try:
@@ -276,6 +293,9 @@ class NetworkConfiguration(object):
     # attributes where they exist but pseudorandomly chooses values where it
     # needs to.
     def tcpip(self, essid=None, channel=None):
+        if debug:
+            print "DEBUG: Entered NetworkConfiguration.tcpip()."
+
         # Store the ESSID and wireless channel in the class' attribute set if
         # they were passed as args.
         if essid:
@@ -296,17 +316,26 @@ class NetworkConfiguration(object):
         cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=? AND enabled=?;", template)
         result = cursor.fetchall()
         if not len(result):
+            if debug:
+                print "DEBUG: Activating wireless interface."
+
             # Note that arping returns '2' if the interface isn't online!
             command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
-            output = os.popen(command)
-        
+            if test:
+                print "NetworkConfiguration.tcpip() command to activate network interface is %s." % command
+            else:
+                output = os.popen(command)
+
             # Sleep five seconds to give the hardware a chance to catch up.
             time.sleep(5)
-       
+
         # First pick an IP address for the mesh interface on the node.
         # Go into a loop in which pseudorandom IP addresses are chosen and
         # tested to see if they have been taken already or not.  Loop until we
         # have a winner.
+        if debug:
+            print "DEBUG: Probing for an IP address for the mesh interface."
+
         ip_in_use = 1
         while ip_in_use:
             # Pick a random IP address in 192.168/16.
@@ -323,16 +352,24 @@ class NetworkConfiguration(object):
             # -I Network interface to use.  Mandatory.
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       self.mesh_interface, addr]
-            ip_in_use = subprocess.call(arping)
-            
+            if test:
+                "NetworkConfiguration.tcpip() command to probe for a mesh interface IP address is %s" % arping
+            else:
+                ip_in_use = subprocess.call(arping)
+
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
                 self.mesh_ip = addr
+                if debug:
+                    print "DEBUG: IP address of mesh interface is %s." % addr
                 break
 
         # Next pick a distinct IP address for the client interface and its
         # netblock.  This is potentially trickier depending on how large the
         # mesh gets.
+        if debug:
+            print "DEBUG: Probing for an IP address for the client interface."
+
         ip_in_use = 1
         while ip_in_use:
             # Pick a random IP address in a 10/24.
@@ -349,17 +386,28 @@ class NetworkConfiguration(object):
             # -I Network interface to use.  Mandatory.
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       self.mesh_interface, addr]
-            ip_in_use = subprocess.call(arping)
+            if test:
+                "NetworkConfiguration.tcpip() command to probe for a client interface IP address is %s" % arping
+            else:
+                ip_in_use = subprocess.call(arping)
 
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
                 self.client_ip = addr
+                if debug:
+                    print "DEBUG: IP address of client interface is %s." % addr
                 break
 
         # Deactivate the interface again if it was down to begin with.
         if not len(result):
+            if debug:
+                print "DEBUG: Deactivating wireless interface."
+
             command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
-            output = os.popen(command)
+            if test:
+                print "NetworkConfiguration.tcpip() command to deactivate a mesh interface: %s" % command
+            else:
+                output = os.popen(command)
 
         # Close the database connection.
         connection.close()
@@ -386,6 +434,9 @@ class NetworkConfiguration(object):
 
     # Configure the network interface.
     def set_ip(self):
+        if debug:
+            print "DEBUG: Entered NetworkConfiguration.set_ip()."
+
         # Set up the error catcher variable.
         error = ''
 
@@ -393,27 +444,53 @@ class NetworkConfiguration(object):
         # network interface.  Full steam ahead, damn the torpedoes!
 
         # First, take the wireless NIC offline so its mode can be changed.
+        if debug:
+            print "DEBUG: Deactivating wireless interface."
+
         command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
-        output = os.popen(command)
+        if test:
+            print "NetworkConfiguration.set_ip() command to deactivate a wireless interface: %s" % command
+        else:
+            output = os.popen(command)
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless
         # interfaces are configured reliably.  The wireless NIC has to make it
         # all the way through one iteration of the loop without errors before
         # we can go on.
+        if debug:
+            print "DEBUG: Going into wireless configuration loop."
+
         while True:
             # Set the mode, ESSID and channel.
+            if debug:
+                print "DEBUG: Configuring wireless interface for ad-hoc mode."
+
             command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
-            output = os.popen(command)
+            if test:
+                print "NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s" % command
+            else:
+                output = os.popen(command)
+
             command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
-            output = os.popen(command)
+            if test:
+                print "NetworkConfiguration.set_ip() command to set the ESSID: %s" % command
+            else:
+                output = os.popen(command)
+
             command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
-            output = os.popen(command)
+            if test:
+                print "NetworkConfiguration.set_ip() command to set the channel: %s" % command
+            else:
+                output = os.popen(command)
 
             # Run iwconfig again and capture the current wireless configuration.
             command = '/sbin/iwconfig ' + self.mesh_interface
             output = os.popen(command)
-            configuration = output.readlines()
+            if test:
+                print "NetworkConfiguration.set_ip()command to capture the current state of a network interface: %s" % command
+            else:
+                configuration = output.readlines()
 
             # Test the interface by going through the captured text to see if
             # it's in ad-hoc mode.  If it's not, put it in ad-hoc mode and go
@@ -441,19 +518,35 @@ class NetworkConfiguration(object):
                     if frequency != self.frequency:
                         continue
 
+            # For the purpose of testing, exit after one iteration.
+            if test:
+                continue
+
             # "Victory is mine!"
             #     --Stewie, _Family Guy_
             break
+        if debug:
+            print "DEBUG: Wireless interface configured successfully."
 
         # Call ifconfig and set up the network configuration information.
+        if debug:
+            print "DEBUG: Setting IP configuration information on wireless interface."
         command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
         command = command + ' netmask ' + self.mesh_netmask + ' up'
-        output = os.popen(command)
+        if test:
+            print "NetworkConfiguration.set_ip()command to set the IP configuration of the mesh interface: %s" % command
+        else:
+            output = os.popen(command)
         time.sleep(5)
 
         # Add the client interface.
+        if debug:
+            print "DEBUG: Adding client interface."
         command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
-        output = os.popen(command)
+        if test:
+            print "NetworkConfiguration.set_ip()command to set the IP configuration of the client interface: %s" % command
+        else:
+            output = os.popen(command)
 
         # Commit the interface's configuration to the database.
         connection = sqlite3.connect(self.netconfdb)
@@ -470,29 +563,38 @@ class NetworkConfiguration(object):
         # MOOF MOOF MOOF - Daemon runs in test mode by default.  This means
         # that it pretends to configure the system and prints what it would
         # have done.
+        if debug:
+            print "Starting captive portal daemon."
         captive_portal_daemon = ['/usr/local/sbin/captive_portal.py', '-i',
                                  self.mesh_interface, '-a', self.client_ip,
                                  '-d' , '-t']
-        captive_portal_return = subprocess.Popen(captive_portal_daemon)
+        captive_portal_return = 0
+        if test:
+            print "NetworkConfiguration.set_ip() command to start the captive portal daemon: %s" % captive_portal_daemon
+            captive_portal_return = 6
+        else:
+            captive_portal_return = subprocess.Popen(captive_portal_daemon)
+        if debug:
+            print "DEBUG: Sleeping for 5 seconds to see if a race condition is the reason we can't get the PID of the captive portal daemon."
         time.sleep(5)
 
         # Now do some error checking.
         if captive_portal_return == 1:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 1
-            - insufficient command line arguments passed to daemon!</p>\n"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 1 - insufficient command line arguments passed to daemon!</p>\n"
         elif captive_portal_return == 2:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 2
-            - bad arguments passed to daemon!</p>\n"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 2 - bad arguments passed to daemon!</p>\n"
         elif captive_portal_return == 3:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 3
-            - bad IP tables commands during firewall initialization!</p>\n"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 3 - bad IP tables commands during firewall initialization!</p>\n"
         elif captive_portal_return == 4:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 4
-            - bad parameters passed to IP tables!</p>\n"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 4 - bad parameters passed to IP tables!</p>\n"
         elif captive_portal_return == 5:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 5
-            - daemon already running on interface!</p>\n"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 5 - daemon already running on interface!</p>\n"
+        elif captive_portal_return == 6:
+            error = error + "<p>NOTICE: captive_portal.py started in TEST mode - did not actually start up!</p>\n"
         else:
+            if debug:
+                print "DEBUG: Getting PID of captive portal daemon."
+
             # If the captive portal daemon started successfully, get its PID.
             # Note that we have to take into account both regular and test mode.
             portal_pid = 0
@@ -504,20 +606,32 @@ class NetworkConfiguration(object):
                 captive_portal_pidfile = '/tmp/' + captive_portal_pidfile
             else:
                 error = error + "<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n"
+                if debug:
+                    print "DEBUG: Unable to find PID file %s of captive portal daemon." % captive_portal_pidfile
 
-            print "DEBUG: value of captive_portal_pidfile is %s." % captive_portal_pidfile
+            if debug:
+                print "DEBUG: value of captive_portal_pidfile is %s." % captive_portal_pidfile 
 
-            print "DEBUG: Trying to open %s." % captive_portal_pidfile
+            if debug:
+                print "DEBUG: Trying to open %s." % captive_portal_pidfile
+
             pidfile = open(captive_portal_pidfile, 'r')
             portal_pid = pidfile.readline()
             pidfile.close()
-            print "DEBUG: value of portal_pid is %s." % portal_pid
+
+            if debug:
+                print "DEBUG: value of portal_pid is %s." % portal_pid
 
             if not portal_pid:
                 portal_pid = "ERROR: captive_portal.py failed, returned code " + str(captive_portal_return) + "."
+                if debug:
+                    print "DEBUG: Captive portal daemon failed to start.  Exited with code %s." % str(captive_portal_return)
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
+        if debug:
+            print "DEBUG: Generating dnsmasq configuration files."
+
         problem = self.make_hosts(self.client_ip)
         if problem:
             error = error + "<p>WARNING!  /etc/hosts.mesh not generated!  Something went wrong!</p>"
