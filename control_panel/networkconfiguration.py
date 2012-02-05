@@ -468,42 +468,51 @@ class NetworkConfiguration(object):
         # Start the captive portal daemon.  This will also initialize the IP
         # tables ruleset for the client interface.
         # MOOF MOOF MOOF - Daemon runs in test mode by default.  This means
-        # that it pretends to configure the system when in fact it just prints
-        # what it would have done.
+        # that it pretends to configure the system and prints what it would
+        # have done.
         captive_portal_daemon = ['/usr/local/sbin/captive_portal.py', '-i',
                                  self.mesh_interface, '-a', self.client_ip,
                                  '-d' , '-t']
         captive_portal_return = subprocess.Popen(captive_portal_daemon)
+        time.sleep(5)
 
         # Now do some error checking.
         if captive_portal_return == 1:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 1 - insufficient command line arguments passed to daemon!</p>"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 1
+            - insufficient command line arguments passed to daemon!</p>\n"
         elif captive_portal_return == 2:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 2 - bad arguments passed to daemon!</p>"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 2
+            - bad arguments passed to daemon!</p>\n"
         elif captive_portal_return == 3:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 3 - bad IP tables commands during firewall initialization!</p>"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 3
+            - bad IP tables commands during firewall initialization!</p>\n"
         elif captive_portal_return == 4:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 4 - bad parameters passed to IP tables!</p>"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 4
+            - bad parameters passed to IP tables!</p>\n"
         elif captive_portal_return == 5:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 5 - daemon already running on interface!</p>"
+            error = error + "<p>WARNING!  captive_portal.py exited with code 5
+            - daemon already running on interface!</p>\n"
         else:
             # If the captive portal daemon started successfully, get its PID.
-            # MOOF MOOF MOOF: Note that we have to take into account both
-	    # regular and test mode.
-      	    portal_pid = 0
-            pidfile = 'captive_portal.' + self.mesh_interface
-	    process_id = ''
-            if os.path.exists('/var/run/' + pidfile):
-                process_id = '/var/run/' + pidfile
-		print "DEBUG: Value of process_id is %s." % process_id
-            if os.path.exists('/tmp/' + pidfile):
-                process_id = '/tmp/' + pidfile
-		print "DEBUG: Value of process_id is %s." % process_id
-	    print "DEBUG: value of process_id is %s." % process_id
-            pidfile = open(process_id, 'r')
+            # Note that we have to take into account both regular and test mode.
+            portal_pid = 0
+            captive_portal_pidfile = 'captive_portal.' + self.mesh_interface
+
+            if os.path.exists('/var/run/' + captive_portal_pidfile):
+                captive_portal_pidfile = '/var/run/' + captive_portal_pidfile
+            elif os.path.exists('/tmp/' + captive_portal_pidfile):
+                captive_portal_pidfile = '/tmp/' + captive_portal_pidfile
+            else:
+                error = error + "<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n"
+
+            print "DEBUG: value of captive_portal_pidfile is %s." % captive_portal_pidfile
+
+            print "DEBUG: Trying to open %s." % captive_portal_pidfile
+            pidfile = open(captive_portal_pidfile, 'r')
             portal_pid = pidfile.readline()
             pidfile.close()
             print "DEBUG: value of portal_pid is %s." % portal_pid
+
             if not portal_pid:
                 portal_pid = "ERROR: captive_portal.py failed, returned code " + str(captive_portal_return) + "."
 
