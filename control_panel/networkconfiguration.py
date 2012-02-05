@@ -40,7 +40,7 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 class NetworkConfiguration(object):
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
-    if debug:
+    if test:
         netconfdb = '/home/drwho/network.sqlite'
         print "DEBUG: Location of NetworkConfiguration.netconfdb is %s." % netconfdb
     else:
