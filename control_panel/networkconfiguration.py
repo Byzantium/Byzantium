@@ -480,9 +480,10 @@ class NetworkConfiguration(object):
         # interfaces are configured reliably.  The wireless NIC has to make it
         # all the way through one iteration of the loop without errors before
         # we can go on.
-        if debug:
-            print "DEBUG: Going into wireless configuration loop."
         while True:
+            if debug:
+                print "DEBUG: At top of wireless configuration loop."
+
             # Set wireless interface mode.
             if debug:
                 print "DEBUG: Configuring wireless interface for ad-hoc mode."
@@ -491,6 +492,7 @@ class NetworkConfiguration(object):
                 print "NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s" % command
             else:
                 output = os.popen(command)
+                time.sleep(1)
 
             # Set ESSID.
             if debug:
@@ -500,6 +502,7 @@ class NetworkConfiguration(object):
                 print "NetworkConfiguration.set_ip() command to set the ESSID: %s" % command
             else:
                 output = os.popen(command)
+                time.sleep(1)
 
             # Set wireless channel.
             if debug:
@@ -509,6 +512,7 @@ class NetworkConfiguration(object):
                 print "NetworkConfiguration.set_ip() command to set the channel: %s" % command
             else:
                 output = os.popen(command)
+                time.sleep(1)
 
             # Run iwconfig again and capture the current wireless configuration.
             command = '/sbin/iwconfig ' + self.mesh_interface
@@ -520,15 +524,15 @@ class NetworkConfiguration(object):
                 configuration = output.readlines()
 
             # Test the interface by going through the captured text to see if
-            # it's in ad-hoc mode.  If it's not, put it in ad-hoc mode and go
-            # back to the top of the loop to try again.
+            # it's in ad-hoc mode.  If it's not, go back to the top of the
+            # loop to try again.
             for line in configuration:
                 if 'Mode' in line:
                     line = line.strip()
                     mode = line.split(' ')[0].split(':')[1]
                     if mode != 'Ad-Hoc':
                         if debug:
-                            print "DEBUG: Uh-oh!  Not in ad-hoc mode!"
+                            print "DEBUG: Uh-oh!  Not in ad-hoc mode!  Starting over."
                         continue
 
             # Test the ESSID to see if it's been set properly.
@@ -538,7 +542,7 @@ class NetworkConfiguration(object):
                     essid = line.split(' ')[-1].split(':')[1]
                     if essid != self.essid:
                         if debug:
-                            print "DEBUG: Uh-oh!  ESSID wasn't set!"
+                            print "DEBUG: Uh-oh!  ESSID wasn't set!  Starting over."
                         continue
 
             # Check the wireless channel to see if it's been set properly.
@@ -548,8 +552,10 @@ class NetworkConfiguration(object):
                     frequency = line.split(' ')[2].split(':')[1]
                     if frequency != self.frequency:
                         if debug:
-                            print "DEBUG: Uh-oh!  Wireless channel wasn't set!"
+                            print "DEBUG: Uh-oh!  Wireless channel wasn't set!  starting over."
                         continue
+            if debug:
+                print "DEBUG: Hit bottom of the wireless configuration loop."
 
             # For the purpose of testing, exit after one iteration so we don't
             # get stuck in an infinite loop.
