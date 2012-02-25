@@ -21,7 +21,7 @@ case "$1" in
         $IPTABLES -N internet -t mangle
 
         # Convert the IP address of the client interface into a netblock.
-        CLIENTNET=`echo $2 | sed's/1$/0\/24/'`
+        CLIENTNET=`echo $2 | sed 's/1$/0\/24/'`
 
         # Make the network interface easier to spot in the code.
         INTERFACE=$3
