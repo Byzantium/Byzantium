@@ -15,7 +15,10 @@ dnsmasq - http://thekelleys.org.uk/dnsmasq/doc.html
 Etherpad-Lite - https://github.com/Pita/etherpad-lite
 qwebirc - http://qwebirc.org/
 ngircd - http://ngircd.barton.de/
-Apache - https://httpd.apache.org/
+Apache / MySQL / PHP
+    https://httpd.apache.org/
+    https://www.mysql.com/
+    http://www.php.net/
 node.js - http://nodejs.org/
 rrdtool - http://oss.oetiker.ch/rrdtool/
 SQLite - http://www.sqlite.org/
