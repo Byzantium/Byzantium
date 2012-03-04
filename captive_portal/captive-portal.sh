@@ -52,23 +52,24 @@ case "$1" in
             --dport 443 -j DNAT --to-destination $CLIENTIP
 
         # All other traffic which is marked 99 is just dropped
-        $IPTABLES -t filter -A FORWARD -i $INTERFACE -d $CLIENTIP -m mark --mark 99 \
-		-j DROP
+        $IPTABLES -t filter -A FORWARD -i $INTERFACE -d $CLIENTIP -m mark \
+		--mark 99 -j DROP
 
-        # Allow incomming traffic that is headed for our apps.
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp --dport 53 \
+        # Allow incoming traffic that is headed for our apps.
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp \
+		--dport 53 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp \
+		--dport 80 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp \
+		--dport 443 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp \
+		--dport 9001 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p udp \
+		--dport 53 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p udp \
+		--dport 67 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -p udp --dport 6696 \
 		-j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp --dport 80 \
-		-j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp --dport 443 \
-		-j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp --dport 9001 \
-		-j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p udp --dport 53 \
-		-j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p udp --dport 67 \
-		-j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -p udp --dport 6696 -j ACCEPT
 
         # But reject anything else that is comming from unrecognized users.
         $IPTABLES -t filter -A INPUT -i $INTERFACE -m mark --mark 99 -j DROP
