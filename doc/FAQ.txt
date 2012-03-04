@@ -1,0 +1,248 @@
+What are the goals of Project Byzantium?
+The goal of Byzantium is to develop and maintain a distribution of Linux  
+which can run from removable media (such as a CD-ROM, DVD-ROM, or USB storage 
+device) without needing to be installed.  This distribution of Linux will 
+include a graphical desktop, a control panel application which configures and 
+manipulates services running on the Byzantium node, and mesh routing software 
+which allows the creation of an entirely separate wireless Internet, 
+functionally indistinguishable from a wireless access point of the sort that 
+you'd find in a coffee shop or at home. The Byzantium mesh network is 
+theoretically uncensorable because it operates in a peer-to-peer fashion and 
+avoids the existing infrastructure of the Net; any computer with a wireless 
+network interface can become a part of the Byzantium mesh.  Moreover, every 
+Byzantium node comes with a number of collaboration and communication 
+applications pre-installed, configured, and optimized for use by mobile 
+clients (such as smartphones and MP3 players), from a wiki to a web-chat  
+application to a collaborative word processor.  Each application can be 
+individually turned on and off so a particular Byzantium node doesn't have to 
+run everything all of the time, only the mesh routing software.
+
+We will also write an ebook and translate it into different languages which 
+explains how Byzantium works in a manner which is easy to understand, how to 
+set up Byzantium nodes without our distribution of Linux, how to protect 
+yourself if you're running a node, and how to solve some of the thornier 
+non-software problems (such as bridging meshes over distances longer than the 
+unaugmented maximum range of 802.11a/b/g/n).  While it would be great if we 
+could include a FabFi kit in every .iso image it's kind of hard to zip up an 
+improvised antenna and cable set sitting on a workbench, so the best we can 
+do is include and attribute the plans so you can build one yourself (at least 
+until general purpose nanoassembly is perfected and we can include  
+free/libre greyprints for one).
+
+Why is the project called Byzantium?
+Byzantium takes its name from the fact that we're aiming for Byzantine fault 
+tolerance,  which is a fancy way of saying that arbitrary members of the 
+network can and will get fouled up in arbitrary and surprising ways.  Not 
+only could nodes crash for whatever reason, but they could run out of power, 
+a critical USB device could be  disconnected, the environment might interfere 
+with wireless broadcasts, a node could overheat, a single process could die, 
+or any number of other things.  We aim to mitigate those risks by making it 
+simple and quick to build a large mesh in a short period of time, so that if 
+a few nodes do happen to go dark there will be plenty left over to take over 
+for it (and the dead nodes can be brought back online quickly).  Also, if a  
+single process dies it can be easily restarted (or migrated to another  node).
+
+What is a mesh network?
+A mesh network is a network in which some of the nodes route traffic for 
+other nodes in addition to making services available and acting as clients in 
+the network.  In traditional wired or wireless networks every node has a 
+default gateway though which it sends all traffic not destined for adjacent 
+nodes on the local network.  If that  default gateway goes down the local 
+network is isolated.  In a mesh network every node on the local network can 
+potentially act as a gateway for all other nodes within broadcast range.  
+Under the hood of a mesh there is no default gateway, there are only 
+neighboring routers (you can call them gateways if you like but this is 
+technically inaccurate) that will relay traffic.  Also, due to the sheer 
+number of routers in a mesh you don't have to worry about your active 
+connections dropping  just because you walked three blocks away and your 
+smartphone decided that  another two or three mesh nodes were its preferred 
+("default") "gateways"; this is called mobile IP.
+
+To put it another way, because every PC with a wireless NIC running Byzantium 
+Linux is effectively a router, you don't have to go out and  buy specialized 
+equipment to set up a mesh.  You just have to boot off of a USB key or CD 
+(yes, CD-ROM - we're shooting for tiny here) and off  you go.
+
+Aren't meshes notoriously unreliable/inefficient/noisy/unworkable?  Or, "Why 
+aren't you using the FooMesh routing protocol?"
+Early mesh networks weren't very good.  The first experiments with mesh  
+networking used dedicated hardware (and companies still build single-purpose 
+modules that cost way too much money for most people to want to experiment 
+with let alone deploy).  Due to the fact that each mesh node has to send 
+broadcasts to neighboring nodes so they can keep  their routing tables up to 
+date some older protocols are notoriously inefficient (and this has 
+unfortunately tarred all of them with the same brush).  Some mesh routing 
+protocols require that each node maintain a table of every other node in the 
+mesh, and others are entirely too  chatty.  Also, older mesh routing 
+protocols like OLSR do not attempt to avoid routing loops that can bring a 
+mesh to a screeching halt (though that problem is being fixed more recently). 
+ What a lot of people don't seem to realize thanks to first impressions is 
+that newer mesh routing protocols (like the ones Byzantium is using) learned 
+from these mistakes and seek to not repeat them.  A little research on mesh 
+routing protocols will produce a  lot of documentation and working, deployed 
+source code that proves that these problems have been resolved.  Case in 
+point, the Battlemesh.
+
+At this moment in time, Byzantium has packaged two mesh protocols for 
+full-scale testing, Babel and BATMAN-advanced.  Rather than quote their 
+documentation verbatim I encourage you to take a look at the projects' 
+introductory documentation and see for  yourselves why we chose these two 
+protocols.
+
+As for other potential problems with mesh networking, we are hard at work 
+finding and deploying ways to mitigate as many of these problems as much as 
+we can.
+
+What exactly is in a Byzantium node?
+A Byzantium node is any wifi-enabled computer either running Byzantium Linux 
+or has installed software that gives it compatible functionality.  At the 
+very least, a Byzantium node has the capacity to distribute network 
+configuration information to wireless clients with DHCP and participate in a 
+wireless mesh network as a router.  Byzantium nodes are capable of making 
+services available to the mesh they are a part of but it is not expected that 
+everyone will set up a wiki, microblog, or chat server.
+
+What is Byzantium built with?
+Byzantium is being built on top of Porteus Linux, an ultra-lightweight 
+distribution of Linux built using Linux Live.  Porteus aims for Slackware 
+compatibility in most respects (including construction and  interconversion 
+of packages).  To give you an idea of how small Porteus Linux is, the .iso 
+image for v1.0 weighs in around 250 MB.   Porteus Linux can be run entirely 
+from a disk or it can be installed to removable media (like a USB key or MP3 
+player), and so Byzantium Linux can be as well.
+
+If Byzantium is a live distribution of Linux, how can I use the mesh?  I 
+don't know anything about Linux, I just have an iPhone!
+While it's great if you boot Byzantium and set up a mesh node you don't have 
+to.  One of our design goals was to make it possible for anyone walking down 
+the street with a smartphone to get on the mesh and use it.  Byzantium nodes, 
+as far as your smartphone, netbook, or laptop are  concerned, may as well be 
+a wireless access points at a coffee shop, home, or the airport.  Your 
+wireless device needs to be capable of ad-hoc wireless networking, and you 
+may need to install an application beforehand to do this.
+
+How do you plan to provide services to users?
+In either of our use cases, access to the global Net would be limited at 
+best, likely unavailable.  This means that many of the organizational tools 
+that people use today (like Twitter and Facebook) could not be reached by 
+users to exchange information.  To remedy this, every Byzantium node will 
+include a pre-installed, pre-configured web application that will fill in for 
+one of those online services  (status.net for Twitter, an as-yet-undecided 
+lightweight social networking site for Facebook, and a wiki).  Once we've 
+gathered, installed, configured, and hardened each of those applications for 
+inclusion in Byzantium Linux, the administrator of a running Byzantium node 
+can use the control panel to turn on just the wiki or just the chat system 
+with a few clicks of a mouse.  When a web application is turned on, the 
+frontpage of the Byzantium node will be updated to have a link to that 
+application.  Additionally, other Byzantium nodes will be notified of the 
+existence of this service, and they will update their frontpages with links 
+to it.
+
+If this is a live distribution, can I save my configuration someplace so I 
+don't have to re-do it when I reboot?
+Yes.  Porteus Linux (and thus Byzantium) are fully capable of storing data 
+generated while the node is running so that the next time the node is booted 
+it can pick up where it left off (including configuration information and any 
+databases created earlier).  Porteus already has a utility to create the 
+persistent datastore on removable media (encrypted if you prefer, and if you 
+have reason to fear for your safety or freedom we strongly recommend that you 
+use it) which we will interface with the control panel along with 
+step-by-step instructions.
+
+If there is no central DNS, how do you propose to tell users what's out there?
+That's a bit of a trick.  It's trivial for a node to put a link to services 
+it's running on its frontpage, but to get neighboring nodes to do so a 
+mechanism of some sort must be used to spread the entry.  We looked at a 
+couple of ways of going about this and determined that the problem is already 
+solved for us.  We have plans to use Avahi (ZeroConf) to do this in later 
+releases of Byzantium.  When a service is activated on a node  the 
+announcements will be made automatically without further user  interaction 
+and will appear on the frontpages of neighboring mesh nodes presently.  Work 
+is underway on this subsystem but we wanted to get a proof of concept build 
+out the door first.
+
+Can you provide access to the Internet from a Byzantium mesh?
+The short answer is yes.
+
+The longer answer is yes, if a Byzantium node has an active connection to the 
+Internet, and if the ISP is not blocking or filtering traffic of  some kind.  
+The mesh routing protocols used with Byzantium were chosen for a number of 
+reasons, among them the capability to detect usable  connections to the 
+global net and act as gateways (the default routers I mentioned earlier).  A 
+feature to activate this functionality will be added to the control panel in 
+subsequent releases.
+
+We are also researching the possibility of routing traffic destined for the 
+global Net through Tor.   While this is doable, it may not be a good idea for 
+reasons of latency, plus it will probably break the mobile IP functionality 
+of the  mesh (meaning that whatever sessions you have running will break, 
+possibly compromising your anonymity in the process).
+
+Can't an attacker set up their own Byantium node?
+Absolutely.  An attacker can also set up their own wireless access point at 
+your corner coffee shop, their own Tor exit node, and can plug into a switch 
+at your telco's central office and monitor traffic.  They can (and have) 
+forced ISPs to install surveillance and censorship equipment at key locations 
+in the network infrastructure as well.  We can't stop them from doing that 
+(if we could, we would stop people from doing  bad things, bring peace to the 
+world, end injustice, and make every  backspace and delete key on every 
+keyboard vanish).
+
+Byzantium was designed primarily for people using wireless devices to get 
+online - that means smartphones, the odd MP3 player, and laptop computers or 
+netbooks.  That also means that, if it comes down to it, taking cover if you 
+need to is possible.  You can get onto a Byzantium mesh from inside a house, 
+a rooftop, inside a vehicle (possibly with some difficulty due to all the 
+metal), a store, or anywhere else you could reasonably duck out of sight for 
+a few minutes.  Direction finding of wireless devices is time-consuming, easy 
+to spot and requires a certain amount of skill on the part of the attacker.  
+Wi-fi is fairly common in developed areas; in some locations there is so much 
+wireless activity that it can be a nuisance.  One person staring intently at 
+their cellphone isn't that different from another unless you're looking over 
+their shoulder or roughing up everyone within visual  range.  If there is 
+anyone nearby monitoring wireless traffic with readily available software, 
+unless you are the only source of traffic in the area and in view of the 
+observers it would be reasonably easy to blend into the crowd so  long as you 
+do not give away information that could uniquely identify you (such as your 
+name or a precise location).  Operational security cannot be ignored if 
+you're using a Byzantium mesh.
+
+Do you need help developing or testing Byzantium?
+Absolutely!  There are only a few of us working on Byzantium right now.  We 
+need:
+
+   * Developers to write code that runs under the hood of a Byzantium node, 
+     such as shell scripts supporting other functions.
+   * People who can help us translate the control panel and documentation 
+     into languages other than English.  i18n experience would be a plus.  At a 
+     minimum we need Arabic, Farsi, and Chinese.
+   * People to port and test existing Slackware packages and build new 
+     modules for Porteus Linux.
+   * People to configure and package web applications for inclusion in 
+     Byzantium.
+   * Alpha and beta testers!  We need to know what works, what doesn't, and 
+     what needs to be reworked.
+
+Why haven't you published yet?
+A few people have remarked that we have published no whitepapers and 
+presented at no academic conferences since the inception of Project 
+Byzantium.  We're not inventing new technologies, we're assembling 
+technologies that have been around for years that no one else has pulled 
+together into a coherent, easy to use system.  In many cases, some of  this 
+software has never been packaged by maintainers of Linux  distributions.  The 
+code we're writing is for the user interface, to make it fast and easy to use 
+by non-hackers.  We've read the academic papers and watched recordings of the 
+conferences, which is how we selected the technologies Byzantium is built 
+around.  There is no need to reinvent the wheel (at least, not right now) 
+when the hard work has already been done, it's just waiting to be used.  If 
+nothing else, Project Byzantium obviates the need to track down and pull 
+together software from all around the Net in a hurry, a scramble which may 
+not be possible if the Net is locked down or goes offline entirely.  
+Byzantium is pre-configured with sane and reasonably secure defaults for 
+everything, defaults that we've put through their paces time and again 
+because we use it ourselves.
+
+This document is published under a Creative Commons By Attribution / 
+Noncommercial / Share Alike v3.0 License. 
+(http://creativecommons.org/licenses/by-nc-sa/3.0/)
+

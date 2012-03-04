@@ -21,7 +21,7 @@ case "$1" in
         $IPTABLES -N internet -t mangle
 
         # Convert the IP address of the client interface into a netblock.
-        CLIENTNET=`echo $2 | sed's/1$/0\/24/'`
+        CLIENTNET=`echo $2 | sed 's/1$/0\/24/'`
 
         # Make the network interface easier to spot in the code.
         INTERFACE=$3
@@ -52,13 +52,23 @@ case "$1" in
             --dport 443 -j DNAT --to-destination $CLIENTIP
 
         # All other traffic which is marked 99 is just dropped
-        $IPTABLES -t filter -A FORWARD -i $INTERFACE -m mark --mark 99 -j DROP
+        $IPTABLES -t filter -A FORWARD -i $INTERFACE -d $CLIENTIP -m mark --mark 99 \
+		-j DROP
 
         # Allow incomming traffic that is headed for our apps.
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -p tcp --dport 80 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -p tcp --dport 443 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -p tcp --dport 9001 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -p udp --dport 53 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp --dport 53 \
+		-j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp --dport 80 \
+		-j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp --dport 443 \
+		-j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp --dport 9001 \
+		-j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p udp --dport 53 \
+		-j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p udp --dport 67 \
+		-j ACCEPT
+        $IPTABLES -t filter -A INPUT -i $INTERFACE -p udp --dport 6696 -j ACCEPT
 
         # But reject anything else that is comming from unrecognized users.
         $IPTABLES -t filter -A INPUT -i $INTERFACE -m mark --mark 99 -j DROP
