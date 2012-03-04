@@ -47,9 +47,9 @@ case "$1" in
         # Traffic which has been marked 99 and is headed for 80/TCP or 443/TCP
         # should be redirected to the captive portal web server.
         $IPTABLES -t nat -A PREROUTING -i $INTERFACE -m mark --mark 99 -p tcp \
-            --dport 80 -j DNAT --to-destination $CLIENTIP
+            --dport 80 -j REDIRECT --to-destination $CLIENTIP --to-port 31337
         $IPTABLES -t nat -A PREROUTING -i $INTERFACE -m mark --mark 99 -p tcp \
-            --dport 443 -j DNAT --to-destination $CLIENTIP
+            --dport 443 -j REDIRECT --to-destination $CLIENTIP --to-port 31337
 
         # All other traffic which is marked 99 is just dropped
         $IPTABLES -t filter -A FORWARD -i $INTERFACE -d $CLIENTIP -m mark \
