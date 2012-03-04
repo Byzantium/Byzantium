@@ -2,14 +2,14 @@
 
 # Project Byzantium: captive-portal.sh
 # This script does the heavy lifting of IP tables manipulation under the
-# captive portal's hood.  It should only be used by the control panel.
+# captive portal's hood.  It should only be used by the captive portal daemon.
 
 # Written by Sitwon and The Doctor.
 # License: GPLv3
 
 IPTABLES=/usr/sbin/iptables
 
-# Set up the choice tree of options passed to this script.
+# Set up the choice tree of options that can be passed to this script.
 case "$1" in
     'initialize')
         # $2: IP address of the client interface.  Assumes final octet is .1.
