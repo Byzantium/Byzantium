@@ -90,8 +90,7 @@ class CaptivePortal(object):
             print "DEBUG: Client's IP address: %s" % clientip
 
         # Set up the command string to add the client to the IP tables ruleset.
-        addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip,
-                   interface]
+        addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip]
         if test:
             print "Command that would be executed:"
             print str(addclient)
