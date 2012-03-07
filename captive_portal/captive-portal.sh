@@ -13,8 +13,6 @@ IPTABLES=/usr/sbin/iptables
 case "$1" in
     'initialize')
         # $2: IP address of the client interface.  Assumes final octet is .1.
-        # $3: Identifier of the physical network interface.  We'll need this
-        #     for multiple NICs later.
 
         # Initialize the IP tables ruleset by creating a new chain for captive
         # portal users.
@@ -22,9 +20,6 @@ case "$1" in
 
         # Convert the IP address of the client interface into a netblock.
         CLIENTNET=`echo $2 | sed 's/1$/0\/24/'`
-
-        # Make the network interface easier to spot in the code.
-        INTERFACE=$3
 
         # Exempt traffic which does not originate from the client network.
         $IPTABLES -t mangle -A PREROUTING -p tcp ! -s $CLIENTNET -j RETURN
@@ -44,10 +39,10 @@ case "$1" in
 
         # Traffic which has been marked 99 and is headed for 80/TCP or 443/TCP
         # should be redirected to the captive portal web server.
-        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp \
-            --dport 80 -j DNAT --to-destination $CLIENTIP:31337
-        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp \
-            --dport 443 -j DNAT --to-destination $CLIENTIP:31337
+        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 \
+	    -j DNAT --to-destination $CLIENTIP:31337
+        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 \
+	    -j DNAT --to-destination $CLIENTIP:31337
 
         # All other traffic which is marked 99 is just dropped
         $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
@@ -66,29 +61,25 @@ case "$1" in
         ;;
     'add')
         # $2: IP address of client.
-        # $3: Identifier of the physical network interface.
         CLIENT=$2
-        INTERFACE=$3
 
         # Isolate the MAC address of the client in question.
         CLIENTMAC=`arp -n | grep ':' | grep $CLIENT | awk '{print $3}'`
 
         # Add the MAC address of the client to the whitelist, so it'll be able
         # to access the mesh even if its IP address changes.
-        $IPTABLES -t mangle -A internet -i $INTERFACE -m mac --mac-source \
+        $IPTABLES -t mangle -A internet -m mac --mac-source \
             $CLIENTMAC -j RETURN
         ;;
     'remove')
         # $2: IP address of client.
-        # $3: Identifier of the physical network interface.
         CLIENT=$2
-        INTERFACE=$3
 
         # Isolate the MAC address of the client in question.
         CLIENTMAC=`arp -n | grep ':' | grep $CLIENT | awk '{print $3}'`
 
         # Delete the MAC address of the client from the whitelist.
-        $IPTABLES -t mangle -D internet -i $INTERFACE -m mac --mac-source \
+        $IPTABLES -t mangle -D internet -m mac --mac-source \
             $CLIENTMAC -j RETURN
         ;;
     'purge')
