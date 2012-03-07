@@ -27,18 +27,16 @@ case "$1" in
         INTERFACE=$3
 
         # Exempt traffic which does not originate from the client network.
-        $IPTABLES -t mangle -A PREROUTING -p tcp -i $INTERFACE \
-            ! -s $CLIENTNET -j RETURN
-        $IPTABLES -t mangle -A PREROUTING -p udp -i $INTERFACE \
-            ! -s $CLIENTNET -j RETURN
+        $IPTABLES -t mangle -A PREROUTING -p tcp ! -s $CLIENTNET -j RETURN
+        $IPTABLES -t mangle -A PREROUTING -p udp ! -s $CLIENTNET -j RETURN
 
         # Traffic not exempted by the above rules gets kicked to the captive
         # portal chain.  When a use clicks through a rule is inserted above
         # this one that matches them with a RETURN.
-        $IPTABLES -t mangle -A PREROUTING -i $INTERFACE -j internet
+        $IPTABLES -t mangle -A PREROUTING -j internet
 
         # Traffic not coming from an accepted user gets marked 99.
-        $IPTABLES -t mangle -A internet -i $INTERFACE -j MARK --set-mark 99
+        $IPTABLES -t mangle -A internet -j MARK --set-mark 99
 
         # $2 is actually the IP address of the client interface, so let's make
         # it a bit more clear.
@@ -46,33 +44,25 @@ case "$1" in
 
         # Traffic which has been marked 99 and is headed for 80/TCP or 443/TCP
         # should be redirected to the captive portal web server.
-        $IPTABLES -t nat -A PREROUTING -i $INTERFACE -m mark --mark 99 -p tcp \
-            --dport 80 -j REDIRECT --to-destination $CLIENTIP --to-port 31337
-        $IPTABLES -t nat -A PREROUTING -i $INTERFACE -m mark --mark 99 -p tcp \
-            --dport 443 -j REDIRECT --to-destination $CLIENTIP --to-port 31337
+        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp \
+            --dport 80 -j DNAT --to-destination $CLIENTIP:31337
+        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp \
+            --dport 443 -j DNAT --to-destination $CLIENTIP:31337
 
         # All other traffic which is marked 99 is just dropped
-        $IPTABLES -t filter -A FORWARD -i $INTERFACE -d $CLIENTIP -m mark \
-		--mark 99 -j DROP
+        $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
 
-        # Allow incoming traffic that is headed for our apps.
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp \
-		--dport 53 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp \
-		--dport 80 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp \
-		--dport 443 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p tcp \
-		--dport 9001 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p udp \
-		--dport 53 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -d $CLIENTIP -p udp \
-		--dport 67 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -p udp --dport 6696 \
-		-j ACCEPT
+        # Allow incoming traffic that is headed for the local node.
+        $IPTABLES -t filter -A INPUT -p tcp --dport 53 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 443 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 9001 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p udp --dport 53 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p udp --dport 67 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p udp --dport 6696 -j ACCEPT
 
         # But reject anything else that is comming from unrecognized users.
-        $IPTABLES -t filter -A INPUT -i $INTERFACE -m mark --mark 99 -j DROP
+        $IPTABLES -t filter -A INPUT -m mark --mark 99 -j DROP
         ;;
     'add')
         # $2: IP address of client.
