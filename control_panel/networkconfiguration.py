@@ -792,7 +792,7 @@ class NetworkConfiguration(object):
             intercepted_domains.append('cruel-summer.org')
             intercepted_domains.append('miskatonic.edu')
 
-            print "DEBUG: Contents of intercepted_domains: " str(intercepted_domains)
+            print "DEBUG: Contents of intercepted_domains: %s" % str(intercepted_domains)
 
         # Generate redirects for commonly accessed domains because this is the
         # only way that client traffic will be intercepted by the captive
