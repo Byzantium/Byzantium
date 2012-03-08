@@ -35,8 +35,5 @@ chmod +x /etc/rc.d/rc.sshd
 # running instance and error out.
 /etc/rc.d/rc.httpd start
 
-# Start dnsmasq.
-/etc/rc.d/rc.dnsmasq start
-
 # Start the control panel.
 /etc/rc.d/rc.byzantium start
