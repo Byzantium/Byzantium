@@ -783,24 +783,11 @@ class NetworkConfiguration(object):
         # Open the include file so it can be written to.
         file = open(self.dnsmasq_include_file, 'w')
 
-        # Set up the list of domains to intercept.  The dnsmasq docs say that
-        # any host under domain.tld will be intercepted.
-        intercepted_domains = ['google.com', 'twitter.com', 'facebook.com',
-                               'yahoo.com']
-        if debug:
-            print "DEBUG: Adding in-jokes to list of intercepted domains for debugging."
-            intercepted_domains.append('cruel-summer.org')
-            intercepted_domains.append('miskatonic.edu')
-
-            print "DEBUG: Contents of intercepted_domains: " str(intercepted_domains)
-
-        # Generate redirects for commonly accessed domains because this is the
-        # only way that client traffic will be intercepted by the captive
-        # portal properly.  Otherwise, dnsmasq just returns 'not found' to
-        # clients.
-        for domain in intercepted_domains:
-            intercept = 'address=/' + domain + "/" + starting_ip + "\n"
-            file.write(intercept)
+        # Add the configuration directive that intercepts resolution attempts
+        # for all possible domains to catch clients.  This resolves issue #93
+        # at Github.
+        intercept_domains = 'address=/#/' + starting_ip + '\n'
+        file.write(intercept_domains)
 
         # Write the DHCP range for this node's clients.
         file.write(dhcp_range)
