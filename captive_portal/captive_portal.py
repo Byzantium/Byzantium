@@ -38,6 +38,7 @@
 # Modules.
 import cherrypy
 from cherrypy import _cperror
+from cherrypy.process.plugins import PIDFile
 from mako.template import Template
 from mako.lookup import TemplateLookup
 import os
@@ -154,21 +155,6 @@ def usage():
     print "\tbe done.  Used for testing commands without altering the test system."
     print
 
-# cleanup: Deletes the PID file for an instance of the daemon, removes whatever
-#          hooks are installed in the system.  Takes no args, returns nothing.
-def cleanup():
-    if debug:
-        print "DEBUG: Entered cleanup()."
-
-    # Delete the PID file for this instance of the daemon.
-    if test:
-        print "TEST: Deleting pidfile %s." %  pidfile
-    os.remove(pidfile)
-
-    if debug:
-        print "DEBUG: Exiting captive_portal.py."
-    cherrypy.engine.exit()
-
 # Core code.
 # Set up the command line arguments.
 # h - Display online help.
@@ -247,9 +233,8 @@ if os.path.exists(pidfile):
 if debug:
     print "DEBUG: Creating pidfile for network interface %s." % str(interface)
     print "DEBUG: PID of process is %s." % str(os.getpid())
-pid = open(pidfile, "w")
-pid.write(str(os.getpid()))
-pid.close()
+pid = PIDFile(cherrypy.engine, pidfile)
+pid.subscribe()
 
 # Configure a few things about the web server so we don't have to fuss
 # with an extra config file, namely, the port and IP address to listen on.
@@ -296,13 +281,8 @@ if iptables == 2:
 # Start the web server.
 if debug:
     print "DEBUG: Starting web server."
-if hasattr(cherrypy.engine, 'signal_handler'):
-    cherrypy.engine.signal_handler.subscribe()
 cherrypy.engine.start()
 cherrypy.engine.block()
-
-# Clean up after ourselves.
-cleanup()
 
 # [Insert opening anthem from Blaster Master here.]
 # Fin.
