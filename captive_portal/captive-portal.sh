@@ -57,8 +57,10 @@ case "$1" in
         $IPTABLES -t filter -A INPUT -p udp --dport 67 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 6696 -j ACCEPT
 
-        # But reject anything else that is comming from unrecognized users.
+        # But reject anything else coming from unrecognized users.
         $IPTABLES -t filter -A INPUT -m mark --mark 99 -j DROP
+
+	exit 0
         ;;
     'add')
         # $2: IP address of client.
@@ -71,6 +73,8 @@ case "$1" in
         # to access the mesh even if its IP address changes.
         $IPTABLES -t mangle -A internet -m mac --mac-source \
             $CLIENTMAC -j RETURN
+
+	exit 0
         ;;
     'remove')
         # $2: IP address of client.
@@ -82,6 +86,8 @@ case "$1" in
         # Delete the MAC address of the client from the whitelist.
         $IPTABLES -t mangle -D internet -m mac --mac-source \
             $CLIENTMAC -j RETURN
+
+	exit 0
         ;;
     'purge')
         # Purge all of the IP tables rules.
@@ -93,8 +99,18 @@ case "$1" in
         $IPTABLES -t mangle -X
         $IPTABLES -t filter -F
         $IPTABLES -t filter -X
+
+	exit 0
         ;;
+    'list')
+	# Display the currently running IP tables ruleset.
+	$IPTABLES --list -n
+	$IPTABLES --list -t nat -n
+	$IPTABLES --list -t mangle -n
+	$IPTABLES --list -t filter -n
+	exit 0
+	;;
     *)
-        echo "USAGE: $0 {initialize <IP> <interface>|add <IP> <interface>|remove <IP> <interface>|purge}"
+        echo "USAGE: $0 {initialize <IP> <interface>|add <IP> <interface>|remove <IP> <interface>|purge|list}"
         exit 0
     esac
