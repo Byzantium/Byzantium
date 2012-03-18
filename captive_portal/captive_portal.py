@@ -187,7 +187,11 @@ for opt, arg in opts:
     # User specifying the IP address to listen on.  This is more useful
     # for network math than anything else.
     if opt in ('-a', '--address'):
-        address = arg.rstrip()
+        if debug:
+            print "DEBUG: Listening on 0.0.0.0 rather than %s." % str(address)
+            address = '0.0.0.0'
+        else:
+            address = arg.rstrip()
 
     # User specifies the port to listen on.  This has a default.
     if opt in ('-p', '--port'):
@@ -209,9 +213,6 @@ for opt, arg in opts:
 # If some arguments are missing, ABEND.
 if not interface:
     print "ERROR: Missing command line argument 'interface'."
-    exit(2)
-if not address:
-    print "ERROR: Missing command line argument 'address'."
     exit(2)
 
 # Create the filename for this instance's PID file.
