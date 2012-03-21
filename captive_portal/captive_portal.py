@@ -112,11 +112,11 @@ class CaptivePortal(object):
     # error_page_404(): Registered with CherryPy as the default handler for
     # HTTP 404 errors (file or resource not found).  Takes four arguments (this
     # is required by CherryPy), returns some HTML generated at runtime that
-    # redirects the client to http://<IP address>:<port>/, where it'll be
-    # caught by CaptivePortal.index().  I wish there was an easier way to do
-    # this (like calling self.index() directly) but the stable's fresh out of
-    # ponies.  We don't use any of the arguments passed to this method so I
-    # reference a few of them in debug mode.
+    # redirects the client to http://<IP address>/, where it'll be caught by
+    # CaptivePortal.index().  I wish there was an easier way to do this (like
+    # calling self.index() directly) but the stable's fresh out of ponies.
+    # We don't use any of the arguments passed to this method so I reference
+    # a few of them in debug mode.
     def error_page_404(status, message, traceback, version):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
@@ -187,11 +187,7 @@ for opt, arg in opts:
     # User specifying the IP address to listen on.  This is more useful
     # for network math than anything else.
     if opt in ('-a', '--address'):
-        if debug:
-            print "DEBUG: Listening on 0.0.0.0 rather than %s." % str(address)
-            address = '0.0.0.0'
-        else:
-            address = arg.rstrip()
+        address = arg.rstrip()
 
     # User specifies the port to listen on.  This has a default.
     if opt in ('-p', '--port'):
