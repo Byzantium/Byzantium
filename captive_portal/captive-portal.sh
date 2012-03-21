@@ -56,6 +56,7 @@ case "$1" in
         $IPTABLES -t filter -A INPUT -p udp --dport 53 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 67 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 6696 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p icmp -j ACCEPT
 
         # But reject anything else coming from unrecognized users.
         $IPTABLES -t filter -A INPUT -m mark --mark 99 -j DROP
