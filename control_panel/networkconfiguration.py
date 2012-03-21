@@ -600,14 +600,11 @@ class NetworkConfiguration(object):
 
         # Start the captive portal daemon.  This will also initialize the IP
         # tables ruleset for the client interface.
-        # MOOF MOOF MOOF - Daemon runs in test mode by default.  This means
-        # that it pretends to configure the system and prints what it would
-        # have done.
         if debug:
             print "Starting captive portal daemon."
         captive_portal_daemon = ['/usr/local/sbin/captive_portal.py', '-i',
                                  str(self.mesh_interface), '-a', self.client_ip,
-                                 '-d' , '-t']
+                                 '-d' ]
         captive_portal_return = 0
         if test:
             print "NetworkConfiguration.set_ip() command to start the captive portal daemon: %s" % captive_portal_daemon
