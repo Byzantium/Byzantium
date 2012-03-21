@@ -108,6 +108,7 @@ case "$1" in
 	$IPTABLES --list -t nat -n
 	$IPTABLES --list -t mangle -n
 	$IPTABLES --list -t filter -n
+
 	exit 0
 	;;
     *)
