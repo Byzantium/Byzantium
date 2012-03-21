@@ -239,7 +239,7 @@ pid.subscribe()
 
 # Configure a few things about the web server so we don't have to fuss
 # with an extra config file, namely, the port and IP address to listen on.
-cherrypy.config.update({'server.socket_host':address, })
+cherrypy.config.update({'server.socket_host':'0.0.0.0', })
 cherrypy.config.update({'server.socket_port':port, })
 
 # Set up the location the templates will be served out of.
