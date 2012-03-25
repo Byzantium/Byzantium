@@ -12,18 +12,34 @@
 <link rel="stylesheet" href="css/text.css" />
 </head>
 
-
 <body>
 <div id="container">
 <!-- Pull in the code for the top part of the page that says what this page is for. -->
 <div id="header"><%include file="/includes/header.html" /></div>
 
-
 <!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
 <div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
 
 <!-- This is where all of the content of the status page goes. -->
-	<div id="nodeuptime">
+	 <div id="memoryutilization">
+		<table border="1">
+		<tr>
+		<td>Memory utilization</td>
+		</tr>
+		
+		<tr>
+		<td>memory used (in kb)</td>
+		<td>${ram_used}</td>
+		</tr>
+		
+		<tr>
+		<td>memory (in kb)</td>
+		<td>${ram}</td>	
+		</tr>
+		</table>
+	 </div>
+
+	 <div id="nodeuptime">
 		<table border="1">
 		<tr>
 		<td>Node uptime:</td>
@@ -31,31 +47,44 @@
 		</tr>
 		</table>
     </div>
-    
-    <div id="mainInfo">
-    	<table border="1">
-		<tr>
-		<td>1 minute load</td>
-		<td>5 minute load</td>
-		<td>15 minute load</td>
-		<td>memory (in kb)</td>
-		<td>memory used (in kb)</td>
-		<td>swap (in kb)</td>
-		<td>swap used (in kb)</td>
-		</tr>
-		<tr>
-		<td>${one_minute_load}</td>
-		<td>${five_minute_load}</td>
-		<td>${fifteen_minute_load}</td>
-		<td>${ram}</td>
-		<td>${ram_used}</td>
-		<td>${swap}</td>
-		<td>${swap_used}</td>
-		</tr>
-		</table>
-       </div> 
- 
+
+    <br /><br /><br /><br /><br />
+
+	 <div id="meshinterfaces">
+	     <table border="1">
+	         <tr>
+	         <td>Mesh network interfaces</td>
+	         </tr>
+	         
+				<tr>
+				<td>Interface</td>
+				<td>IP Address</td>
+				<td>ESSID</td>
+				<td>Channel</td>
+				</tr>
+				
+				${mesh_interfaces}
+	     </table>
+	 </div>
+
+	 <div id="clientinterfaces">
+	     <table border="1">
+		      <tr>
+		      <td>Client network interfaces</td>
+		      </tr>
+		      
+				<tr>
+				<td>Interface</td>
+				<td>IP address</td>
+				<td>Number of associated clients</td>
+				</tr>		      
+		      
+		      ${client_interfaces}
+	     </table>
+	 </div>
+
 	<div id="footer"></div>
+
 </div>
 </body>
 </html>

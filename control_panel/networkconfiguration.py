@@ -42,7 +42,7 @@ class NetworkConfiguration(object):
     # of every network interface in the node.
     if test:
         netconfdb = '/home/drwho/network.sqlite'
-        print "DEBUG: Location of NetworkConfiguration.netconfdb is %s." % netconfdb
+        print "DEBUG: Location of NetworkConfiguration.netconfdb: %s" % netconfdb
     else:
         netconfdb = '/var/db/controlpanel/network.sqlite'
 

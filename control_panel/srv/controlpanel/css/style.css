@@ -24,7 +24,7 @@ div#container {
 
 div#header {
 	background-color: #33A1C9;
-    height: 100px;
+   height: 100px;
 	text-align: center;
 }
 
@@ -35,23 +35,36 @@ div#leftsidebar {
 	padding: 10px;
 }
 
+div#memoryutilization {
+	float: left;
+	width: 25%;
+	padding: 10px;
+}	
+
 div#nodeuptime {
 	float: right;
 	width: 25%;
 	padding: 10px;
 }	
 
-div#loadmemswapInfo {
-	float: right;
-	width: 70%;
+div#meshinterfaces {
+	float: left;
+	width: 50%;
 	padding: 10px;
-}
+}	
+
+div#clientinterfaces {
+	float: left;
+	width: 50%;
+	padding: 10px;
+}	
 
 div#mainInfo {
 	float: right;
 	width: 70%;
 	padding: 10px;
 }
+
 div#footer  {
   clear: both;	
   background-color: #33A1C9;
