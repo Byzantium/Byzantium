@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+        |-----handy-ruler------------------------------------------------------|
+protobuf: protobuf (Google's data interchange format)
+protobuf:
+protobuf: Protocol buffers are a flexible, efficient, automated mechanism for
+protobuf: serializing structured data, think XML, but smaller, faster, and
+protobuf: simpler. You define how you want your data to be structured once,
+protobuf: then you can use special generated source code to easily write and
+protobuf: read your structured data to and from a variety of data streams
+protobuf: and using a variety of languages. You can even update your data
+protobuf: structure without breaking deployed programs that are compiled
+protobuf: against the "old" format.
+protobuf:

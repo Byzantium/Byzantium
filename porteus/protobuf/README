@@ -1,0 +1,15 @@
+protobuf (Google's data interchange format)
+
+Protocol buffers are a flexible, efficient, automated mechanism for
+serializing structured data, think XML, but smaller, faster, and
+simpler. You define how you want your data to be structured once,
+then you can use special generated source code to easily write and
+read your structured data to and from a variety of data streams
+and using a variety of languages. You can even update your data
+structure without breaking deployed programs that are compiled
+against the "old" format.
+
+pysetuptools is a required dependency unless you disable python
+support by running the build with "PYTHON=no ./protobuf.SlackBuild"
+By default we build the python libraries because a few programs 
+require it.
