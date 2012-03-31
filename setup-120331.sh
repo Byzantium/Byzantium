@@ -94,7 +94,7 @@ chown ngircd.root /tmp/fakeroot/var/run/ngircd
 chmod 0750 /tmp/fakeroot/var/run/ngircd
 
 mkdir -p /tmp/fakeroot/srv/captiveportal
-mkidr -p /tmp/fakeroot/etc/captiveportal
+mkdir -p /tmp/fakeroot/etc/captiveportal
 cd ~guest/Byzantium/captive_portal
 cp captive_portal.py /tmp/fakeroot/usr/local/sbin
 cp captive-portal.sh /tmp/fakeroot/usr/local/sbin
