@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Bail on errors
+set -e
+
 cd ~guest/byzantium
 mkdir -p /tmp/fakeroot
 for i in *.xzm ; do xzm2dir $i /tmp/fakeroot ; done
