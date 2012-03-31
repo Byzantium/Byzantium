@@ -1,0 +1,20 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+       |-----handy-ruler------------------------------------------------------|
+olsrd: olsrd (short description of app)
+olsrd:
+olsrd: The olsr.org OLSR daemon is an implementation of the Optimized Link 
+olsrd: State Routing protocol. It allows mesh routing for any network 
+olsrd: equipment with any wifi card that supports ad-hoc mode or any ethernet 
+olsrd: device. It runs on: Windows, Linux, OS X, and many many more. As a 
+olsrd: deployed mesh routing protocol, it is regularly stress tested and we 
+olsrd: consider it quite solid since version 0.5.6-r7 despite what other 
+olsrd: competing protocols say.
+olsrd: Released under a BSD license.
+olsrd: OLSR is an ongoing open source project and we encourage you to get 
+olsrd: involved. Just join the mailing lists <http://list.olsr.org>.

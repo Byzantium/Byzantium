@@ -1,0 +1,77 @@
+#!/bin/sh
+#
+# OLSRd - Optimized Link State Routing
+#
+# Init script for olsrd
+#
+# Written by haxwithaxe
+# ripped off from miredo init script by Fridrich von Stauffenberg <cancellor2@gmail.com>
+# Based on tor's init script by Marco Bonetti <sid77@slackware.it>
+
+PIDFILE=/var/run/olsrd.pid
+LOGFILE="/dev/null"
+DAEMON="/usr/sbin/olsrd"
+HNAME="OLSRd"
+
+olsrd_start() {
+  echo "Starting ${HNAME}: $DAEMON"
+  $DAEMON -d $DEBUG -nofork 2>&1 > $LOGFILE &
+  PID=$!
+  echo $PID > $PIDFILE 2>/dev/null
+  echo "Strarted."
+}
+
+olsrd_stop() {
+  echo -n "Stopping ${HNAME}... "
+  PID=$(cat $PIDFILE 2>/dev/null)
+  if [ -z "$PID" ]; then
+    echo "not running."
+    exit 0
+  fi
+  if kill -15 $PID; then
+    echo "stopped."
+    rm $PIDFILE
+  else
+    sleep 1
+    if kill -9 $PID; then
+      echo "killed."
+    else
+      echo "error!"
+      exit 1
+    fi
+  fi
+}
+
+olsrd_status() {
+  PID=$(cat $PIDFILE 2>/dev/null)
+  if [ -z "$PID" ]; then
+    echo "Not running."
+    exit 1
+  elif kill -0 $PID 2>/dev/null; then
+    echo "Running with PID $PID."
+    exit 0
+  else
+    echo "PID file $PIDFILE present, but PID $PID is not running."
+    exit 1
+  fi
+}
+
+case "$1" in
+  start)
+    olsrd_start
+  ;;
+  stop)
+    olsrd_stop
+  ;;
+  restart)
+    olsrd_stop
+    sleep 1
+    olsrd_start
+  ;;
+  status)
+    olsrd_status
+  ;;
+  *)
+    echo "Usage: $0 (start|stop|restart|status)"
+  ;;
+esac

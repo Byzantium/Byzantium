@@ -1,0 +1,10 @@
+PRGNAM=olsrd
+VERSION=0.6.2
+HOMEPAGE="http://www.olsr.org"
+DOWNLOAD="http://www.olsr.org/releases/0.6/olsrd-0.6.2.tar.bz2"
+MD5SUM=1f55bbbaf0737364b53daaeecc2cd50c
+DOWNLOAD_x86_64=
+MD5SUM_x86_64=
+MAINTAINER="haxwithaxe"
+EMAIL="me@haxwithaxe.net"
+APPROVED="no"
