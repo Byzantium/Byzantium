@@ -24,7 +24,7 @@ cp -rv ~guest/Byzantium/control_panel/var/db/controlpanel/* /tmp/fakeroot/var/db
 
 # We need to upgrade the version of Wicd to fix a bug, this is a hackaround.
 mkdir -p /tmp/fakeroot/usr/share/wicd/cli
-cp ~guest/Byzantium/porteus/wicd/usr/share/cli/wicd-cli.py /tmp/fakeroot/usr/share/wicd/cli/
+cp ~guest/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py /tmp/fakeroot/usr/share/wicd/cli/
 
 
 cd ~guest/Byzantium/scripts
