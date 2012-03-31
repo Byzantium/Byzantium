@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+    |-----handy-ruler------------------------------------------------------|
+celt: celt (low delay audio codec)
+celt:
+celt: CELT is a very low delay audio codec designed for high-quality
+celt: communications. Traditional full-bandwidth  codecs such as Vorbis and
+celt: AAC can offer high quality but they require codec delays of hundreds
+celt: of milliseconds, which makes them unsuitable  for real-time
+celt: interactive applications like teleconferencing. Speech targeted
+celt: codecs, such as Speex or G.722, have lower 20-40ms delays but their
+celt: speech focus and limited sampling rates restricts their quality,
+celt: especially for music.
+celt:

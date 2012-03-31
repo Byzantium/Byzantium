@@ -1,0 +1,16 @@
+Mumble is a voice chat application for groups. While it can be used
+for any kind of activity, it is primarily intended for gaming. It
+can be compared to programs like Ventrilo or TeamSpeak. 
+
+If you have g15tools installed and want mumble to use it:
+    G15=yes ./mumble.SlackBuild
+
+If you want the mumble overlay:
+    OVERLAY=yes ./mumble.SlackBuild
+
+Please note, if you have celt-0.7.1, the previous version of celt on
+SBo, you will need to upgrade to celt >= 0.11.0.
+
+This requires: protobuf, speex, and celt >= 0.11.0
+
+Note: This does not build the mumble server (murmur).

@@ -1,0 +1,28 @@
+PRGNAM="cryptoki"
+VERSION="2.20"
+HOMEPAGE="http://www.rsa.com/rsalabs/node.asp?id=2133"
+DOWNLOAD="ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/cryptoki.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/ct-kip.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/otp-pkcs11.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/pkcs-11v2-20a3.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/pkcs-11v2-20a3d3.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/pkcs11.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/pkcs11f.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/pkcs11t-consolidated-d1.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/pkcs11t.h \
+  ftp://ftp.rsasecurity.com/pub/pkcs/pkcs-11/v2-20/pkcs-11v2-20.pdf"
+MD5SUM="c3e33fe37f9d5411c9e2eaae272c0b0a \
+  568c783efb6afab39fa5d0c440df69d7 \
+  aa2f98004d812fe946ceb4d3e640a5a5 \
+  2ae3887a96fc9d0414b18e2ea0813551 \
+  c53982f55d9469e4623510def1f0a553 \
+  713ac88786b436a5df02bface7dfce45 \
+  652434a5793eb14aae7b5baa07f6cfc7 \
+  e61d20509d3a4263d02e1b1d0bf74c2c \
+  aeebc839b98e672982abf566e6a25525 \
+  43f1cb13936cccba55bee0dbc0926849"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+MAINTAINER="Pierre Cazenave"
+EMAIL="pwcazenave <at> gmail {dot} com"
+APPROVED="rworkman"

@@ -38,6 +38,7 @@
 # Modules.
 import cherrypy
 from cherrypy import _cperror
+from cherrypy.process.plugins import PIDFile
 from mako.template import Template
 from mako.lookup import TemplateLookup
 import os
@@ -90,8 +91,7 @@ class CaptivePortal(object):
             print "DEBUG: Client's IP address: %s" % clientip
 
         # Set up the command string to add the client to the IP tables ruleset.
-        addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip,
-                   interface]
+        addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip]
         if test:
             print "Command that would be executed:"
             print str(addclient)
@@ -99,7 +99,7 @@ class CaptivePortal(object):
             iptables = subprocess.call(addclient)
 
         # Assemble some HTML to redirect the client to the node's frontpage.
-        redirect = """<html><head><meta http-equiv="refresh" content="0; url=https://""" + address + """/" /></head> <body></body> </html>"""
+        redirect = """<html><head><meta http-equiv="refresh" content="0; url=https://""" + address + """/" /></head><body></body></html>"""
 
         if debug:
             print "DEBUG: Generated HTML refresh is:"
@@ -112,11 +112,11 @@ class CaptivePortal(object):
     # error_page_404(): Registered with CherryPy as the default handler for
     # HTTP 404 errors (file or resource not found).  Takes four arguments (this
     # is required by CherryPy), returns some HTML generated at runtime that
-    # redirects the client to http://<IP address>:<port>/, where it'll be
-    # caught by CaptivePortal.index().  I wish there was an easier way to do
-    # this (like calling self.index() directly) but the stable's fresh out of
-    # ponies.  We don't use any of the arguments passed to this method so I
-    # reference a few of them in debug mode.
+    # redirects the client to http://<IP address>/, where it'll be caught by
+    # CaptivePortal.index().  I wish there was an easier way to do this (like
+    # calling self.index() directly) but the stable's fresh out of ponies.
+    # We don't use any of the arguments passed to this method so I reference
+    # a few of them in debug mode.
     def error_page_404(status, message, traceback, version):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
@@ -127,7 +127,7 @@ class CaptivePortal(object):
 
         # Assemble some HTML to redirect the client to the captive portal's
         # /index.html-* page.
-        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + address + ":" + str(port) + """/" /></head> <body></body> </html>"""
+        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + address + """/" /></head> <body></body> </html>"""
 
         if debug:
             print "DEBUG: Generated HTML refresh is:"
@@ -154,21 +154,6 @@ def usage():
     print "\t-t / --test: Disables actually doing anything, it just prints what would"
     print "\tbe done.  Used for testing commands without altering the test system."
     print
-
-# cleanup: Deletes the PID file for an instance of the daemon, removes whatever
-#          hooks are installed in the system.  Takes no args, returns nothing.
-def cleanup():
-    if debug:
-        print "DEBUG: Entered cleanup()."
-
-    # Delete the PID file for this instance of the daemon.
-    if test:
-        print "TEST: Deleting pidfile %s." %  pidfile
-    os.remove(pidfile)
-
-    if debug:
-        print "DEBUG: Exiting captive_portal.py."
-    cherrypy.engine.exit()
 
 # Core code.
 # Set up the command line arguments.
@@ -225,9 +210,6 @@ for opt, arg in opts:
 if not interface:
     print "ERROR: Missing command line argument 'interface'."
     exit(2)
-if not address:
-    print "ERROR: Missing command line argument 'address'."
-    exit(2)
 
 # Create the filename for this instance's PID file.
 if test:
@@ -248,9 +230,13 @@ if os.path.exists(pidfile):
 if debug:
     print "DEBUG: Creating pidfile for network interface %s." % str(interface)
     print "DEBUG: PID of process is %s." % str(os.getpid())
-pid = open(pidfile, "w")
-pid.write(str(os.getpid()))
-pid.close()
+pid = PIDFile(cherrypy.engine, pidfile)
+pid.subscribe()
+
+# Configure a few things about the web server so we don't have to fuss
+# with an extra config file, namely, the port and IP address to listen on.
+cherrypy.config.update({'server.socket_host':'0.0.0.0', })
+cherrypy.config.update({'server.socket_port':port, })
 
 # Set up the location the templates will be served out of.
 templatelookup = TemplateLookup(directories=[filedir],
@@ -264,11 +250,6 @@ root = CaptivePortal()
 if debug:
     print "DEBUG: Mounting web app in %s to /." % appconfig
 cherrypy.tree.mount(root, "/", appconfig)
-
-# Configure a few things about the web server so we don't have to fuss
-# with an extra config file, namely, the port and IP address to listen on.
-cherrypy.server.socket_port = port
-cherrypy.server.socket_host = address
 
 # Initialize the IP tables ruleset for the node.
 initialize_iptables = ['/usr/local/sbin/captive-portal.sh', 'initialize',
@@ -297,13 +278,8 @@ if iptables == 2:
 # Start the web server.
 if debug:
     print "DEBUG: Starting web server."
-if hasattr(cherrypy.engine, 'signal_handler'):
-    cherrypy.engine.signal_handler.subscribe()
 cherrypy.engine.start()
 cherrypy.engine.block()
-
-# Clean up after ourselves.
-cleanup()
 
 # [Insert opening anthem from Blaster Master here.]
 # Fin.

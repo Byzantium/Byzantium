@@ -11,6 +11,8 @@ import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
 import os
+import os.path
+import sqlite3
 
 # Import control panel modules.
 from control_panel import *
@@ -20,56 +22,188 @@ from meshconfiguration import MeshConfiguration
 from services import Services
 from gateways import Gateways
 
+# Configure the location templates will be served from.
 templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=100)
 
 # The Status class implements the system status report page that makes up
 # /index.html.
 class Status(object):
+    # Allocate objects for all of the control panel's main features.
     traffic = NetworkTraffic()
     network = NetworkConfiguration()
     mesh = MeshConfiguration()
     services = Services()
     gateways = Gateways()
 
+    # Location of the network.sqlite database, which holds the configuration
+    # of every network interface in the node.
+    if test:
+        netconfdb = '/home/drwho/network.sqlite'
+        print "DEBUG: Location of NetworkConfiguration.netconfdb: %s" % netconfdb
+    else:
+        netconfdb = '/var/db/controlpanel/network.sqlite'
+
     # Pretends to be index.html.
     def index(self):
+        if debug:
+            print "DEBUG: Entered Status.index()."
+
         # Set the variables that'll eventually be displayed to the user to
         # known values.  If nothing else, we'll know if something is going wrong
         # someplace if they don't change.
         uptime = 0
-        one_minute_load = 0
-        five_minute_load = 0
-        fifteen_minute_load = 0
         ram = 0
         ram_used = 0
-        swap = 0
-        swap_used = 0
 
         # Get the node's uptime from the OS.
         sysuptime = self.get_uptime()
-        if sysuptime: uptime = sysuptime
+        if sysuptime:
+            uptime = sysuptime
 
         # Convert the uptime in seconds into something human readable.
         (minutes, seconds) = divmod(float(uptime), 60)
         (hours, minutes) = divmod(minutes, 60)
         uptime = "%i hours, %i minutes, %i seconds" % (hours, minutes, seconds)
+        if debug:
+            print "DEBUG: System uptime: %s" % str(uptime)
 
-        # Get the one, five, and ten minute system load averages from the OS.
-        sysload = self.get_load()
-        if sysload: (one_minute_load,five_minute_load,fifteen_minute_load) = sysload
-
-        # Get the amount of RAM and swap used by the system.
+        # Get the amount of RAM in and in use by the system.
         sysmem = self.get_memory()
-        if sysmem: (ram, ram_used, swap, swap_used) = sysmem
+        if sysmem:
+            (ram, ram_used) = sysmem
+        if debug:
+            print "DEBUG: Total RAM: %s" % ram
+            print "DEBUG: RAM in use: %s" % ram_used
 
+        # For the purposes of debugging, test to see if the network
+        # configuration database file exists and print a tell to the console.
+        if debug:
+            print "DEBUG: Checking for existence of network configuration database."
+            if os.path.exists(self.netconfdb):
+                print "DEBUG: Network configuration database %s found." % self.netconfdb
+            else:
+                print "DEBUG: Network configuration database %s NOT found!" % self.netconfdb
+
+        # Pull a list of the mesh interfaces on this system out of the network
+        # configuration database.  If none are found, report none.
+        mesh_interfaces = ''
+        ip_address = ''
+
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+        query = "SELECT mesh_interface, essid, channel FROM wireless WHERE mesh_interface LIKE 'wlan%';"
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        if not result:
+            # Fields:
+            #    interface, IP, ESSID, channel
+            mesh_interfaces = "<tr><td>n/a</td>\n<td>n/a</td>\n<td>n/a</td>\n<td>n/a</td></tr>\n"
+        else:
+            for (mesh_interface, essid, channel) in result:
+                # For every mesh interface found in the database, get its
+                # current IP address with ifconfig.
+                command = '/sbin/ifconfig ' + mesh_interface
+                if test:
+                    print "TEST: Status.index() command to pull the configuration of a mesh interface:"
+                    print command
+                else:
+                    if debug:
+                        print "DEBUG: Running ifconfig to collect configuration of interface %s." % mesh_interface
+
+                    output = os.popen(command)
+                    configuration = output.readlines()
+                    if debug:
+                        print "DEBUG: Output of ifconfig:"
+                        print configuration
+
+                    # Parse the output of ifconfig.
+                    for line in configuration:
+                        if 'inet addr' in line:
+                            line = line.strip()
+                            ip_address = line.split(' ')[1].split(':')[1]
+                            if debug:
+                                print "DEBUG: IP address is %s" % ip_address
+
+                # Assemble the HTML for the status page using the mesh
+                # interface configuration data.
+                mesh_interfaces = mesh_interfaces + "<tr><td>" + mesh_interface + "</td>\n<td>" + ip_address + "</td>\n<td>" + essid + "</td>\n<td>" + str(channel) + "</td></tr>\n"
+
+        # Pull a list of the client interfaces on this system.  If none are
+        # found, report none.
+        client_interfaces = ''
+        ip_address = ''
+        number_of_clients = 0
+
+        query = "SELECT client_interface FROM wireless WHERE client_interface LIKE 'wlan%';"
+        cursor.execute(query)
+        result = cursor.fetchall()
+
+        if not result:
+            # Fields:
+            #    interface, IP, active clients
+            client_interfaces = "<tr><td>n/a</td>\n<td>n/a</td>\n<td>0</td></tr>\n"
+        else:
+            for client_interface in result:
+                # For every client interface found, run ifconfig and pull
+                # its configuration information.
+                command = '/sbin/ifconfig ' + client_interface[0]
+                if test:
+                    print "TEST: Status.index() command to pull the configuration of a client interface:"
+                    print command
+                else:
+                    if debug:
+                        print "DEBUG: Running ifconfig to collect configuration of interface %s." % client_interface
+
+                    output = os.popen(command)
+                    configuration = output.readlines()
+                    if debug:
+                        print "DEBUG: Output of ifconfig:"
+                        print configuration
+
+                    # Parse the output of ifconfig.
+                    for line in configuration:
+                        if 'inet addr' in line:
+                            line = line.strip()
+                            ip_address = line.split(' ')[1].split(':')[1]
+                            if debug:
+                                print "DEBUG: IP address is %s" % ip_address
+
+                # For each client interface, count the number of rows in its
+                # associated arp table to count the number of clients currently
+                # associated.  Note that one has to be subtracted from the
+                # count of rows to account for the line of column headers.
+                command = '/sbin/arp -n -i ' + client_interface[0]
+                if test:
+                    print "TEST: Status.index() command to dump the ARP table of interface %s: " % client_interface
+                    print command
+                else:
+                    if debug:
+                        print "DEBUG: Running arp to dump the ARP table of client interface %s." % client_interface
+                    output = os.popen(command)
+                    arp_table = output.readlines()
+                    if debug:
+                        print "DEBUG: Contents of ARP table:"
+                        print arp_table
+
+                    # Count the number of clients associated with the client
+                    # interface by analyzing the ARP table.
+                    number_of_clients = len(arp_table) - 1
+                    if debug:
+                        print "DEBUG: Number of associated clients: %i" % number_of_clients
+
+                # Assemble the HTML for the status page using the mesh
+                # interface configuration data.
+                client_interfaces = client_interfaces + "<tr><td>" + client_interface[0] + "</td>\n<td>" + ip_address + "</td>\n<td>" + str(number_of_clients) + "</td></tr>\n"
+
+        # Render the HTML page and return to the client.
+        cursor.close()
         page = templatelookup.get_template("index.html")
-        return page.render(uptime = uptime, one_minute_load = one_minute_load,
-                           five_minute_load = five_minute_load,
-                           fifteen_minute_load = fifteen_minute_load,
-                           ram = ram, ram_used = ram_used,
-                           swap = swap, swap_used = swap_used,
-                           title = "Byzantium Node Control Panel",
+        return page.render(ram_used = ram_used, ram = ram, uptime = uptime,
+                           mesh_interfaces = mesh_interfaces,
+                           client_interfaces = client_interfaces,
+                           title = "Byzantium Mesh Node Status",
                            purpose_of_page = "System Status")
     index.exposed = True
 
@@ -126,7 +260,7 @@ class Status(object):
         # to make it easy to pick out what we want.  If this can't be done,
         # return nothing and let the default values handle it.
         for line in meminfo:
-           # homoginize the data
+           # Homoginize the data.
            line = line.strip().lower()
            # Figure out how much RAM and swap are in use right now
            try:
@@ -134,17 +268,12 @@ class Status(object):
                  memtotal = line.split()[1]
               elif line.startswith('memfree'):
                  memfree = line.split()[1]
-              elif line.startswith('swaptotal'):
-                 swaptotal = line.split()[1]
-              elif line.startswith('swapfree'):
-                 swapfree = line.split()[1]
            except KeyError as e:
               print(e)
               print('WARNING: /proc/meminfo is not formatted as expected')
               return False
         memused = int(memtotal) - int(memfree)
-        swapused = int(swaptotal) - int(swapfree)
 
         # Return total RAM, RAM used, total swap space, swap space used.
-        return (memtotal, memused, memtotal, swapused)
+        return (memtotal, memused)
 

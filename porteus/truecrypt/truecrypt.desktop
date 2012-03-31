@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Truecrypt
+Comment=Disk encryption software
+Exec=truecrypt
+Icon=/usr/share/pixmaps/truecrypt.png
+Terminal=false
+Type=Application
+Categories=System;
