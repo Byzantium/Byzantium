@@ -1,0 +1,11 @@
+RSA Security Inc. PKCS #11 Cryptographic Token Interface (Cryptoki)
+2.20 header files.
+
+This standard specifies an API, called Cryptoki, to devices which hold
+cryptographic information and perform cryptographic functions. Cryptoki,
+pronounced crypto-key and short for cryptographic token interface,
+follows a simple object-based approach, addressing the goals of
+technology independence (any kind of device) and resource sharing
+(multiple applications accessing multiple devices), presenting to
+applications a common, logical view of the device called a cryptographic
+token.

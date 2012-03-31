@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in.  You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+         |-----handy-ruler--------------------------------------------------|
+cryptoki: cryptoki (cryptographic API)
+cryptoki:
+cryptoki: This standard specifies an API, called Cryptoki, to devices which 
+cryptoki: hold cryptographic information and perform cryptographic functions.
+cryptoki: Cryptoki, pronounced crypto-key and short for cryptographic token 
+cryptoki: interface, follows a simple object-based approach, addressing the 
+cryptoki: goals of technology independence (any kind of device) and resource 
+cryptoki: sharing (multiple applications accessing multiple devices), 
+cryptoki: presenting to applications a common, logical view of the device 
+cryptoki: called a cryptographic token.
+cryptoki: http://www.rsa.com/rsalabs/node.asp?id=2133
