@@ -83,7 +83,7 @@ cp databases/* /tmp/fakeroot/srv/httpd/databases
 mkdir -p /tmp/fakeroot/home/guest/Desktop
 cp porteus/home/guest/Desktop/Control\ Panel.desktop /tmp/fakeroot/home/guest/Desktop
 mkdir -p /tmp/fakeroot/usr/share/pixmaps/porteus
-cp byzantium-logo.png /tmp/fakeroot/usr/share/pixmaps/porteus
+cp byzantium-icon.png /tmp/fakeroot/usr/share/pixmaps/porteus
 
 # has fail??
 mkdir -p /tmp/fakeroot/srv/httpd/htdocs
