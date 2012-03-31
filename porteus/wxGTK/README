@@ -1,0 +1,12 @@
+wxGTK is part of wxWidgets, a cross-platform API for writing GUI
+applications on multiple platforms that still utilize the native platform's
+controls and utilities.
+
+This is a unicode shared build.  If you do not want the unicode build, use:
+  UNICODE=NO ./wxGTK.SlackBuild
+
+If you want to include the media library, which provides bindings for
+gstreamer, you will need to install GConf first.
+
+This package conflicts with wxPython because wxGTK is already included
+there. Both cannot be installed at the same time!
