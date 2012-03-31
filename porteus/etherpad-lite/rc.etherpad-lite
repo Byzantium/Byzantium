@@ -22,6 +22,9 @@ case "$1" in
 	'start')
 		# Start Etherpad.
 		/bin/su -l -c "bin/run.sh &" $USER
+
+		# Wait five seconds for the node.js server to start up.
+		sleep 5
 	
 		# Store the PID in a file.
 		ps ax | grep [s]erver.js | awk '{print $1}' > $PID
@@ -29,6 +32,7 @@ case "$1" in
 	'stop')
 		# Terminate Etherpad-Lite.
 		kill `cat $PID`
+		rm -f $PID
 		;;
 	'status')
 		ps ax | grep [n]ode
