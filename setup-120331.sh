@@ -103,5 +103,6 @@ cp srv/captiveportal/* /tmp/fakeroot/srv/captiveportal/
 
 chown -R guest:guest /tmp/fakeroot/home/guest
 
-chmod -x /tmp/fakeroot/etc/rc.d/rc3.d/S-firewall
+# This file doesn't exit?
+#chmod -x /tmp/fakeroot/etc/rc.d/rc3.d/S-firewall
 
