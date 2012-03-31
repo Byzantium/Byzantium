@@ -29,7 +29,7 @@ cp ~guest/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py /tmp/fakeroot/us
 
 cd ~guest/Byzantium/scripts
 mkdir -p /tmp/fakeroot/etc/udev/rules.d
-cp 11-media-by-lable-auto-mount.rules /tmp/fakeroot/etc/udev/rules.d
+cp 11-media-by-label-auto-mount.rules /tmp/fakeroot/etc/udev/rules.d
 
 # Could these be placed in a module?
 cp rc.local rc.mysqld rc.setup_mysql /tmp/fakeroot/etc.rc.d
