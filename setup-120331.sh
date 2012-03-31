@@ -18,7 +18,7 @@ ln -s httpd www
 mkdir -p /tmp/fakeroot/srv/controlpanel/graphs
 cp -rv ~guest/Byzantium/control_panel/srv/controlpanel/* /tmp/fakeroot/srv/controlpanel
 mkdir -p /tmp/fakeroot/etc/controlpanel
-cp ~guest/Byzantium/control_panel/etc/controlpanel/* /tmp/fakeroot/etc/contolpanel
+cp ~guest/Byzantium/control_panel/etc/controlpanel/* /tmp/fakeroot/etc/controlpanel
 mkdir -p /tmp/fakeroot/var/db/controlpanel
 cp -rv ~guest/Byzantium/control_panel/var/db/controlpanel/* /tmp/fakeroot/var/db/controlpanel
 
