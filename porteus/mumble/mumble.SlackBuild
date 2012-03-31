@@ -1,0 +1,157 @@
+#!/bin/sh
+
+# Slackware build script for Mumble
+
+# Copyright 2011 James Geboski <jgeboski@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=mumble
+VERSION=${VERSION:-1.2.3}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+G15=${G15:-no}
+OVERLAY=${OVERLAY:-no}
+
+BUILD_G15=""
+BUILD_OVERLAY=""
+
+if [ "$G15" = "no" ]; then
+  BUILD_G15="CONFIG+=no-g15"
+fi
+
+if [ "$OVERLAY" = "no" ]; then
+  BUILD_OVERLAY="CONFIG+=no-overlay"
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# As of celt-0.11.0, the macro CELT_SET_VBR_RATE has been renamed to
+# CELT_SET_BITRATE. Please make sure you have at least celt 0.11.0,
+# if not comment the line below out.
+sed -i 's/CELT_SET_VBR_RATE/CELT_SET_BITRATE/' src/mumble/AudioInput.cpp
+
+qmake \
+  -recursive \
+  main.pro \
+  DEFINES*="PLUGIN_PATH=/usr/lib${LIBDIRSUFFIX}/mumble" \
+  CONFIG+=no-server \
+  CONFIG+=no-bundled-celt \
+  CONFIG+=no-bundled-speex \
+  CONFIG+=no-pulseaudio \
+  CONFIG+=no-speechd \
+  CONFIG+=no-update \
+  CONFIG+=no-embed-qt-translations \
+  CONFIG+=no-ice \
+  CONFIG+=no-bonjour \
+  $BUILD_G15 \
+  $BUILD_OVERLAY
+
+make release
+
+mkdir -p \
+  $PKG/usr/bin \
+  $PKG/usr/lib${LIBDIRSUFFIX}/mumble \
+  $PKG/usr/man/man1 \
+  $PKG/usr/share/{applications,pixmaps}
+
+install -m 755 \
+  release/mumble release/mumble11x \
+ $PKG/usr/bin
+
+install -m 644 \
+  man/mumble-overlay.1 man/mumble.1 man/mumble11x.1 \
+ $PKG/usr/man/man1
+
+install -m 644 scripts/mumble.desktop $PKG/usr/share/applications
+install -m 644 icons/mumble.xpm $PKG/usr/share/pixmaps
+
+find release/plugins -type f -name *.so \
+  -exec install -m 755 {} $PKG/usr/lib${LIBDIRSUFFIX}/mumble \;
+
+# If the overlay was built, let's install the library for it
+if [ -e release/libmumble.so.$VERSION ]; then
+  install -m 755 release/libmumble.so.$VERSION $PKG/usr/lib${LIBDIRSUFFIX}
+  
+  cd $PKG/usr/lib${LIBDIRSUFFIX}
+    ln -sf libmumble.so.$VERSION libmumble.so.1.2
+    ln -sf libmumble.so.1.2 libmumble.so.1
+    ln -sf libmumble.so.1 libmumble.so
+  cd -
+fi
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  CHANGES LICENSE README README.Linux \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
