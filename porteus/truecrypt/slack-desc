@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+         |-----handy-ruler------------------------------------------------------|
+truecrypt: TrueCrypt (On-the-fly disk encryption)
+truecrypt:
+truecrypt: TrueCrypt can create a virtual encrypted disk within a file and mount
+truecrypt: it as a real disk. It can encrypt an entire hard disk partition or a
+truecrypt: device, such as USB memory stick, floppy disk, etc. It provides two
+truecrypt: levels of plausible deniability, in case an adversary forces you to
+truecrypt: reveal the password: 1) Hidden volume 2) No TrueCrypt volume can be
+truecrypt: identified. Supports many encryption algorithms.
+truecrypt: TrueCrypt is multi-platform (supports MS-Windows TrueCrypt volumes)
+truecrypt:
+truecrypt: TrueCrypt home: http://www.truecrypt.org/

@@ -1,0 +1,16 @@
+TrueCrypt is free open-source disk encryption software for
+Windows Vista/XP, Mac OS X, and Linux.
+
+Since version 6.1a of TrueCrypt, a number of header files from RSA
+Laboratories are required during the compilation. I've separated the
+installation of these into a separate package called cryptoki rather
+than have this script extract a separate, isolated archive. 
+
+Thus, to build this version of TrueCrypt, you also need cryptoki, and
+to run Truecrypt you need wxGTK. Both are available at SlackBuilds.org.
+
+This script does not create the static GUI build seen elsewhere (see
+above for required runtime dependency of wxGTK or similar).
+
+NOTE: There is no direct link to the TrueCrypt source archive, as such, 
+it must be downloaded manually from within a web browser.
