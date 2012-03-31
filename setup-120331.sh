@@ -106,3 +106,5 @@ chown -R guest:guest /tmp/fakeroot/home/guest
 # This file doesn't exit?
 #chmod -x /tmp/fakeroot/etc/rc.d/rc3.d/S-firewall
 
+dir2xzm /tmp/fakeroot /tmp/000-byzantium.xzm
+
