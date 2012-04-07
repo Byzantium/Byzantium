@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# Slackware build script for murmur
+
+PRGNAM=murmur
+SRCNAM=mumble
+VERSION=${VERSION:-1.1.4}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRCNAM-$VERSION
+tar xvf $CWD/$SRCNAM-$VERSION.tar.gz
+cd $SRCNAM-$VERSION
+chown -R root:root .
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+qmake \
+  main.pro \
+  CONFIG+=no-client
+
+make
+
+mkdir -p $PKG/usr/bin \
+  $PKG/etc \
+  $PKG/var/lib/mumble-server \
+  $PKG/var/run/mumble-server \
+  $PKG/var/log/mumble-server
+install -m 0755 ./release/murmurd $PKG/usr/bin
+install -m 0644 ./scripts/murmur.ini.system $PKG/etc/murmur.ini.new
+strip --strip-unneeded $PKG/usr/bin/* 2>/dev/null || true
+
+mkdir -p $PKG/usr/man/man1
+install -m 0644 ./man/murmurd.1 $PKG/usr/man/man1
+gzip -9 $PKG/usr/man/man1/*
+
+DOCS="CHANGES INSTALL LICENSE README README.Linux $CWD/$PRGNAM.SlackBuild"
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+install -m 0644 $DOCS $PKG/usr/doc/$PRGNAM-$VERSION
+
+mkdir -p $PKG/install $PKG/etc/rc.d
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+cat $CWD/rc.murmur > $PKG/etc/rc.d/rc.murmur.new
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
