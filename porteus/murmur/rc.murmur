@@ -1,0 +1,41 @@
+#!/bin/bash
+
+PIDFILE="/var/run/mumble-server/mumble-server.pid"
+
+murmur_start() {
+  echo -n "Starting Murmur Server: "
+  if [ ! -f $PIDFILE ]; then
+    /usr/bin/murmurd -ini /etc/murmur.ini & > /dev/null 2>&1
+    echo "OK"
+  else
+    echo -n "Removing stale lock.. "
+    /bin/rm -f $PIDFILE
+    /usr/bin/murmurd -ini /etc/murmur.ini & > /dev/null 2>&1
+    echo "OK"
+  fi
+}
+
+murmur_stop() {
+  echo -n "Stopping Murmur: "
+  if [ -f $PIDFILE ]; then
+    /bin/kill $(/bin/cat $PIDFILE)
+    /bin/rm -f $PIDFILE
+    echo "OK"
+  else
+    echo "Not Running"
+  fi
+}
+
+case "$1" in
+  start)
+    murmur_start
+    ;;
+  stop)
+    murmur_stop
+    ;;
+  restart)
+    murmur_stop && (/bin/sleep 1 && murmur_start)
+    ;;
+  *)
+    echo "Usage: rc.murmur {start|stop|restart}"
+esac

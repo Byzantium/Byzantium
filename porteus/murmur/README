@@ -1,0 +1,11 @@
+Murmur is the VoIP server component for Mumble. Murmur is
+installed in a system-wide fashion, but can also be run by
+individual users. Each murmur process supports multiple virtual
+servers, each with their own user base and channel list.
+Administration of murmur is done through D-Bus.
+
+To run murmur at boot, add the following to /etc/rc.d/rc.local:
+
+if [ -x /etc/rc.d/rc.murmur ]; then
+  /etc/rc.d/rc.murmur start
+fi
