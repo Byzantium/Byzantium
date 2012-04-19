@@ -24,10 +24,12 @@ case "$1" in
 		./run.py
 	
 		# Save the PID.
+		sleep 5
 		ps ax | grep [r]un.py | grep -v 'grep' | awk '{print $1}' > $PID
 		;;
 	'stop')
 		kill `cat $PID`
+		rm -f $PID
 		;;
 	'status')
 		# Extract the PID from the process list, in case the PID file doesn't

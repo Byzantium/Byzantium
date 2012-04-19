@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+      |-----handy-ruler-------------------------------------------------|
+murmur: murmur (low latency voip server)
+murmur: 
+murmur: Murmur is the VoIP server component for Mumble. Murmur is
+murmur: installed in a system-wide fashion, but can also be run by
+murmur: individual users. Each murmur process supports multiple virtual
+murmur: servers, each with their own user base and channel list.
+murmur: Administration of murmur is done through D-Bus.
+murmur: 
+murmur: Homepage: http://mumble.sourceforge.net/
+murmur: 
+murmur: 
