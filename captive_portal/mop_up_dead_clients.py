@@ -9,6 +9,7 @@ CACHEFILE = '/tmp/captive_portal-mopup.cache'
 STASHTO = 'ram' # options are 'ram','disk'
 MAXIDLESEC = 18000 # max idle time in seconds (18000s == 5hr) 
 CHECKEVERY = 1800 # check every CHECKEVERY seconds for idle clients (1800s == 30min)
+IPTABLESCMD = ['/usr/sbin/iptables','-t','mangle','-L','internet','-n','-v']
 USAGE = '''usage: %s [(-c|--cache) <cache file>] [(-s|--stashto) <disk|ram>] [(-m|--maxidle) <time before idle client expires in seconds>] [(-i|--checkinterval) <time between each check for idle clients in seconds>]'''
 
 clients={}
@@ -42,11 +43,33 @@ def _die():
 
 '''@param	mac	string representing the mac address of a client to be removed'''
 def _scrub_dead(mac):
-	pass
+	del clients[mac]
+	subprocess.call(['/usr/local/sbin/captive-portal.sh','remove',mac])
 
 '''@return	list of dict of {'ip':string,'mac':string,'metric':int}'''
 def read_metrics():
-	return []
+	metrics = []
+	packetcounts = get_packetcounts()
+	for mac, pc in packetcounts.items():
+		metrics += [{'mac':mac, 'metric':pc}]
+	return metrics
+
+def get_packetcounts():
+	packetcounts = {}
+	p = subprocess.Popen(IPTABLESCMD,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+	p.wait()
+	stdout, stderr = p.communicate()
+	print(stdout,stderr)
+	for line in stdout.strip().split('\n')[2:]:
+		print(line)
+		larr = [x.strip() for x in line.strip().split()]
+		print(larr)
+		if 'MAC' in larr:
+			pcount = int(larr[0].strip() or 0)
+			if len(larr) >= larr.index('MAC')+1:
+				mac = larr[larr.index('MAC')+1]
+				packetcounts[mac] = pcount
+	return packetcounts
 
 def bring_out_your_dead(metrics):
 	global clients
@@ -65,10 +88,12 @@ def bring_out_your_dead(metrics):
 				c['lastChanged'] = int(time.time())
 				clients[c['mac']] = c
 	_stash(clients) # stash the client list someplace
+	print(metrics,clients)
 
 '''call this if this is used as a module'''
 def mop_up():
 	metrics = read_metrics()
+	print(metrics)
 	bring_out_your_dead(metrics)
 
 '''this is run if this is used as a script'''
