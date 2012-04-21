@@ -261,6 +261,10 @@ if test:
 else:
     iptables = subprocess.call(initialize_iptables)
 
+# Start up the idle client reaper daemon.
+idle_client_reaper = ['/usr/local/sbin/mop_up_dead_clients.py', '-m', '600',
+                      '-i', '60']
+
 # Now do some error checking in case IP tables went pear-shaped.  This appears
 # oddly specific, but /usr/sbin/iptables treats these two kinds of errors
 # differently and that makes a difference during troubleshooting.

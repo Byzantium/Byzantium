@@ -17,7 +17,7 @@ STASHTO = 'ram' # options are 'ram','disk'
 MAXIDLESEC = 18000 # max idle time in seconds (18000s == 5hr)
 CHECKEVERY = 1800 # check every CHECKEVERY seconds for idle clients (1800s == 30min)
 IPTABLESCMD = ['/usr/sbin/iptables','-t','mangle','-L','internet','-n','-v']
-USAGE = '''usage: %s [(-c|--cache) <cache file>] [(-s|--stashto) <disk|ram>]\n\t[(-m|--maxidle) <time before idle client expires in seconds>]\n\t[(-i|--checkinterval) <time between each check for idle clients in\n\tseconds>]'''
+USAGE = '''[(-c|--cache) <cache file>] [(-s|--stashto) <disk|ram>]\n\t[(-m|--maxidle) <time before idle client expires in seconds>]\n\t[(-i|--checkinterval) <time between each check for idle clients in\n\tseconds>]'''
 
 # List of clients the daemon knows about.
 clients={}
@@ -53,7 +53,7 @@ def _get_stash():
 # _die(): Top-level error handler for the daemon.  Prints the usage info and
 #         terminates.
 def _die():
-    print(USAGE % sys.argv[0])
+    print "USAGE: %s" % sys.argv[0], USAGE
     sys.exit(1)
 
 # _scrub_dead(): Calls captive-portal.sh to remove an IP tables rule for a mesh
@@ -164,7 +164,7 @@ def main(args):
             if '--checkinterval' in args:
                 CHECKEVERY = args[args.index('--checkinterval')+1]
             if '--help' in args:
-                print USAGE
+                print "USAGE: %s" % sys.argv[0], USAGE
                 sys.exit(0)
         except IndexError as ie:
             _die(USAGE % args[0])
