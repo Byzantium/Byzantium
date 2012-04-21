@@ -1,123 +1,175 @@
 #!/usr/bin/env python
 
+# mop_up_dead_clients.py - Daemon that pairs with the captive portal to remove
+#    IP tables rules for idle clients so they don't overflow the kernel.
+# By: Haxwithaxe
+
+# Modules
 import sys
 import os
 import time
 import subprocess
 
+# Global variables.
+# Defaults are set here but they can be overridden on the command line.
 CACHEFILE = '/tmp/captive_portal-mopup.cache'
 STASHTO = 'ram' # options are 'ram','disk'
-MAXIDLESEC = 18000 # max idle time in seconds (18000s == 5hr) 
+MAXIDLESEC = 18000 # max idle time in seconds (18000s == 5hr)
 CHECKEVERY = 1800 # check every CHECKEVERY seconds for idle clients (1800s == 30min)
 IPTABLESCMD = ['/usr/sbin/iptables','-t','mangle','-L','internet','-n','-v']
 USAGE = '''usage: %s [(-c|--cache) <cache file>] [(-s|--stashto) <disk|ram>] [(-m|--maxidle) <time before idle client expires in seconds>] [(-i|--checkinterval) <time between each check for idle clients in seconds>]'''
 
+# List of clients the daemon knows about.
 clients={}
 
-
+# _stash(): Writes the cache of known clients' information (documented below)
+#           to a JSON file on disk.  Takes one argument, a dict containing a
+#           client's information.  Returns nothing.  Only does something if the
+#           stashtype is 'disk'.
 '''@param	info	dict of mac:{'ip':string,'mac':string,'metric':int,'lastChange':int} (lastChange in unix timestamp)'''
 def _stash(info):
-	if STASHTO == 'disk':
-		fobj = open(CACHEFILE,'w')
-		fobj.write(json.dumps(info))
-		fobj.close()
+    if STASHTO == 'disk':
+        fobj = open(CACHEFILE,'w')
+        fobj.write(json.dumps(info))
+        fobj.close()
 
+# _get_stash(): Tries to load the database of the node's clients from disk if
+#               it exists (returns a dict).
 '''@return		False if empty or not found, else dict of mac:{'ip':string,'mac':string,'metric':int,'lastChange':int} (lastChange in unix timestamp)'''
 def _get_stash():
-	try:
-		fobj = open(CACHEFILE,'r')
-		fstr = fobj.read()
-		fobj.close()
-		if len(fstr) > 0:
-			try:
-				return json.loads()
-			except ValueError as ve:
-				print('Reading Cache File: Cache File Likely Empty '+str(ve))
-	except IOError as ioe:
-		print('Reading Cache File: Cache File Not Found '+str(ioe))
-	return False
+    try:
+        fobj = open(CACHEFILE,'r')
+        fstr = fobj.read()
+        fobj.close()
+        if len(fstr) > 0:
+            try:
+                return json.loads()
+            except ValueError as ve:
+                print('Reading Cache File: Cache File Likely Empty '+str(ve))
+    except IOError as ioe:
+        print('Reading Cache File: Cache File Not Found '+str(ioe))
+    return False
 
+# _die(): Top-level error handler for the daemon.  Prints the usage info and
+#         terminates.
 def _die():
-	print(USAGE % sys.argv[0])
-	sys.exit(1)
+    print(USAGE % sys.argv[0])
+    sys.exit(1)
 
+# _scrub_dead(): Calls captive-portal.sh to remove an IP tables rule for a mesh
+#                client that no longer exists.  Takes the MAC address of the
+#                client as an arg, returns nothing.
 '''@param	mac	string representing the mac address of a client to be removed'''
 def _scrub_dead(mac):
-	del clients[mac]
-	subprocess.call(['/usr/local/sbin/captive-portal.sh','remove',mac])
+    del clients[mac]
+    subprocess.call(['/usr/local/sbin/captive-portal.sh','remove',mac])
 
+# read_metrics(): Updates the client cache with the number of packets logged
+#                 per client.  Takes no args.  Returns a dict containing the
+#                 MAC and the current packet count.
 '''@return	list of dict of {'ip':string,'mac':string,'metric':int}'''
 def read_metrics():
-	metrics = []
-	packetcounts = get_packetcounts()
-	for mac, pc in packetcounts.items():
-		metrics += [{'mac':mac, 'metric':pc}]
-	return metrics
+    metrics = []
+    packetcounts = get_packetcounts()
+    for mac, pc in packetcounts.items():
+        metrics += [{'mac':mac, 'metric':pc}]
+    return metrics
 
+# get_packetcounts(): Calls /usr/sbin/iptables to display the list of rules
+#                     that correspond to mesh clients, in particular the number
+#                     of packets sent or received by the client at time t.
+#                     Returns a dict consisting of <MAC address>:<packet count>
+#                     pairs.
 def get_packetcounts():
-	packetcounts = {}
-	p = subprocess.Popen(IPTABLESCMD,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-	p.wait()
-	stdout, stderr = p.communicate()
-	print(stdout,stderr)
-	for line in stdout.strip().split('\n')[2:]:
-		print(line)
-		larr = [x.strip() for x in line.strip().split()]
-		print(larr)
-		if 'MAC' in larr:
-			pcount = int(larr[0].strip() or 0)
-			if len(larr) >= larr.index('MAC')+1:
-				mac = larr[larr.index('MAC')+1]
-				packetcounts[mac] = pcount
-	return packetcounts
+    packetcounts = {}
+    p = subprocess.Popen(IPTABLESCMD, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    p.wait()
+    stdout, stderr = p.communicate()
+    print(stdout,stderr)
+    for line in stdout.strip().split('\n')[2:]:
+        print(line)
+        larr = [x.strip() for x in line.strip().split()]
+        print(larr)
+        if 'MAC' in larr:
+            pcount = int(larr[0].strip() or 0)
+            if len(larr) >= larr.index('MAC')+1:
+                mac = larr[larr.index('MAC')+1]
+                packetcounts[mac] = pcount
+    return packetcounts
 
+# bring_out_your_dead():
 def bring_out_your_dead(metrics):
-	global clients
-	if len(clients) < 1:
-		for c in metrics:
-			c['lastChanged'] = int(time.time())
-			clients[c['mac']] = c
-	else:
-		for c in metrics:
-			if c['mac'] in clients: # If we know this client then check if it's dead
-				if clients[c['mac']]['metric'] != c['metric']: # if change in metric then update time of last change
-					clients[c['mac']]['lastChanged'] = int(time.time())
-				elif (int(time.time()) - clients[c['mac']]['lastChanged']) > MAXIDLESEC: # else if the time since the last change is too long remove the client from the system
-					_scrub_dead(c['mac'])
-			else: # Else add client
-				c['lastChanged'] = int(time.time())
-				clients[c['mac']] = c
-	_stash(clients) # stash the client list someplace
-	print(metrics,clients)
+    global clients
 
+    # If the clients dict isn't populated, go through the dict of clients and
+    # associate the current time (in time_t format) with their packet count.
+    if len(clients) < 1:
+        for c in metrics:
+            c['lastChanged'] = int(time.time())
+            clients[c['mac']] = c
+    else:
+        for c in metrics:
+            # Test every client we know about to see if it's been active or
+            # not.
+            if c['mac'] in clients:
+                # If the number of packets recieved has changed, then update
+                # its last known-alive time.
+                if clients[c['mac']]['metric'] != c['metric']:
+                    clients[c['mac']]['lastChanged'] = int(time.time())
+
+                # If the client hasn't been alive for longer than MAXIDLESEC,
+                # remove its rule from IP tables.  It'll have to reassociate.
+                elif (int(time.time()) - clients[c['mac']]['lastChanged']) > MAXIDLESEC:
+                    _scrub_dead(c['mac'])
+            else:
+                # Else, add the client.
+                c['lastChanged'] = int(time.time())
+                clients[c['mac']] = c
+    # Update the cache of clients.
+    _stash(clients)
+    print(metrics,clients)
+
+# mop_up(): Wrapper method that calls all of the methods that do the heavy
+#           lifting in sequence.  Supposed to run when this code is imported
+#           into other code as a module.  Takes no args.  Returns nothing.
 '''call this if this is used as a module'''
 def mop_up():
-	metrics = read_metrics()
-	print(metrics)
-	bring_out_your_dead(metrics)
+    metrics = read_metrics()
+    print(metrics)
+    bring_out_your_dead(metrics)
 
+# If running this code as a separate process, main() gets called.
 '''this is run if this is used as a script'''
 def main(args):
-	if len(args) > 1:
-		global CACHEFILE
-		global STASHTO
-		global MAXIDLESEC 
-		global CHECKEVERY
-		try:
-			if '-c' in args: CACHEFILE = args[args.index('-c')+1]
-			if '--cache' in args: CACHEFILE = args[args.index('--cache')+1]
-			if '-s' in args: STASHTO = args[args.index('-s')+1]
-			if '--stashto' in args: STASHTO = args[args.index('--stashto')+1]
-			if '-m' in args: MAXIDLESEC = args[args.index('-m')+1]
-			if '--maxidle' in args: MAXIDLESEC = args[args.index('--maxidle')+1]
-			if '-i' in args: CHECKEVERY = args[args.index('-i')+1]
-			if '--checkinterval' in args: CHECKEVERY = args[args.index('--checkinterval')+1]
-		except IndexError as ie:
-			_die(USAGE % args[0])
-		
-	while True:
-		mop_up()
-		time.sleep(CHECKEVERY)
+    if len(args) > 1:
+        global CACHEFILE
+        global STASHTO
+        global MAXIDLESEC
+        global CHECKEVERY
+        try:
+            if '-c' in args:
+                CACHEFILE = args[args.index('-c')+1]
+            if '--cache' in args:
+                CACHEFILE = args[args.index('--cache')+1]
+            if '-s' in args:
+                STASHTO = args[args.index('-s')+1]
+            if '--stashto' in args:
+                STASHTO = args[args.index('--stashto')+1]
+            if '-m' in args:
+                MAXIDLESEC = args[args.index('-m')+1]
+            if '--maxidle' in args:
+                MAXIDLESEC = args[args.index('--maxidle')+1]
+            if '-i' in args:
+                CHECKEVERY = args[args.index('-i')+1]
+            if '--checkinterval' in args:
+                CHECKEVERY = args[args.index('--checkinterval')+1]
+        except IndexError as ie:
+            _die(USAGE % args[0])
+
+        while True:
+            mop_up()
+            time.sleep(CHECKEVERY)
 
 if __name__ == '__main__':
-	main(sys.argv)
+    main(sys.argv)
