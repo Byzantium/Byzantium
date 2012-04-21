@@ -82,8 +82,7 @@ def read_metrics():
 #                     pairs.
 def get_packetcounts():
     packetcounts = {}
-    p = subprocess.Popen(IPTABLESCMD, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+    p = subprocess.Popen(IPTABLESCMD)
     p.wait()
     stdout, stderr = p.communicate()
     print(stdout,stderr)
