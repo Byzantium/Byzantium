@@ -62,7 +62,7 @@ def _die():
 '''@param	mac	string representing the mac address of a client to be removed'''
 def _scrub_dead(mac):
     del clients[mac]
-    subprocess.call(['/usr/local/sbin/captive-portal.sh','remove',mac])
+    subprocess.call(['/usr/local/sbin/captive-portal.sh', 'remove', mac])
 
 # read_metrics(): Updates the client cache with the number of packets logged
 #                 per client.  Takes no args.  Returns a dict containing the

@@ -264,6 +264,14 @@ else:
 # Start up the idle client reaper daemon.
 idle_client_reaper = ['/usr/local/sbin/mop_up_dead_clients.py', '-m', '600',
                       '-i', '60']
+reaper = 0
+if test:
+    print "Idle client monitor command that would be executed:"
+    print str(idle_client_reaper)
+else:
+    reaper = subprocess.Popen(idle_client_reaper)
+if reaper:
+    print "ERROR: mop_up_dead_clients.py did not start."
 
 # Now do some error checking in case IP tables went pear-shaped.  This appears
 # oddly specific, but /usr/sbin/iptables treats these two kinds of errors
