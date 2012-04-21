@@ -163,6 +163,9 @@ def main(args):
                 CHECKEVERY = args[args.index('-i')+1]
             if '--checkinterval' in args:
                 CHECKEVERY = args[args.index('--checkinterval')+1]
+            if '--help' in args:
+                print USAGE
+                sys.exit(0)
         except IndexError as ie:
             _die(USAGE % args[0])
 
