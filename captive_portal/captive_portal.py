@@ -71,19 +71,13 @@ port = ''
 # functionality).  This breaks things for users of iOS, unless we fix it in
 # the captive portal.
 class CaptivePortalDetector(object):
-
-    def __init__(self):
-        if debug:
-            print "DEBUG: Instantiating captive portal detector object."
-        setattr(self, 'success.html', self.success())
-
     # index(): Pretends to be /library/test and /library/test/index.html.
     def index(self):
         return("You shouldn't be seeing this, either.")
     index.exposed = True
 
-    # success(): Pretends to be http://apple.com/library/test/success.html.
-    def success(self):
+    # success_html(): Pretends to be http://apple.com/library/test/success.html.
+    def success_html(self):
         if debug:
             print "DEBUG: iOS device detected."
         success = '''
@@ -98,7 +92,7 @@ class CaptivePortalDetector(object):
                 </HTML>
                 '''
         return success
-    success.exposed = True
+    success_html.exposed = True
 
 # Dummy class that has to exist to create a durectory URI hierarchy.
 class Library(object):
