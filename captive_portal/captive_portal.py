@@ -71,15 +71,11 @@ port = ''
 # functionality).  This breaks things for users of iOS, unless we fix it in
 # the captive portal.
 class CaptivePortalDetector(object):
-    if debug:
-        print "DEBUG: Instantiating captive portal detector object."
 
-    # __init__(): Method that runs when the CaptivePortalDetector() object is
-    #             instantiated.
     def __init__(self):
         if debug:
-            print "DEBUG: running hacked __init__() method of CaptivePortalDetector()."
-        setattr(self, 'success.html', self.success)
+            print "DEBUG: Instantiating captive portal detector object."
+        setattr(self, 'success.html', self.success())
 
     # index(): Pretends to be /library/test and /library/test/index.html.
     def index(self):
@@ -249,7 +245,7 @@ for opt, arg in opts:
 
     # User specifies the port to listen on.  This has a default.
     if opt in ('-p', '--port'):
-        port = arg.rstrip()
+        port = int(arg.rstrip())
     else:
         port = 31337
 
