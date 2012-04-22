@@ -32,6 +32,9 @@
 #        SIGTERM) and call a cleanup function to take care of things before
 #        terminating.  It took a couple of hours of hacking but I finally found
 #        something that worked.
+# v0.3 - Added code to implement an Apple iOS captive portal detector.
+#      - Added code that starts the idle client reaper daemon that Haxwithaxe
+#        wrote.
 
 # TODO:
 
@@ -61,9 +64,54 @@ interface = ''
 address = ''
 port = ''
 
+# The CaptivePortalDetector class implements a fix for an undocumented bit of
+# fail in Apple iOS.  iProducts attempt to access a particular file hidden in
+# the Apple Computer website.  If it can't find it, iOS forces the user to try
+# to log into the local captive portal (even if it doesn't support that
+# functionality).  This breaks things for users of iOS, unless we fix it in
+# the captive portal.
+class CaptivePortalDetector(object):
+    # index(): Pretends to be /library/test and /library/test/index.html.
+    def index(self):
+        return("You shouldn't be seeing this, either.")
+    index.exposed = True
+
+    # success_html(): Pretends to be http://apple.com/library/test/success.html.
+    def success_html(self):
+        if debug:
+            print "DEBUG: iOS device detected."
+        success = '''
+                <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+                <HTML>
+                <HEAD>
+                        <TITLE>Success</TITLE>
+                </HEAD>
+                <BODY>
+                        Success
+                </BODY>
+                </HTML>
+                '''
+        return success
+    success_html.exposed = True
+
+# Dummy class that has to exist to create a durectory URI hierarchy.
+class Library(object):
+    if debug:
+        print "DEBUG: Instantiating Library() dummy object."
+    test = CaptivePortalDetector()
+
+    # index(): Pretends to be /library and /library/index.html.
+    def index(self):
+        return("You shouldn't be seeing this.")
+    index.exposed = True
+
 # The CaptivePortal class implements the actual captive portal stuff - the
 # HTML front-end and the IP tables interface.
 class CaptivePortal(object):
+    if debug:
+        print "DEBUG: Mounting Library() from CaptivePortal()."
+    library = Library()
+
     # index(): Pretends to be / and /index.html.
     def index(self):
         # Identify the primary language the client's web browser supports.
@@ -191,7 +239,7 @@ for opt, arg in opts:
 
     # User specifies the port to listen on.  This has a default.
     if opt in ('-p', '--port'):
-        port = arg.rstrip()
+        port = int(arg.rstrip())
     else:
         port = 31337
 
