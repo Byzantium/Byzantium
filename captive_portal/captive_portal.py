@@ -203,14 +203,15 @@ def usage():
     print "\t-a / --address: The IP address of the interface the daemon listens on."
     print "\t-p / --port: Port to listen on.  Defaults to 31337/TCP."
     print "\t-s / --sslport: Port to listen for HTTPS connections on.."
-    print "\t                Defaults to HTTP port +1."
+    print "\t\t\tDefaults to HTTP port +1."
     print "\t-c / --certificate: Path to an SSL certificate."
-    print "\t                Defaults to %s." % ssl_cert
+    print "\t\t\t    Defaults to %s." % ssl_cert
     print "\t-k / --key: Path to an SSL private key file."
-    print "\t                Defaults to %s." % ssl_private_key
+    print "\t\t    Defaults to %s." % ssl_private_key
     print "\t-d / --debug: Enable debugging mode."
-    print "\t-t / --test: Disables actually doing anything, it just prints what would"
-    print "\tbe done.  Used for testing commands without altering the test system."
+    print "\t-t / --test: Disables actually doing anything, it just prints what"
+    print "\t\t     would be done.  Used for testing commands without altering"
+    print "\t\t     the test system."
     print
 
 # Core code.
@@ -260,10 +261,10 @@ for opt, arg in opts:
     if opt in ('-s', '--sslport'):
         if not ssl_port:
             ssl_port = int(arg.rstrip())
-        else:
+    else:
             ssl_port = port + 1
-        if debug:
-            print "DEBUG: SSL port defaulting to %i/TCP." % ssl_port
+    if debug:
+        print "DEBUG: SSL port defaulting to %i/TCP." % ssl_port
 
     # User specifies a path to a pre-generated SSL certificate.  This has a
     # default.
