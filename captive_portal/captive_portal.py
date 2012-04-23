@@ -35,6 +35,7 @@
 # v0.3 - Added code to implement an Apple iOS captive portal detector.
 #      - Added code that starts the idle client reaper daemon that Haxwithaxe
 #        wrote.
+#      - Added a second listener for HTTPS connections.
 
 # TODO:
 
@@ -56,6 +57,8 @@ configdir = '/etc/captiveportal'
 appconfig = os.path.join(configdir,'captiveportal.conf')
 cachedir = '/tmp/portalcache'
 pidfile = ''
+ssl_cert = '/etc/httpd/server.crt'
+ssl_private_key = '/etc/httpd/server.key'
 
 # Command line arguments to the server.
 debug = False
@@ -63,6 +66,7 @@ test = False
 interface = ''
 address = ''
 port = ''
+ssl_port = ''
 
 # The CaptivePortalDetector class implements a fix for an undocumented bit of
 # fail in Apple iOS.  iProducts attempt to access a particular file hidden in
@@ -198,9 +202,16 @@ def usage():
     print "\t-i / --interface: The name of the interface the daemon listens on."
     print "\t-a / --address: The IP address of the interface the daemon listens on."
     print "\t-p / --port: Port to listen on.  Defaults to 31337/TCP."
+    print "\t-s / --sslport: Port to listen for HTTPS connections on.."
+    print "\t\t\tDefaults to HTTP port +1."
+    print "\t-c / --certificate: Path to an SSL certificate."
+    print "\t\t\t    Defaults to %s." % ssl_cert
+    print "\t-k / --key: Path to an SSL private key file."
+    print "\t\t    Defaults to %s." % ssl_private_key
     print "\t-d / --debug: Enable debugging mode."
-    print "\t-t / --test: Disables actually doing anything, it just prints what would"
-    print "\tbe done.  Used for testing commands without altering the test system."
+    print "\t-t / --test: Disables actually doing anything, it just prints what"
+    print "\t\t     would be done.  Used for testing commands without altering"
+    print "\t\t     the test system."
     print
 
 # Core code.
@@ -209,10 +220,12 @@ def usage():
 # i: - Interface to listen on.
 # a: - Address to listen on so we can figure out the network info later.
 # p: - Port to listen on.  Defaults to 31337.
+# s: - Port to listen for HTTPS requests on.  Defaults to HTTP port +1.
 # d - Debugging mode.
 # t - Test mode.
-shortopts = 'hi:a:p:dt'
-longopts = ['help', 'interface=', 'address=', 'port=', 'debug', 'test']
+shortopts = 'hi:a:p:s:c:k:dt'
+longopts = ['help', 'interface=', 'address=', 'port=', 'sslport=',
+            'certificate=', 'key=', 'debug', 'test']
 try:
     (opts, args) = getopt.getopt(sys.argv[1:], shortopts, longopts)
 except getopt.GetoptError:
@@ -242,6 +255,40 @@ for opt, arg in opts:
         port = int(arg.rstrip())
     else:
         port = 31337
+
+    # User specifies the port to listen for HTTPS requests on.  This has a
+    # default.
+    if opt in ('-s', '--sslport'):
+        if not ssl_port:
+            ssl_port = int(arg.rstrip())
+    else:
+            ssl_port = port + 1
+    if debug:
+        print "DEBUG: SSL port defaulting to %i/TCP." % ssl_port
+
+    # User specifies a path to a pre-generated SSL certificate.  This has a
+    # default.
+    if opt in ('-c', '--certificate'):
+        temp_cert_path = arg.rstrip()
+        if os.path.exists(temp_cert_path):
+            ssl_cert = temp_cert_path
+            if debug:
+                print "DEBUG: Using SSL cert %s." % temp_cert_path
+        else:
+            print "ERROR: Specified SSL cert not found.  Check the path you supplied."
+            exit(2)
+
+    # User specifies a path to a pre-generated SSL private keyfile.  This has a
+    # default.
+    if opt in ('-k', '--key'):
+        temp_key_path = arg.rstrip()
+        if os.path.exists(temp_key_path):
+            ssl_private_key = temp_key_path
+            if debug:
+                print "DEBUG: Using SSL private key %s." % temp_key_path
+        else:
+            print "ERROR: Specified SSL private key not found.  Check the path you supplied."
+            exit(2)
 
     # User turns on debugging mode.
     if opt in ('-d', '--debug'):
@@ -285,6 +332,14 @@ pid.subscribe()
 # with an extra config file, namely, the port and IP address to listen on.
 cherrypy.config.update({'server.socket_host':'0.0.0.0', })
 cherrypy.config.update({'server.socket_port':port, })
+
+# Set up an SSL listener running in parallel.
+ssl_listener = cherrypy._cpserver.Server()
+ssl_listener.socket_host = '0.0.0.0'
+ssl_listener.socket_port = ssl_port
+ssl_listener.ssl_certificate = ssl_cert
+ssl_listener.ssl_private_key = ssl_private_key
+ssl_listener.subscribe()
 
 # Set up the location the templates will be served out of.
 templatelookup = TemplateLookup(directories=[filedir],
