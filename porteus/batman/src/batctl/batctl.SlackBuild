@@ -1,102 +1,92 @@
-#!/bin/bash -e
+#!/bin/sh
 
-# .SlackBuild script for ahcpd v0.51.  Written for Project Byzantium.
-#	http://wiki.hacdc.org/index.php/Byzantium
-# By: The Doctor [412/724/301/703] <drwho at virtadpt dot net>
-# Licence: GPLv3
+# Slackware build script for batctl
 
-# Save the CWD and set a temporary directory to compile into.
-CWD=$(pwd)
-OUTPUT=${OUTPUT:-/tmp}
+# Written by Ben Mendis <ben.mendis@gmail.com>
 
-# The version which appears in the package's filename.
-VERSION=2011.2.0
+PRGNAM=batctl
+VERSION=${VERSION:-2011.3.0}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}		# the "_SBo" is required
 
-# The dash character ("-") is not allowed in the VERSION string, but you can override
-# it here by setting PKG_VERSION to something else than VERSION if you need to.
-# Here, we don't.
-PKG_VERSION=$VERSION
-
-# Set the architecture for which you want to build your package.
-ARCH=${ARCH:-i486}
-
-# First digit is the build number, which specifies how many times it has been built.	
-# Second string is the short form of the authors name, typical three initials.
-BUILD=${BUILD:-1_dw}
-
-# The name of the application.
-APP=batctl
-
-# The installation directory of the package (where its actual directory structure will
-# be created as the package is built.) 
-PKG=$OUTPUT/package-$APP
-
-# Determine the flags to pass to GCC.
-if [ "$ARCH" = "i486" ]; then
-	SLKCFLAGS="-O2 -march=i486 -mtune=i686"
-elif [ "$ARCH" = "x86_64" ]; then
-	SLKCFLAGS="-O2 -fPIC"
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) ARCH=$( uname -m ) ;;
+  esac
 fi
 
-# Delete the leftover directories if they exist (due to a previous build)
-# and (re)create the packaging directory
-rm -rf $PKG 
-mkdir -p $OUTPUT $PKG
-rm -rf $OUTPUT/$APP-$VERSION
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}	# For consistency's sake, use this
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}	# Drop the package in /tmp
 
-# Change to the OUTPUT directory.
-cd $OUTPUT || exit 1
- 
-# Extract the application source into OUTPUT.
-tar -zxvf $CWD/$APP-$VERSION.tar.gz || exit 1
-cd $APP-$VERSION || exit 1
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+else
+  SLKCFLAGS="-O2"
+fi
+
+set -e # Exit on most errors
+# If you prefer to do selective error checking with
+#   command || exit 1
+# then that's also acceptable.
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
 chown -R root:root .
-chmod -R u+w,go+r-w,a-s .
- 
-# Compile.
-make || exit 1
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
 
-# Install into the temporary directory.
-make install INSTALL_PREFIX=$PKG || exit 1
-mkdir -p $PKG/usr/man/man8
-install -m 0644 man/batctl.8 $PKG/usr/man/man8
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+make
+make install PREFIX=/usr MANDIR=/usr/man DESTDIR=$PKG
 
-# Install documentation.
-mkdir -p $PKG/usr/doc/$APP-$VERSION
-cp bat-hosts.sample README $CWD/$APP.SlackBuild $PKG/usr/doc/$APP-$VERSION
-find $PKG/usr/doc/$APP-$VERSION -type f -exec chmod 644 {} \;
+# Strip binaries and libraries - this can be done with 'make install-strip'
+# in many source trees, and that's usually acceptable if so, but if not,
+# use this:
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-# Create the ./install directory and copy the slack-desc into it.
+# Compress man pages
+# If the man pages are installed to /usr/share/man instead, you'll need to either
+# add the --mandir=/usr/man flag to configure or move them manually after the
+# make install process is run.
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+# Copy program documentation into the package
+# The included documentation varies from one application to another, so be sure
+# to adjust your script as needed
+# Also, include the SlackBuild script in the documentation directory
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  README \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Copy the slack-desc (and a custom doinst.sh if necessary) into ./install
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 
-# Add doinst.sh to package if it exists.
-if [ -e $CWD/doinst.sh.gz ]; then
-	zcat $CWD/doinst.sh.gz > $PKG/install/doinst.sh
-	fi
-
-# Strip libraries and binaries to save some space.
+# Make the package; be sure to leave it in $OUTPUT
+# If package symlinks need to be created during install *before*
+# your custom contents of doinst.sh runs, then add the -p switch to
+# the makepkg command below -- see makepkg(8) for details
 cd $PKG
-find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | \
-	xargs strip --strip-unneeded
-      
-# Compress man pages if they exist
-if [ -d $PKG/usr/man ]; then
-	cd $PKG/usr/man
-	find . -type f -exec gzip -9 {} \;
-	for i in $(find . -type l) ; do
-		ln -s $(readlink $i).gz $i.gz
-		rm $i
-		done
-	fi
-              
-# Compress info pages if they exist (and remove the dir file)
-if [ -d $PKG/usr/info ]; then
-	gzip -9 $PKG/usr/info/*.info
-	rm -f $PKG/usr/info/dir
-	fi
-
-# Build the Slackware package.
-cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$APP-$PKG_VERSION-$ARCH-$BUILD.tgz
-
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

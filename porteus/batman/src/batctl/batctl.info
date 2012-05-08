@@ -1,1 +1,10 @@
-DOWNLOAD=http://downloads.open-mesh.org/batman/releases/batman-adv-2011.2.0/batctl-2011.2.0.tar.gz
+PRGNAM="batctl"
+VERSION="2011.3.0"
+HOMEPAGE="http://www.open-mesh.org/"
+DOWNLOAD="http://downloads.open-mesh.org/batman/stable/sources/batctl/batctl-2011.3.0.tar.gz"
+MD5SUM="8eb197896049bb04a6beef56015a16b6"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+MAINTAINER="Ben Mendis"
+EMAIL="ben.mendis@gmail.com"
+APPROVED=""

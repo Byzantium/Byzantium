@@ -1,0 +1,11 @@
+batctl (B.A.T.M.A.N. advanced control and management tool)
+
+The B.A.T.M.A.N. advanced routing protocol has been included in the
+Linux kernel since 2.6.38, however the kernel module is only part of
+of the implementation. In order to create and configure mesh networks
+using the B.A.T.M.A.N. advanced protocol you need the batctl userland
+tool.
+
+Since B.A.T.M.A.N. advanced operates on layer 2 the common diagnosis
+tools do not work as expected. To solve this, batctl provides
+alternatives for ping, traceroute, and tcpdump.
