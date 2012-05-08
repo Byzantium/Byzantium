@@ -1,0 +1,97 @@
+#!/bin/bash -e
+
+# .SlackBuild script for ahcpd v0.51.  Written for Project Byzantium.
+#	http://wiki.hacdc.org/index.php/Byzantium
+# By: The Doctor [412/724/301/703] <drwho at virtadpt dot net>
+# Licence: GPLv3
+
+# Save the CWD and set a temporary directory to compile into.
+CWD=$(pwd)
+OUTPUT=${OUTPUT:-/tmp}
+
+# The version which appears in the package's filename.
+VERSION=2012.1.0
+
+# The dash character ("-") is not allowed in the VERSION string, but you can override
+# it here by setting PKG_VERSION to something else than VERSION if you need to.
+# Here, we don't.
+PKG_VERSION=$VERSION
+
+# Set the architecture for which you want to build your package.
+ARCH=${ARCH:-i486}
+
+# First digit is the build number, which specifies how many times it has been built.	
+# Second string is the short form of the authors name, typical three initials.
+BUILD=${BUILD:-1_dw}
+
+# The name of the application.
+APP=batman-adv
+
+# The installation directory of the package (where its actual directory structure will
+# be created as the package is built.) 
+PKG=$OUTPUT/package-$APP
+
+# Determine the flags to pass to GCC.
+if [ "$ARCH" = "i486" ]; then
+	SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "$ARCH" = "x86_64" ]; then
+	SLKCFLAGS="-O2 -fPIC"
+fi
+
+# Delete the leftover directories if they exist (due to a previous build)
+# and (re)create the packaging directory
+rm -rf $PKG 
+mkdir -p $OUTPUT $PKG
+rm -rf $OUTPUT/$APP-$VERSION
+
+# Change to the OUTPUT directory.
+cd $OUTPUT || exit 1
+ 
+# Extract the application source into OUTPUT.
+tar -zxvf $CWD/$APP-$VERSION.tar.gz || exit 1
+cd $APP-$VERSION || exit 1
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
+ 
+# Compile.
+make || exit 1
+
+# Install into the temporary directory.
+DEST=$PKG/lib/modules/`uname -r`/misc
+mkdir -p $DEST
+install -m 0644 batman-adv.ko $DEST
+
+# Install documentation.
+mkdir -p $PKG/usr/doc/$APP-$VERSION
+cp README sysfs-class-net-* CHANGELOG $CWD/$APP.SlackBuild $PKG/usr/doc/$APP-$VERSION
+find $PKG/usr/doc/$APP-$VERSION -type f -exec chmod 644 {} \;
+
+# Create the ./install directory and copy the slack-desc into it.
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+# Add doinst.sh to package if it exists.
+if [ -e $CWD/doinst.sh.gz ]; then
+	zcat $CWD/doinst.sh.gz > $PKG/install/doinst.sh
+	fi
+
+# Compress man pages if they exist
+if [ -d $PKG/usr/man ]; then
+	cd $PKG/usr/man
+	find . -type f -exec gzip -9 {} \;
+	for i in $(find . -type l) ; do
+		ln -s $(readlink $i).gz $i.gz
+		rm $i
+		done
+	fi
+              
+# Compress info pages if they exist (and remove the dir file)
+if [ -d $PKG/usr/info ]; then
+	gzip -9 $PKG/usr/info/*.info
+	rm -f $PKG/usr/info/dir
+	fi
+
+# Build the Slackware package.
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$APP-$PKG_VERSION-$ARCH-$BUILD.tgz
+

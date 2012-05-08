@@ -5,7 +5,7 @@
 # Written by Ben Mendis <ben.mendis@gmail.com>
 
 PRGNAM=batctl
-VERSION=${VERSION:-2011.3.0}
+VERSION=${VERSION:-2012.1.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}		# the "_SBo" is required
 
