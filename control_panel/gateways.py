@@ -11,10 +11,6 @@
 # - Add code to configure encryption on wireless gateways.
 # - Make it possible to specify IP configuration information on a wireless
 #   uplink.
-# - Figure out how to make Gateways.wireless() not just default to an 802.11
-#   interface.  Perhaps adding an extra step to pick the sort of device
-#   (Ethernet, wi-fi, cellular).  This would best be served by making tethered
-#   devices read as 'wired' rather than 'wireless'.
 # - Add code to enumerate_network_interfaces() to delete interfaces from the
 #   database if they don't exist anymore.
 
