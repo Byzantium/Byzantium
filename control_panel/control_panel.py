@@ -24,10 +24,6 @@ import sys
 import getopt
 
 # Global variables.
-filedir = '/srv/controlpanel'
-configdir = '/etc/controlpanel'
-globalconfig = os.path.join(configdir,'controlpanelGlobal.conf')
-appconfig = os.path.join(configdir,'controlpanel.conf')
 cachedir = '/tmp/controlcache'
 
 # Mode control flags.
@@ -58,9 +54,22 @@ for opt, arg in opts:
         test = True
         print "Control panel functional testing mode is on."
 
+# Configure the CLI-dependent global variables used by the rest of the control
+# panel.
+if test:
+    # Configure for running in the current working directory.  This will
+    # always be Byzantium/control_panel/.
+    print "TEST: Referencing files from current working directory for testing."
+    filedir = 'srv/controlpanel'
+    configdir = 'etc/controlpanel'
+else:
+    # Configure for production.
+    filedir = '/srv/controlpanel'
+    configdir = '/etc/controlpanel'
+globalconfig = os.path.join(configdir,'controlpanelGlobal.conf')
+appconfig = os.path.join(configdir,'controlpanel.conf')
+
 # Set up the location the templates will be served out of.
-if debug:
-    print "DEBUG: Setting template lookup directory for CherryPy."
 templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=100)
 
