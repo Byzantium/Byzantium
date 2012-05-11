@@ -176,6 +176,7 @@ class Gateways(object):
                 else:
                     # If it's not a wired interface, then it must be wireless.
                     cursor.execute("SELECT mesh_interface FROM wireless WHERE mesh_interface=?;", template)
+                    result = cursor.fetchall()
                     if not len(result):
                         # The interface isn't in the database, so add it.
                         template = ('no', interface + ':1', 'no', 0, '', interface , )
