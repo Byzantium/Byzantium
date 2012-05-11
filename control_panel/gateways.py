@@ -11,6 +11,12 @@
 # - Add code to configure encryption on wireless gateways.
 # - Make it possible to specify IP configuration information on a wireless
 #   uplink.
+# - Figure out how to make Gateways.wireless() not just default to an 802.11
+#   interface.  Perhaps adding an extra step to pick the sort of device
+#   (Ethernet, wi-fi, cellular).  This would best be served by making tethered
+#   devices read as 'wired' rather than 'wireless'.
+# - Add code to enumerate_network_interfaces() to delete interfaces from the
+#   database if they don't exist anymore.
 
 # Import external modules.
 import cherrypy
@@ -38,12 +44,18 @@ class Gateways(object):
     babeld_timeout = 3
 
     # Path to network configuration database.
-    netconfdb = '/var/db/controlpanel/network.sqlite'
-    #netconfdb = '/home/drwho/network.sqlite'
+    if test:
+        netconfdb = '/home/drwho/network.sqlite'
+        print "TEST: Location of Gateways.netconfdb: %s" % netconfdb
+    else:
+        netconfdb = '/var/db/controlpanel/network.sqlite'
 
     # Path to mesh configuration database.
-    meshconfdb = '/var/db/controlpanel/mesh.sqlite'
-    #meshconfdb = '/home/drwho/mesh.sqlite'
+    if test:
+        meshconfdb = '/home/drwho/mesh.sqlite'
+        print "TEST: Location of Gateways.meshconfdb: %s" % meshconfdb
+    else:
+        meshconfdb = '/var/db/controlpanel/mesh.sqlite'
 
     # Configuration information for the network device chosen by the user to
     # act as the uplink.
@@ -62,6 +74,10 @@ class Gateways(object):
         # Open a connection to the network configuration database.
         connection = sqlite3.connect(self.netconfdb)
         cursor = connection.cursor()
+
+        # To find any new network interfaces, rescan the network interfaces on
+        # the node.
+        self.enumerate_network_interfaces()
 
         # Generate a list of Ethernet interfaces on the node that are enabled.
         # Each interface gets its own button in a table.
@@ -100,10 +116,93 @@ class Gateways(object):
                     traceback.error)
     index.exposed = True
 
+    # Utility method to enumerate all of the network interfaces on a node.  If
+    # any new ones are detected they are added to the network.sqlite database.
+    # Takes no arguments; returns nothing (but alters the database).
+    def enumerate_network_interfaces(self):
+        if debug:
+            print "DEBUG: Entered NetworkConfiguration.enumerate_network_interfaces()."
+        interfaces = []
+
+        # Open the kernel's canonical list of network interfaces.
+        procnetdev = open("/proc/net/dev", "r")
+        if debug:
+            if procnetdev:
+                print "DEBUG: Successfully opened /proc/net/dev."
+            else:
+                # Note: This means that we use the contents of the database.
+                print "DEBUG: Warning: Unable to open /proc/net/dev."
+                return
+
+        # Smoke test by trying to read the first two lines from the pseudofile
+        # (which comprises the column headers.  If this fails, just return
+        # because we're falling back on the existing contents of the database.
+        headers = procnetdev.readline()
+        headers = procnetdev.readline()
+        if not headers:
+            if debug:
+                print "DEBUG: Smoke test of /proc/net/dev read failed."
+            procnetdev.close()
+            return
+
+        # Open the network configuration database.
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+
+        # Begin parsing the contents of /proc/net/dev to extract the names of
+        # the interfaces.
+        if test:
+            print "TEST: Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
+            return
+        else:
+            for line in procnetdev:
+                interface = line.split()[0]
+                interface = interface.strip()
+                interface = interface.strip(':')
+
+                if debug:
+                    print "DEBUG: Testing interface %s." % interface
+
+                # Linux has the propensity to name Ethernet interfaces only
+                # /eth/, and every other network interface something different.
+                # We can take advantage of this by broadly dividing them into
+                # 'wired' and 'not wired'in the database.
+                template = (interface, )
+                if 'eth' in interface:
+                    cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
+                    result = cursor.fetchall()
+                    if not len(result):
+                        if debug:
+                            print "DEBUG: Adding interface %s to table 'wired'." % interface
+
+                        # The interface isn't in the database, so add it.
+                        template = ('no', 'no', interface, )
+                        cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
+                        connection.commit()
+                else:
+                    # If it's not considered a wired interface, then it must be
+                    # a wireless interface.  Note that we're treating tethered
+                    # phones as wireless interfaces because they use the
+                    # cellular network (and they follow the 'anything else is a
+                    # wireless interface' pattern).
+                    cursor.execute("SELECT mesh_interface FROM wireless WHERE mesh_interface=?;", template)
+                    if not len(result):
+                        # The interface isn't in the database, so add it.
+                        template = ('no', interface + ':1', 'no', 0, '', interface , )
+                        cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?);", template)
+                        connection.commit()
+
+        # Close the network configuration database and return.
+        cursor.close()
+        print "DEBUG: Leaving Gateways.enumerate_network_interfaces()."
+
     # Implements step two of the wired gateway configuration process: turning
     # the gateway on.  This method assumes that whichever Ethernet interface
     # chosen is already configured via DHCP through ifplugd.
     def tcpip(self, interface=None, essid=None, channel=None):
+        if debug:
+            print "Entered Gateways.tcpip()."
+
         # Define this variable in case wireless configuration information is
         # passed into this method.
         iwconfigs = ''
@@ -140,7 +239,7 @@ class Gateways(object):
                     traceback.error)
     tcpip.exposed = True
 
-    # Allows the user to enter the ESSID and wireless channel of the wireless 
+    # Allows the user to enter the ESSID and wireless channel of the wireless
     # network interface that will act as an uplink to another Network for the
     # mesh.  Takes as an argument the value of the 'interface' variable passed
     # from the form on /gateways/index.html.
@@ -170,7 +269,7 @@ class Gateways(object):
             essid = result[0][2]
             warning = '<p>WARNING: This interface is already configured!  Changing it now will break the local mesh!  You can hit cancel now without changing anything!</p>'
         connection.close()
-        
+
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
         try:
