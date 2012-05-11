@@ -291,20 +291,32 @@ class Gateways(object):
         # are, use iwconfig to set up the interface.
         if self.essid:
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
-            process = subprocess.Popen(command)
+            if debug:
+                print "DEBUG: Pretending to set ESSID %s." % self.essid
+            else:
+                process = subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
-            process = subprocess.Popen(command)
+            if debug:
+                print "DEBUG: Pretending to set channel %s." % self.channel
+            else:
+                process = subprocess.Popen(command)
 
         # If we have to configure layers 1 and 2, then it's a safe bet that we
         # should use DHCP to set up layer 3.
         command = ['/sbin/dhcpcd', interface]
-        process = subprocess.Popen(command)
+        if debug:
+            print "DEBUG: Pretending to run dhcpcd against interface %s." % interface
+        else:
+            process = subprocess.Popen(command)
 
         # Turn on NAT using iptables to the network interface in question.
         nat_command = ['/usr/sbin/iptables', '-t', 'nat', '-A', 'POSTROUTING',
                       '-o', str(interface), '-j', 'MASQUERADE']
-        process = subprocess.Popen(nat_command)
+        if debug:
+            print "DEBUG: Pretending to set up NAT on interface %s." % interface
+        else:
+            process = subprocess.Popen(nat_command)
 
         # Assemble a new invocation of babeld.
         common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
@@ -329,18 +341,24 @@ class Gateways(object):
         babeld_command = babeld_command + unique_babeld_opts + interfaces
 
         # Kill the old instance of babeld.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-        if pid:
-            os.kill(int(pid), signal.SIGTERM)
-            time.sleep(self.babeld_timeout)
+        if debug:
+            print "DEBUG: Pretending to kill running babeld."
+        else:
+            pid = ''
+            if os.path.exists(self.babeld_pid):
+                pidfile = open(self.babeld_pid, 'r')
+                pid = pidfile.readline()
+                pidfile.close()
+            if pid:
+                os.kill(int(pid), signal.SIGTERM)
+                time.sleep(self.babeld_timeout)
 
         # Re-run babeld with the extra option to propagate the gateway route.
-        process = subprocess.Popen(babeld_command)
-        time.sleep(self.babeld_timeout)
+        if debug:
+            print "DEBUG: Pretending to re-run babeld to propagate gateway route."
+        else:
+            process = subprocess.Popen(babeld_command)
+            time.sleep(self.babeld_timeout)
 
         # Update the network configuration database to reflect the fact that
         # the interface is now a gateway.  Search the table of Ethernet
