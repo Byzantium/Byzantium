@@ -163,12 +163,10 @@ class Gateways(object):
                 if debug:
                     print "DEBUG: Testing interface %s." % interface
 
-                # Linux has the propensity to name Ethernet interfaces only
-                # /eth/, and every other network interface something different.
-                # We can take advantage of this by broadly dividing them into
-                # 'wired' and 'not wired'in the database.
+                # Detect wired interfaces (/eth[0-9]/ and /usb[0-9]/) and add
+                # new ones to the network configuration database.
                 template = (interface, )
-                if 'eth' in interface:
+                if ('eth' in interface) or ('usb' in interface):
                     cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
                     result = cursor.fetchall()
                     if not len(result):
@@ -180,11 +178,7 @@ class Gateways(object):
                         cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
                         connection.commit()
                 else:
-                    # If it's not considered a wired interface, then it must be
-                    # a wireless interface.  Note that we're treating tethered
-                    # phones as wireless interfaces because they use the
-                    # cellular network (and they follow the 'anything else is a
-                    # wireless interface' pattern).
+                    # If it's not a wired interface, then it must be wireless.
                     cursor.execute("SELECT mesh_interface FROM wireless WHERE mesh_interface=?;", template)
                     if not len(result):
                         # The interface isn't in the database, so add it.
@@ -290,24 +284,22 @@ class Gateways(object):
 
     # Method that does the deed of turning an interface into a gateway.  This
     def activate(self, interface=None):
+        if debug:
+            print "DEBUG: Entered Gateways.activat()."
+
         # Test to see if wireless configuration attributes are set, and if they
         # are, use iwconfig to set up the interface.
-        wireless = 0
         if self.essid:
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
             process = subprocess.Popen(command)
-            wireless = 1
-
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
             process = subprocess.Popen(command)
-            wireless = 1
 
         # If we have to configure layers 1 and 2, then it's a safe bet that we
         # should use DHCP to set up layer 3.
-        if wireless:
-            command = ['/sbin/dhcpcd', interface]
-            process = subprocess.Popen(command)
+        command = ['/sbin/dhcpcd', interface]
+        process = subprocess.Popen(command)
 
         # Turn on NAT using iptables to the network interface in question.
         nat_command = ['/usr/sbin/iptables', '-t', 'nat', '-A', 'POSTROUTING',
@@ -359,13 +351,12 @@ class Gateways(object):
         cursor.execute("SELECT interface FROM wired WHERE interface=?;",
                        template)
         results = cursor.fetchall()
+        template = ('yes', interface, )
         if len(results):
-            template = ('yes', interface, )
             cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
                             template)
         # Otherwise, it's a wireless interface.
         else:
-            template = ('yes', interface, )
             cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
 
         # Clean up.
