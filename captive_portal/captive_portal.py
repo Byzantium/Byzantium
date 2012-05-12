@@ -151,7 +151,14 @@ class CaptivePortal(object):
             iptables = subprocess.call(addclient)
 
         # Assemble some HTML to redirect the client to the node's frontpage.
-        redirect = """<html><head><meta http-equiv="refresh" content="0; url=https://""" + address + """/" /></head><body></body></html>"""
+        redirect = """
+                   <html>
+                   <head>
+                   <meta http-equiv="refresh" content="0; url=http://""" + address + """/" />
+                   </head>
+                   <body>
+                   </body>
+                   </html>"""
 
         if debug:
             print "DEBUG: Generated HTML refresh is:"
