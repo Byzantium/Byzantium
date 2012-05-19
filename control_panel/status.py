@@ -144,11 +144,6 @@ class Status(object):
 
                 # Assemble the HTML for the status page using the mesh
                 # interface configuration data.
-                print "DEBUG: Value of mesh_interface is: %s" % mesh_interface
-                print "DEBUG: Value of ip_address is: %s" % ip_address
-                print "DEBUG: Value of ESSID is: %s" % essid
-                print "DEBUG: Value of channel is: %s" % channel
-
                 mesh_interfaces = mesh_interfaces + "<tr><td>" + mesh_interface + "</td>\n<td>" + ip_address + "</td>\n<td>" + essid + "</td>\n<td>" + str(channel) + "</td></tr>\n"
 
         # Pull a list of the client interfaces on this system.  If none are
