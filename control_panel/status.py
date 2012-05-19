@@ -102,6 +102,22 @@ class Status(object):
             mesh_interfaces = "<tr><td>n/a</td>\n<td>n/a</td>\n<td>n/a</td>\n<td>n/a</td></tr>\n"
         else:
             for (mesh_interface, essid, channel) in result:
+                # Test to see if any of the variables retrieved from the
+                # database are empty, and if they are set them to obviously
+                # non-good but also non-null values.
+                if not mesh_interface:
+                    if debug:
+                        print "DEBUG: Value of mesh_interface is empty."
+                    mesh_interface = ' '
+                if not essid:
+                    if debug:
+                        print "DEBUG: Value of ESSID is empty."
+                    essid = ' '
+                if not channel:
+                    if debug:
+                        print "DEBUG: Value of channel is empty."
+                    channel = 0
+
                 # For every mesh interface found in the database, get its
                 # current IP address with ifconfig.
                 command = '/sbin/ifconfig ' + mesh_interface
@@ -128,6 +144,11 @@ class Status(object):
 
                 # Assemble the HTML for the status page using the mesh
                 # interface configuration data.
+                print "DEBUG: Value of mesh_interface is: %s" % mesh_interface
+                print "DEBUG: Value of ip_address is: %s" % ip_address
+                print "DEBUG: Value of ESSID is: %s" % essid
+                print "DEBUG: Value of channel is: %s" % channel
+
                 mesh_interfaces = mesh_interfaces + "<tr><td>" + mesh_interface + "</td>\n<td>" + ip_address + "</td>\n<td>" + essid + "</td>\n<td>" + str(channel) + "</td></tr>\n"
 
         # Pull a list of the client interfaces on this system.  If none are
