@@ -42,11 +42,17 @@ class MeshConfiguration(object):
     babeld_pid = '/var/run/babeld.pid'
     babeld_timeout = 3
 
-    netconfdb = '/var/db/controlpanel/network.sqlite'
-    #netconfdb = '/home/drwho/network.sqlite'
+    if test:
+        netconfdb = '/home/drwho/network.sqlite'
+        print "TEST: Location of netconfdb: %s" % netconfdb
+    else:
+        netconfdb = '/var/db/controlpanel/network.sqlite'
 
-    meshconfdb = '/var/db/controlpanel/mesh.sqlite'
-    #meshconfdb = '/home/drwho/mesh.sqlite'
+    if test:
+        meshconfdb = '/home/drwho/mesh.sqlite'
+        print "TEST: Location of meshconfdb: %s" % meshconfdb
+    else:
+        meshconfdb = '/var/db/controlpanel/mesh.sqlite'
 
     # Class attributes which apply to a network interface.  By default they
     # are blank but will be populated from the mesh.sqlite database if the
@@ -140,6 +146,8 @@ class MeshConfiguration(object):
     # Reinitialize the attributes of an instance of this class to a known
     # state.
     def reinitialize_attributes(self):
+        if debug:
+            print "DEBUG: Reinitializing class attributes of MeshConfiguration()."
         self.interface = ''
         self.protocol = ''
         self.enabled = ''
@@ -198,7 +206,9 @@ class MeshConfiguration(object):
         cursor.execute("SELECT interface, enabled, protocol FROM meshes WHERE enabled='yes' AND protocol='babel';")
         results = cursor.fetchall()
         for i in results:
-            interfaces.append(i[0][0])
+            if debug:
+                print "DEBUG: Adding interface: %s" % i[0]
+            interfaces.append(i[0])
 
         # By definition, if we're in this method the new interface hasn't been
         # added yet.
@@ -209,6 +219,8 @@ class MeshConfiguration(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
+        if debug:
+            print "DEBUG: babeld command to be executed: %s" % babeld_command
 
         # Test to see if babeld is running.  If it is, it's routing for at
         # least one interface, in which case we add the one the user just
@@ -216,13 +228,27 @@ class MeshConfiguration(object):
         # we just start babeld.
         pid = ''
         if os.path.exists(self.babeld_pid):
+            if debug:
+                print "DEBUG: Reading PID of babeld."
             pidfile = open(self.babeld_pid, 'r')
             pid = pidfile.readline()
             pidfile.close()
+            if debug:
+                print "DEBUG: PID of babeld: %s" % str(pid)
         if pid:
-            os.kill(int(pid), signal.SIGTERM)
+            if test:
+                print "TEST: Pretending to kill babeld."
+            else:
+                if debug:
+                    print "DEBUG: Killing current instance of babeld..."
+                os.kill(int(pid), signal.SIGTERM)
             time.sleep(self.babeld_timeout)
-        process = subprocess.Popen(babeld_command)
+        if test:
+            print "TEST: Pretending to restart babeld."
+        else:
+            if debug:
+                print "DEBUG: Restarting babeld."
+            process = subprocess.Popen(babeld_command)
         time.sleep(self.babeld_timeout)
 
         # Get the PID of babeld, then test to see if that pid exists and
@@ -230,15 +256,22 @@ class MeshConfiguration(object):
         # babeld isn't running.
         pid = ''
         if os.path.exists(self.babeld_pid):
+            if debug:
+                print "DEBUG: Reading new PID of babeld."
             pidfile = open(self.babeld_pid, 'r')
             pid = pidfile.readline()
             pidfile.close()
+            if debug:
+                print "DEBUG: New PID of babeld: %s" % str(pid)
         if pid:
+            if debug:
+                print "DEBUG: babeld PID found!"
             procdir = '/proc/' + pid
             if not os.path.isdir(procdir):
                 error = "ERROR: babeld is not running!  Did it crash after startup?"
             else:
                 output = self.babeld + " has been successfully started with PID " + pid + "."
+
                 # Update the mesh configuration database to take into account
                 # the presence of the new interface.
                 template = ('yes', self.interface, )
@@ -267,6 +300,9 @@ class MeshConfiguration(object):
     # Allows the user to remove a configured interface from the mesh.  Takes
     # one argument from self.index(), the name of the interface.
     def removefrommesh(self, interface=None):
+        if debug:
+            print "DEBUG: Entered MeshConfiguration.removefrommesh()."
+
         # Configure this instance of the object for the interface the user
         # wants to remove from the mesh.
         self.interface = interface
@@ -291,6 +327,9 @@ class MeshConfiguration(object):
 
     # Re-runs babeld without self.interface to drop it out of the mesh.
     def disable(self):
+        if debug:
+            print "DEBUG: Entered MeshConfiguration.disable()."
+
         # Set up the error and successful output messages.
         error = ''
         output = ''
@@ -327,23 +366,38 @@ class MeshConfiguration(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
+        if debug:
+            print "DEBUG: New invocation of babeld: %s" % babeld_command
 
         # Test to see if babeld is running.  If it is, we restart it without
         # the network interface that the user wants to drop out of the mesh.
         pid = ''
         if os.path.exists(self.babeld_pid):
+            if debug:
+                print "DEBUG: Reading PID of babeld."
             pidfile = open(self.babeld_pid, 'r')
             pid = pidfile.readline()
             pidfile.close()
+            if debug:
+                print "DEBUG: PID of babeld: %s" % str(pid)
         if pid:
-            os.kill(int(pid), signal.SIGTERM)
+            if test:
+                print "TEST: Pretending to kill babeld."
+            else:
+                if debug:
+                    print "DEBUG: Killing babeld."
+                os.kill(int(pid), signal.SIGTERM)
             time.sleep(self.babeld_timeout)
 
         # If there is at least one wireless network interface still configured,
         # then re-run babeld.
         if len(interfaces):
-            print "DEBUG: value of babeld_command is %s" % babeld_command
-            process = subprocess.Popen(babeld_command)
+            if debug:
+                print "DEBUG: value of babeld_command is %s" % babeld_command
+            if test:
+                print "TEST: Pretending to restart babeld."
+            else:
+                process = subprocess.Popen(babeld_command)
             time.sleep(self.babeld_timeout)
 
         # Get the PID of babeld, then test to see if that pid exists and
@@ -351,9 +405,13 @@ class MeshConfiguration(object):
         # babeld isn't running, in which case something went wrong.
         pid = ''
         if os.path.exists(self.babeld_pid):
+            if debug:
+                print "DEBUG: Reading new PID of babeld."
             pidfile = open(self.babeld_pid, 'r')
             pid = pidfile.readline()
             pidfile.close()
+            if debug:
+                print "DEBUG: PID of babeld: %s" % str(pid)
         if pid:
             procdir = '/proc/' + pid
             if not os.path.isdir(procdir):
