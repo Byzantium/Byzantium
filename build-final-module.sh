@@ -79,6 +79,9 @@ cp babel/babeld.conf /tmp/fakeroot/etc
 cp dnsmasq/dnsmasq.conf /tmp/fakeroot/etc
 cp etherpad-lite/rc.etherpad-lite /tmp/fakeroot/etc/rc.d
 cp -rv ifplugd/etc/ifplugd/* /tmp/fakeroot/etc/ifplugd
+cp sudo/etc/sudoers /tmp/fakeroot/etc
+chown root:root /tmp/fakeroot/etc/sudoers
+chmod 0440 /tmp/fakeroot/etc/sudoers
 
 # Add the custom passwd files.
 cp etc/passwd /tmp/fakeroot/etc
