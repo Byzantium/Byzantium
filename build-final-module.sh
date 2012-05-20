@@ -10,13 +10,21 @@ set -e
 
 # Create the fakeroot.
 cd ~guest/byzantium
+echo "Deleting and recreating the fakeroot..."
 rm -rf /tmp/fakeroot
 mkdir -p /tmp/fakeroot
+
+# Test to see if the Byzantium SVN repository has been checked out into the
+# home directory of the guest user.  ABEND if it's not.
+if [ ! -d /home/guest/byzantium ]; then
+    echo "ERROR: Byzantium SVN package repository not found in ~/guest."
+    exit 1
+    fi
 
 # Unpack all of the .xzm packages into the fakeroot to populate it with the
 # libraries and executables under the hood of Byzantium.
 for i in `cat required_packages.txt` ; do
-    xzm2dir $i /tmp/fakeroot
+    xzm2dir /home/guest/byzantium/$i /tmp/fakeroot
     done
 
 # Should these steps be necessary? Maybe it should be fixed in the module.
@@ -46,7 +54,7 @@ mkdir -p /tmp/fakeroot/etc/udev/rules.d
 cp 11-media-by-label-auto-mount.rules /tmp/fakeroot/etc/udev/rules.d
 
 # Could these be placed in a module?
-cp rc.local rc.mysqld rc.setup_mysql /tmp/fakeroot/etc/rc.d
+cp rc.local rc.mysqld rc.ssl rc.setup_mysql /tmp/fakeroot/etc/rc.d
 
 # Do we really want to enable _everything_?
 chmod +x /tmp/fakeroot/etc/rc.d/rc.*
@@ -70,7 +78,6 @@ cp -rv apache/etc/httpd/* /tmp/fakeroot/etc/httpd
 cp babel/babeld.conf /tmp/fakeroot/etc
 cp dnsmasq/dnsmasq.conf /tmp/fakeroot/etc
 cp etherpad-lite/rc.etherpad-lite /tmp/fakeroot/etc/rc.d
-
 cp -rv ifplugd/etc/ifplugd/* /tmp/fakeroot/etc/ifplugd
 
 # Add the custom passwd files.
@@ -79,7 +86,7 @@ cp etc/shadow /tmp/fakeroot/etc
 cp etc/hosts /tmp/fakeroot/etc
 cp etc/HOSTNAME /tmp/fakeroot/etc
 cp etc/inittab /tmp/fakeroot/etc
-chown root:root /tmp/fakeroot/etc/passwd /tmp/fakeroot/etc/shadow
+chown root:root /tmp/fakeroot/etc/passwd /tmp/fakeroot/etc/shadow /tmp/fakeroot/etc/hosts /tmp/fakeroot/etc/HOSTNAME /tmp/fakeroot/etc/inittab
 chmod 0600 /tmp/fakeroot/etc/shadow
 
 # These belong in modules!
@@ -103,10 +110,6 @@ cp porteus/home/guest/Desktop/Control\ Panel.desktop /tmp/fakeroot/home/guest/De
 mkdir -p /tmp/fakeroot/usr/share/pixmaps/porteus
 cp byzantium-icon.png /tmp/fakeroot/usr/share/pixmaps/porteus
 
-# Much fail.  MOOF MOOF MOOF
-mkdir -p /tmp/fakeroot/srv/httpd/htdocs
-cp -rv /srv/httpd/htdocs/* /tmp/fakeroot/srv/httpd/htdocs/
-
 # Create the runtime directory for ngircd because its package doesn't.
 mkdir /tmp/fakeroot/var/run/ngircd
 chown ngircd.root /tmp/fakeroot/var/run/ngircd
@@ -118,14 +121,12 @@ mkdir -p /tmp/fakeroot/etc/captiveportal
 cd ~guest/Byzantium/captive_portal
 cp captive_portal.py /tmp/fakeroot/usr/local/sbin
 cp captive-portal.sh /tmp/fakeroot/usr/local/sbin
+cp mop_up_dead_clients.py/tmp/fakeroot/usr/local/sbin
 cp etc/captiveportal/captiveportal.conf /tmp/fakeroot/etc/captiveportal/
 cp srv/captiveportal/* /tmp/fakeroot/srv/captiveportal/
 
 # Directory ownership sanity for ~guest.
 chown -R guest:guest /tmp/fakeroot/home/guest
-
-# This file doesn't exit?
-#chmod -x /tmp/fakeroot/etc/rc.d/rc3.d/S-firewall
 
 # Build the Byzantium module.
 dir2xzm /tmp/fakeroot /tmp/000-byzantium.xzm
