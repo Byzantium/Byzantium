@@ -4,7 +4,7 @@
 # Written by Audrius Kažukauskas <audrius@neutrino.lt>
 
 PRGNAM=node
-VERSION=${VERSION:-0.4.7}
+VERSION=${VERSION:-0.6.16}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -46,9 +46,18 @@ cd $PRGNAM-v$VERSION
 chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
 
-sed -i "s|share/man|man|" wscript
-sed -i "s|\"lib\"|\"lib$LIBDIRSUFFIX\"|" tools/node-waf
-sed -i "s|/lib|/lib$LIBDIRSUFFIX|" tools/nodejs.pc.in
+# Fix man page path.
+sed -i 's|/share||' wscript
+sed -i '/var manRoot/ s/"share",//' deps/npm/lib/{,un}build.js
+
+# Make `npm help' to look for gzipped man pages.
+sed -i 's/\." + num/." + num + ".gz"/' deps/npm/lib/help.js
+
+# Fix libdir for 64-bit.
+sed -i "s|/lib/|/lib${LIBDIRSUFFIX}/|" wscript
+sed -i "s/'lib'/'lib${LIBDIRSUFFIX}'/" \
+  lib/module.js tools/wafadmin/Tools/node_addon.py
+sed -i "s|\"lib\"|\"lib${LIBDIRSUFFIX}\"|" deps/npm/lib/npm.js tools/node-waf
 
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
@@ -62,8 +71,26 @@ make install DESTDIR=$PKG
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-find $PKG/usr/man -type f -exec gzip -9 {} \;
+find $PKG/usr/man $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/npm/man -type f -exec gzip -9 {} \;
 for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+# Add bash completion file for npm.
+install -D -m 644 $CWD/npm.sh $PKG/etc/bash_completion.d/npm
+
+# Remove unneeded files.
+find $PKG/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
+
+# Set NODE_PATH to look for globally installed modules.
+mkdir -p $PKG/etc/profile.d
+cat > $PKG/etc/profile.d/node.csh << EOF
+#!/bin/csh
+setenv NODE_PATH /usr/lib${LIBDIRSUFFIX}/node_modules
+EOF
+cat > $PKG/etc/profile.d/node.sh << EOF
+#!/bin/sh
+export NODE_PATH=/usr/lib${LIBDIRSUFFIX}/node_modules
+EOF
+chmod 0755 $PKG/etc/profile.d/*
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a AUTHORS ChangeLog LICENSE $PKG/usr/doc/$PRGNAM-$VERSION
