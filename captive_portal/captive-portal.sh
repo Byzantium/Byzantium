@@ -73,7 +73,7 @@ case "$1" in
 
         # Add the MAC address of the client to the whitelist, so it'll be able
         # to access the mesh even if its IP address changes.
-        $IPTABLES -t mangle -A internet -m mac --mac-source \
+        $IPTABLES -t mangle -I internet -m mac --mac-source \
             $CLIENTMAC -j RETURN
 
 	exit 0
