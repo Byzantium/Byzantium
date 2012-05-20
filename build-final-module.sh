@@ -24,7 +24,9 @@ if [ ! -d /home/guest/byzantium ]; then
 # Unpack all of the .xzm packages into the fakeroot to populate it with the
 # libraries and executables under the hood of Byzantium.
 for i in `cat required_packages.txt` ; do
+    echo "Now installing $i to /tmp/fakeroot..."
     xzm2dir /home/guest/byzantium/$i /tmp/fakeroot
+    echo "Done."
     done
 
 # Should these steps be necessary? Maybe it should be fixed in the module.
