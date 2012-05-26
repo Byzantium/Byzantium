@@ -81,20 +81,31 @@ def read_metrics():
 #                     Returns a dict consisting of <MAC address>:<packet count>
 #                     pairs.
 def get_packetcounts():
+    # Run iptables to dump a list of clients currently connected to this node.
     packetcounts = {}
     p = subprocess.Popen(IPTABLESCMD)
     p.wait()
     stdout, stderr = p.communicate()
-    print(stdout,stderr)
-    for line in stdout.strip().split('\n')[2:]:
-        print(line)
-        larr = [x.strip() for x in line.strip().split()]
-        print(larr)
+
+    # Roll through the captured output from iptables to pick out the packet
+    # counts on a per client basis.
+    for line in stdout.split('\n')[2:]:
+        larr = line.strip().split()
+
+        # If the string's contents after being cleaned up are null, skip this
+        # iteration.
+        if not larr:
+            continue
+
+        # If the line contains a MAC address take it apart to extract the
+        # MAC address and the packet count associated with it.
         if 'MAC' in larr:
             pcount = int(larr[0].strip() or 0)
             if len(larr) >= larr.index('MAC')+1:
                 mac = larr[larr.index('MAC')+1]
                 packetcounts[mac] = pcount
+
+    # Return the hash to the calling method.
     return packetcounts
 
 # bring_out_your_dead():
