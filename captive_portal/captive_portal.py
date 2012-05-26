@@ -127,7 +127,13 @@ class CaptivePortal(object):
         # Piece together the filename of the /index.html file to return based
         # on the primary language.
         indexhtml = "index.html." + clientlang
-        page = templatelookup.get_template(indexhtml)
+        try:
+            page = templatelookup.get_template(indexhtml)
+        except:
+            page = templatelookup.get_template('index.html.en-us')
+            if debug:
+                print "DEBUG: Unable to find HTML template for language %s!" % clientlang
+                print "\tDefaulting to /srv/captiveportal/index.html.en-us."
         return page.render()
     index.exposed = True
 
