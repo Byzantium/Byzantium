@@ -70,6 +70,14 @@ cp etc/rc.d/rc.byzantium /tmp/fakeroot/etc/rc.d/
 mkdir -p /tmp/fakeroot/etc/ssl
 cp etc/ssl/openssl.cnf /tmp/fakeroot/etc/ssl
 
+# Install the CGI-BIN script that implements the service directory the users
+# see.
+cd ../service_directory
+cp index.html /tmp/fakeroot/srv/httpd/htdocs
+cp services.py /tmp/fakeroot/srv/httpd/cgi-bin
+chmod 0755 /tmp/fakeroot/srv/httpd/cgi-bin/services.py
+rm /tmp/fakeroot/srv/httpd/cgi-bin/printenv /tmp/fakeroot/srv/httpd/cgi-bin
+
 # Add the custom Firefox configuration.
 cd ../porteus
 mkdir -p /tmp/fakeroot/home/guest/.mozilla/firefox/c3pp43bg.default
