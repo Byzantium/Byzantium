@@ -23,18 +23,6 @@ output = ''
 # depending upon whether or not command line args are passed to this script.
 servicedb = '/var/db/controlpanel/services.sqlite'
 
-# Helper methods.
-# get_services(): Takes the list of services the node knows about and turns
-#    them into a list of hyperlinks so the user can click on one to visit it.
-#    Takes no arguments.  Returns a string containing HTML code.
-def get_services():
-    output = ''
-    fstr = file2str(service_list_file)
-    for srv in fstr.strip().split('\n'):
-        port, name, desc = srv.strip().split(',',2)
-        output += '<a href="'+os.environ['SERVER_PROTOCOL'].split('/')[0]+'://'+os.environ['SERVER_NAME']+':'+port+'">'+name+'</a> '+desc+'<br/>'
-    return output
-
 # Core code.
 # Set up the command line flags passed to this application to determine what
 # mode (if any) the control panel should be in.
