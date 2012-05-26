@@ -39,16 +39,19 @@ if [ `id -u` -gt 0 ]; then
 HOMEDIR=`pwd`
 
 # Mount the Porteus disk image to an unused loop device.
+echo "Mounting $1 on a loopback device..."
 LOOP=`losetup -f`
 losetup $LOOP $1
 PORTEUS_MOUNTPOINT=`mktemp -d`
 mount $LOOP $PORTEUS_MOUNTPOINT
 
 # Unpack the Porteus .iso image.
+echo "Unpacking the Porteus image..."
 PORTEUS_DIR=`mktemp -d`
 cp -rv $PORTEUS_MOUNTPOINT/* $PORTEUS_DIR
 
 # Copy the Byzantium Linux files into the unpacked .iso image.
+echo "Installing Byzantium files..."
 cp byzantium.jpg $PORTEUS_DIR/boot/
 cp porteus.cfg $PORTEUS_DIR/boot/
 cp $3 $PORTEUS_DIR/porteus/modules
@@ -61,21 +64,24 @@ MD5SUM_LINE=`echo $HASH ./modules/000-byzantium.xzm`
 echo $MD5SUM_LINE >> $PORTEUS_DIR/porteus/md5sums.txt
 
 # Make the Byzantium Linux .iso image.
+echo "Building Byzantium Linux .iso image..."
 cd $PORTEUS_DIR/porteus/
 ./make_iso.sh $2
 
 # Test to see if the .iso image was created successfully.
-if [ -f "$2" ]; then
+if [ -f $2 ]; then
     echo "Byzantium Linux .iso image successfully created at $2."
-else:
+else
     echo "FAILURE: Byzantium Linux .iso image NOT created!"
 fi
 
 # Clean up after ourselves.
+echo "Cleaning up..."
 cd $HOMEDIR
 umount $PORTEUS_MOUNTPOINT
 losetup -d $LOOP
 rm -rf $PORTEUS_MOUNTPOINT $PORTEUS_DIR
+echo "Done."
 
 exit 0
 
