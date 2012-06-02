@@ -54,7 +54,8 @@ if debug:
 
 # Generate the HTML header to return to the client.
 print('Content-type: text/html\n\n')
-print('<html><head><title>Mesh Services</title><head/>\n<body>\n<ul>\n')
+print('<html><head><title>Mesh Services</title><head/>\n<body>\n')
+print 'Services running on this node:\n<ul>\n'
 
 # Get the list of services running on this node from the database.  Start by
 # setting up a connection to the database.
