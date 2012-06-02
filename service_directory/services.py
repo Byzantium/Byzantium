@@ -87,6 +87,31 @@ if results:
         line = line + '</a></li>\n'
         print line
 
+# Now pull a list of daemons running on the node.  This means that most of the
+# web apps users will access will be displayed.
+if debug:
+    print "DEBUG: Getting list of running servers from database."
+cursor.execute("SELECT name FROM daemons WHERE status='active';")
+results = cursor.fetchall()
+if results:
+    for service in results:
+        line = '<li><a href="'
+        if test:
+            line = line + 'https://localhost/'
+	else:
+	    # This isn't the most elegant way to detect whether or not HTTPS
+	    # was used to contact the server but it's either that or parse
+	    # URIs.
+	    if 'HTTPS' in os.environ:
+                line = line + 'https://'
+	    else:
+                line = line + 'http://'
+	    line = line + os.environ['SERVER_NAME'] +  '/'
+
+        line = line + service[0] + '/">' + service[0]
+        line = line + '</a></li>\n'
+        print line
+
 # Print the HTML footer that gets sent to the client by the webserver.
 print('</ul>\n</body></html>')
 
