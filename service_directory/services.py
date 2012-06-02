@@ -66,50 +66,24 @@ cursor = connection.cursor()
 # Pull a list of running web apps on the node.
 if debug:
     print "DEBUG: Getting list of running webapps from database."
-cursor.execute("SELECT name,location FROM webapps WHERE status='active';")
+cursor.execute("SELECT name FROM webapps WHERE status='active';")
 results = cursor.fetchall()
 if results:
     for service in results:
         line = '<li><a href="'
         if test:
-            line = line + 'https://localhost'
-        else:
-            line = line + os.environ['SERVER_PROTOCOL'] + '://'
-            line = line + os.environ['SERVER_NAME']
+            line = line + 'https://localhost/'
+	else:
+	    # This isn't the most elegant way to detect whether or not HTTPS
+	    # was used to contact the server but it's either that or parse
+	    # URIs.
+	    if 'HTTPS' in os.environ:
+                line = line + 'https://'
+	    else:
+                line = line + 'http://'
+	    line = line + os.environ['SERVER_NAME'] +  '/'
 
-        # Detect and remove explicit references to port 80 or 443 because
-        # they'll hose the links.  Trying to throw HTTPS at port 80 doesn't
-        # work.
-        servicename = ''
-        if '80/' in service[1]:
-            servicename = service[1].strip('80')
-        elif '443/' in service[1]:
-            servicename = service[1].strip('443')
-        else:
-            servicename = ':/' + service[1]
-        line = line + servicename + '">' + service[0]
-        line = line + '</a></li>\n'
-        print line
-
-# Generate a list of daemons running on the node.
-if debug:
-    print "DEBUG: Getting list of running system services from database."
-cursor.execute("SELECT name,port FROM daemons WHERE status='active';")
-results = cursor.fetchall()
-if results:
-    for service in results:
-        line = '<li><a href="'
-        if test:
-            line = line + 'http://localhost'
-        else:
-            line = line + os.environ['SERVER_PROTOCOL'] + '://'
-            line = line + os.environ['SERVER_NAME']
-
-        # Detect and remove explicit references to port 80 or 443 because
-        # they'll hose the links.  Trying to throw HTTPS at port 80 doesn't
-        # work.
-        servicename = ':' + str(service[1]) + '/'
-        line = line + servicename + '">' + service[0]
+        line = line + service[0] + '/">' + service[0]
         line = line + '</a></li>\n'
         print line
 
