@@ -10,15 +10,15 @@
   
   //The Type of the database. You can choose between dirty, sqlite and mysql
   //You should use mysql or sqlite for anything else than testing or development
-  "dbType" : "dirty",
-  //"dbType" : "mysql",
+  //"dbType" : "dirty",
+  "dbType" : "mysql",
 
   //the database specific settings
   //"dbSettings" : {
   //                 "filename" : "../var/dirty.db"
   //               },
                  
-  /* An Example of MySQL Configuration
+  /* An Example of MySQL Configuration */
    "dbType" : "mysql",
    "dbSettings" : {
                     "user"    : "etherpad", 
@@ -26,7 +26,7 @@
                     "password": "byzantiumpad12345", 
                     "database": "etherpad"
                   },
-  */
+
   
   //the default text of a pad
   "defaultPadText" : "Welcome to Etherpad Lite!\n\nThis pad text is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents!\n\nEtherpad Lite on Github: http:\/\/j.mp/ep-lite\n",
