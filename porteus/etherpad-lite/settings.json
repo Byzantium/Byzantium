@@ -10,8 +10,8 @@
   
   //The Type of the database. You can choose between dirty, sqlite and mysql
   //You should use mysql or sqlite for anything else than testing or development
-  //"dbType" : "dirty",
-  "dbType" : "mysql",
+  "dbType" : "dirty",
+  //"dbType" : "mysql",
 
   //the database specific settings
   //"dbSettings" : {
