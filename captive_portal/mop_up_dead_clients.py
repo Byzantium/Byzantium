@@ -34,7 +34,8 @@ def _stash(info):
         fobj.close()
 
 # _get_stash(): Tries to load the database of the node's clients from disk if
-#               it exists (returns a dict).
+#               it exists.  Returns a dict containing the list of clients
+#               associated with the node.
 '''@return		False if empty or not found, else dict of mac:{'ip':string,'mac':string,'metric':int,'lastChange':int} (lastChange in unix timestamp)'''
 def _get_stash():
     try:
@@ -108,7 +109,11 @@ def get_packetcounts():
     # Return the hash to the calling method.
     return packetcounts
 
-# bring_out_your_dead():
+# bring_out_your_dead(): Method that carries out the task of checking to see
+#                        which clients have been active and which haven't.
+#                        This method is also responsible for calling the
+#                        methods that remove a client's IP tables rule and
+#                        maintain the internal database of clients.
 def bring_out_your_dead(metrics):
     global clients
 
@@ -180,9 +185,18 @@ def main(args):
         except IndexError as ie:
             _die(USAGE % args[0])
 
+        # Go to sleep for a period of time equal to three delay intervals to
+        # give the node a chance to have some clients associate with it.
+        # Otherwise this daemon will immediately try to build a list of
+        # associated clients, not find any, and crash.
+        time.sleep(CHECKEVERY * 3)
+
+        # Go into a loop of mopping up and sleeping endlessly.
         while True:
             mop_up()
             time.sleep(CHECKEVERY)
 
 if __name__ == '__main__':
     main(sys.argv)
+
+# Fin.
