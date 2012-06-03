@@ -53,7 +53,7 @@ class Services(object):
         cursor = connection.cursor()
 
         # Use the contents of the services.webapps table to build an HTML table
-        # of buttons that are either go/no-go indicators.  It's a bit 
+        # of buttons that are either go/no-go indicators.  It's a bit
         # complicated, so I'll break it into smaller pieces.
         cursor.execute("SELECT name, status FROM webapps;")
         results = cursor.fetchall()
