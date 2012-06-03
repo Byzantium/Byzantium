@@ -74,15 +74,16 @@ if results:
         if test:
             line = line + 'https://localhost/'
 	else:
-	    # This isn't the most elegant way to detect whether or not HTTPS
-	    # was used to contact the server but it's either that or parse
-	    # URIs.
-	    if 'HTTPS' in os.environ:
+            # This isn't the most elegant way to detect whether or not HTTPS
+            # was used to contact the server but it's either that or parse
+            # URIs.
+            if 'HTTPS' in os.environ:
                 line = line + 'https://'
-	    else:
+            else:
                 line = line + 'http://'
-	    line = line + os.environ['SERVER_NAME'] +  '/'
 
+        # Populate the location-aware bit of the hyperlink.
+        line = line + os.environ['SERVER_NAME'] +  '/'
         line = line + service[0] + '/">' + service[0]
         line = line + '</a></li>\n'
         print line
@@ -91,25 +92,39 @@ if results:
 # web apps users will access will be displayed.
 if debug:
     print "DEBUG: Getting list of running servers from database."
-cursor.execute("SELECT name FROM daemons WHERE status='active';")
+cursor.execute("SELECT name,showtouser FROM daemons WHERE status='active';")
 results = cursor.fetchall()
 if results:
     for service in results:
+        if debug:
+            print "DEBUG: Value of service: %s" % service
+
+        # Test to see if the daemon is one that can be shown to the user.  If
+        # it's not, skip to the next iteration.
+        if service[1] == 'no':
+            if debug:
+                print "DEBUG: This daemon won't be shown to the user."
+            continue
+
+        # Begin setting up a hyperlink that the user will see.
         line = '<li><a href="'
         if test:
             line = line + 'https://localhost/'
 	else:
-	    # This isn't the most elegant way to detect whether or not HTTPS
-	    # was used to contact the server but it's either that or parse
-	    # URIs.
-	    if 'HTTPS' in os.environ:
+            # This isn't the most elegant way to detect whether or not HTTPS
+            # was used to contact the server but it's either that or parse
+            # URIs.
+            if 'HTTPS' in os.environ:
                 line = line + 'https://'
-	    else:
+            else:
                 line = line + 'http://'
-	    line = line + os.environ['SERVER_NAME'] +  '/'
 
+        # Populate the location-aware bit of the hyperlink.
+        line = line + os.environ['SERVER_NAME'] +  '/'
         line = line + service[0] + '/">' + service[0]
         line = line + '</a></li>\n'
+
+        # Display the line to the user.
         print line
 
 # Print the HTML footer that gets sent to the client by the webserver.
