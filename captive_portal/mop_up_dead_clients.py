@@ -189,7 +189,7 @@ def main(args):
         # give the node a chance to have some clients associate with it.
         # Otherwise this daemon will immediately try to build a list of
         # associated clients, not find any, and crash.
-        time.sleep(CHECKEVERY * 3)
+        time.sleep(int(CHECKEVERY) * 3)
 
         # Go into a loop of mopping up and sleeping endlessly.
         while True:
