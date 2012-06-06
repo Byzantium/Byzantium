@@ -24,7 +24,7 @@ locales-en_US.utf8-i486.xzm
 mysql-5.1.56-i486-1.xzm
 ngircd-17.1-i486-1_SBo.xzm
 node-0.6.11.xzm
-npm-1.1.2.xzm
+npm-1.1.22.xzm
 openldap-client-2.4.23-i486-1.xzm
 pcre-8.12-i486-1.xzm
 php-5.3.10-i486-1_slack13.37.xzm
