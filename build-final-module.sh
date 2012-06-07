@@ -9,7 +9,7 @@
 set -e
 
 # Create the fakeroot.
-cd ~guest/byzantium
+cd ~guest/Byzantium
 echo "Deleting and recreating the fakeroot..."
 rm -rf /tmp/fakeroot
 mkdir -p /tmp/fakeroot
