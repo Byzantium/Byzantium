@@ -98,9 +98,6 @@ cp index.html /tmp/fakeroot/srv/httpd/htdocs
 cp services.py /tmp/fakeroot/srv/httpd/cgi-bin
 chmod 0755 /tmp/fakeroot/srv/httpd/cgi-bin/services.py
 
-echo "Deleting sample CGI scripts."
-rm /tmp/fakeroot/srv/httpd/cgi-bin/printenv /tmp/fakeroot/srv/httpd/cgi-bin/test-cgi
-
 # Add the custom Firefox configuration.
 echo "Installing Mozilla configs for the guest user."
 cd ../porteus
@@ -108,11 +105,11 @@ mkdir -p /tmp/fakeroot/home/guest/.mozilla/firefox/c3pp43bg.default
 cp home/guest/.mozilla/firefox/c3pp43bg.default/prefs.js /tmp/fakeroot/home/guest/.mozilla/firefox/c3pp43bg.default
 
 # Why aren't these in their modules?
+echo "Installing custom configuration files and initscripts for services."
 cp -rv apache/etc/httpd/* /tmp/fakeroot/etc/httpd
 cp babel/babeld.conf /tmp/fakeroot/etc
 cp dnsmasq/dnsmasq.conf /tmp/fakeroot/etc
 cp etherpad-lite/rc.etherpad-lite /tmp/fakeroot/etc/rc.d
-cp -rv ifplugd/etc/ifplugd/* /tmp/fakeroot/etc/ifplugd
 cp sudo/etc/sudoers /tmp/fakeroot/etc
 chown root:root /tmp/fakeroot/etc/sudoers
 chmod 0440 /tmp/fakeroot/etc/sudoers
