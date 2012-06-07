@@ -36,7 +36,9 @@ echo "Deleting bad symlinks to httpd directories."
 rm /tmp/fakeroot/srv/httpd
 rm /tmp/fakeroot/srv/www
 
-echo "Creating database dump directories and symlinks."
+echo "Creating database and web server content directories."
+mkdir -p /tmp/fakeroot/srv/httpd/htdocs
+mkdir -p /tmp/fakeroot/srv/httpd/cgi-bin
 mkdir -p /tmp/fakeroot/srv/httpd/databases
 cd /tmp/fakeroot/srv
 ln -s httpd www
@@ -59,38 +61,48 @@ cp -rv ~guest/Byzantium/control_panel/var/db/controlpanel/* /tmp/fakeroot/var/db
 # We need to upgrade the version of Wicd to fix a bug, this is our own fix.
 # Note that when Poteus Linux updates to the latest stable version of wicd
 # this will become obsolete.
+echo "Installing wicd-cli patch."
 mkdir -p /tmp/fakeroot/usr/share/wicd/cli
 cp ~guest/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py /tmp/fakeroot/usr/share/wicd/cli/
 
 # Install our custom udev automount rules.
+echo "Installing udev media-by-label rule patch."
 cd ~guest/Byzantium/scripts
 mkdir -p /tmp/fakeroot/etc/udev/rules.d
 cp 11-media-by-label-auto-mount.rules /tmp/fakeroot/etc/udev/rules.d
 
 # Could these be placed in a module?
+echo "Installing custom initscripts."
 cp rc.local rc.mysqld rc.ssl rc.setup_mysql /tmp/fakeroot/etc/rc.d
-
-# Do we really want to enable _everything_?
 chmod +x /tmp/fakeroot/etc/rc.d/rc.*
 
 # This stuff probably belongs in the controlpanel package.
+echo "Installing rrdtool shell script."
 cp traffic_stats.sh /tmp/fakeroot/usr/local/bin
+
+echo "Installing the control panel."
 cd ../control_panel
 mkdir -p /tmp/fakeroot/usr/local/sbin
 cp *.py /tmp/fakeroot/usr/local/sbin
 cp etc/rc.d/rc.byzantium /tmp/fakeroot/etc/rc.d/
+
+echo "Installing OpenSSL configuration file."
 mkdir -p /tmp/fakeroot/etc/ssl
 cp etc/ssl/openssl.cnf /tmp/fakeroot/etc/ssl
 
 # Install the CGI-BIN script that implements the service directory the users
 # see.
+echo "Installing the service directory."
 cd ../service_directory
 cp index.html /tmp/fakeroot/srv/httpd/htdocs
 cp services.py /tmp/fakeroot/srv/httpd/cgi-bin
 chmod 0755 /tmp/fakeroot/srv/httpd/cgi-bin/services.py
+
+echo "Deleting sample CGI scripts."
 rm /tmp/fakeroot/srv/httpd/cgi-bin/printenv /tmp/fakeroot/srv/httpd/cgi-bin/test-cgi
 
 # Add the custom Firefox configuration.
+echo "Installing Mozilla configs for the guest user."
 cd ../porteus
 mkdir -p /tmp/fakeroot/home/guest/.mozilla/firefox/c3pp43bg.default
 cp home/guest/.mozilla/firefox/c3pp43bg.default/prefs.js /tmp/fakeroot/home/guest/.mozilla/firefox/c3pp43bg.default
