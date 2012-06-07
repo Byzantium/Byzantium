@@ -115,6 +115,7 @@ chown root:root /tmp/fakeroot/etc/sudoers
 chmod 0440 /tmp/fakeroot/etc/sudoers
 
 # Add the custom passwd files.
+echo "Installing custom system configuration files."
 cp etc/passwd /tmp/fakeroot/etc
 cp etc/shadow /tmp/fakeroot/etc
 cp etc/hosts /tmp/fakeroot/etc
@@ -124,32 +125,38 @@ chown root:root /tmp/fakeroot/etc/passwd /tmp/fakeroot/etc/shadow /tmp/fakeroot/
 chmod 0600 /tmp/fakeroot/etc/shadow
 
 # These belong in modules!
+echo "Installing config files for MySQL, ngircd, and PHP."
 cp mysql/my.cnf /tmp/fakeroot/etc
 cp ngircd/ngircd.conf /tmp/fakeroot/etc
 cp ngircd/rc.ngircd /tmp/fakeroot/etc/rc.d
 cp php/etc/httpd/php.ini /tmp/fakeroot/etc/httpd
 
 # This should be a module
+echo "Installing qwebirc configuration file and initscript."
 mkdir -p /tmp/fakeroot/opt/qwebirc
 cp qwebirc/config.py /tmp/fakeroot/opt/qwebirc
 cp qwebirc/rc.qwebirc /tmp/fakeroot/etc/rc.d
 
 # Install the database files.
+echo "Installing database files."
 cd ..
 cp databases/* /tmp/fakeroot/srv/httpd/databases
 
 # Add our custom desktop stuff.
+echo "Customizing desktop for guest user."
 mkdir -p /tmp/fakeroot/home/guest/Desktop
 cp porteus/home/guest/Desktop/Control\ Panel.desktop /tmp/fakeroot/home/guest/Desktop
 mkdir -p /tmp/fakeroot/usr/share/pixmaps/porteus
 cp byzantium-icon.png /tmp/fakeroot/usr/share/pixmaps/porteus
 
 # Create the runtime directory for ngircd because its package doesn't.
+echo "Setting up directories for ngircd."
 mkdir /tmp/fakeroot/var/run/ngircd
 chown ngircd.root /tmp/fakeroot/var/run/ngircd
 chmod 0750 /tmp/fakeroot/var/run/ngircd
 
 # Install the captive portal daemon.
+echo "Installing captive portal."
 mkdir -p /tmp/fakeroot/srv/captiveportal
 mkdir -p /tmp/fakeroot/etc/captiveportal
 cd ~guest/Byzantium/captive_portal
@@ -160,8 +167,11 @@ cp etc/captiveportal/captiveportal.conf /tmp/fakeroot/etc/captiveportal/
 cp srv/captiveportal/* /tmp/fakeroot/srv/captiveportal/
 
 # Directory ownership sanity for ~guest.
+echo "Confirming ownership of guest user's home directory."
 chown -R guest:guest /tmp/fakeroot/home/guest
 
 # Build the Byzantium module.
+echo "Building 000-byzantium.xzm.  Sit back and enjoy the ride."
 dir2xzm /tmp/fakeroot /tmp/000-byzantium.xzm
 
+# "Hey, Bishop - do the thing with the knife!"
