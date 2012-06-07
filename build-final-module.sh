@@ -29,18 +29,30 @@ for i in `cat required_packages.txt` ; do
     echo "Done."
     done
 
-# Should these steps be necessary? Maybe it should be fixed in the module.
+# The thing about symlinks is that they're absolute.  When you're building in
+# a fakeroot this breaks things.  So, we have to set up the web server's
+# content directories manually.
+echo "Deleting bad symlinks to httpd directories."
 rm /tmp/fakeroot/srv/httpd
 rm /tmp/fakeroot/srv/www
+
+echo "Creating database dump directories and symlinks."
 mkdir -p /tmp/fakeroot/srv/httpd/databases
 cd /tmp/fakeroot/srv
 ln -s httpd www
 
 # We should build a controlpanel module to obviate these steps.
+echo "Creating directories for the traffic graphs."
 mkdir -p /tmp/fakeroot/srv/controlpanel/graphs
+
+echo "Copying control panel's HTML templates into place."
 cp -rv ~guest/Byzantium/control_panel/srv/controlpanel/* /tmp/fakeroot/srv/controlpanel
+
+echo "Installing control panel config files."
 mkdir -p /tmp/fakeroot/etc/controlpanel
 cp ~guest/Byzantium/control_panel/etc/controlpanel/* /tmp/fakeroot/etc/controlpanel
+
+echo "Installing control panel's SQLite databases and schemas."
 mkdir -p /tmp/fakeroot/var/db/controlpanel
 cp -rv ~guest/Byzantium/control_panel/var/db/controlpanel/* /tmp/fakeroot/var/db/controlpanel
 
