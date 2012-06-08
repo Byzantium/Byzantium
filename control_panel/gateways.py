@@ -317,7 +317,8 @@ class Gateways(object):
 
         # Assemble a new invocation of babeld.
         common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
-                              '-C', 'redistribute if', interface, 'metric 128']
+                              '-g', '13000', '-C', 'redistribute if',
+			      interface, 'metric 128']
         unique_babeld_opts = []
 
         # Set up a list of mesh interfaces for which babeld is already running.
