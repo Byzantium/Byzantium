@@ -34,11 +34,6 @@ from control_panel import *
 # node into a gateway from the mesh to another network (usually the global Net).
 class Gateways(object):
     # Class constants.
-    # babeld related paths.
-    babeld = '/usr/local/bin/babeld'
-    babeld_pid = '/var/run/babeld.pid'
-    babeld_timeout = 3
-
     # Path to network configuration database.
     if test:
         netconfdb = '/home/drwho/network.sqlite'
@@ -358,12 +353,6 @@ class Gateways(object):
         else:
             process = subprocess.Popen(nat_command)
 
-        # Assemble a new invocation of babeld.
-        common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
-                              '-g', '33123', '-C', 'redistribute if',
-			      interface, 'metric 128']
-        unique_babeld_opts = []
-
         # Set up a list of mesh interfaces for which babeld is already running.
         interfaces = []
         connection = sqlite3.connect(self.meshconfdb)
@@ -374,32 +363,6 @@ class Gateways(object):
             interfaces.append(i[0])
         interfaces.append(interface)
         cursor.close()
-
-        # Assemble the invocation of babeld.
-        babeld_command = []
-        babeld_command.append(self.babeld)
-        babeld_command = babeld_command + common_babeld_opts
-        babeld_command = babeld_command + unique_babeld_opts + interfaces
-
-        # Kill the old instance of babeld.
-        if debug:
-            print "DEBUG: Pretending to kill running babeld."
-        else:
-            pid = ''
-            if os.path.exists(self.babeld_pid):
-                pidfile = open(self.babeld_pid, 'r')
-                pid = pidfile.readline()
-                pidfile.close()
-            if pid:
-                os.kill(int(pid), signal.SIGTERM)
-                time.sleep(self.babeld_timeout)
-
-        # Re-run babeld with the extra option to propagate the gateway route.
-        if debug:
-            print "DEBUG: Pretending to re-run babeld to propagate gateway route."
-        else:
-            process = subprocess.Popen(babeld_command)
-            time.sleep(self.babeld_timeout)
 
         # Update the network configuration database to reflect the fact that
         # the interface is now a gateway.  Search the table of Ethernet
