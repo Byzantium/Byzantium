@@ -16,6 +16,7 @@ flex-2.5.35-i486-1.xzm
 gd-2.0.35-i486-4.xzm
 httpd-2.2.22-i486-1_slack13.37.xzm
 icu4c-4.6.1-i486-1_SBo.xzm
+iproute2-2.6.37-i486-1_slack13.37.xzm
 irssi-0.8.15-i486-3.xzm
 libarchive-2.8.4-i486-1.xzm
 libdaemon-0.14-i486-1_SBo.xzm
