@@ -73,7 +73,7 @@ cp 11-media-by-label-auto-mount.rules /tmp/fakeroot/etc/udev/rules.d
 
 # Could these be placed in a module?
 echo "Installing custom initscripts."
-cp rc.local rc.mysqld rc.ssl rc.setup_mysql /tmp/fakeroot/etc/rc.d
+cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.inet1 /tmp/fakeroot/etc/rc.d
 chmod +x /tmp/fakeroot/etc/rc.d/rc.*
 
 # This stuff probably belongs in the controlpanel package.
