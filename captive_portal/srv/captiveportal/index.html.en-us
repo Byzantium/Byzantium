@@ -6,7 +6,7 @@
 </head>
 <body>
 <p>You have connected to Byzantium, an ad-hoc wireless mesh network.  If you're seeing this, then chances are that
-Internet access where you are has either been cut off, or is compromised somehow, and someone has decided that it's too
+Internet access where you are has either been cut off, or is compromised somehow and someone has decided that it's too
 dangerous to use.</p>
 
 <p>If there is no gateway from the mesh to the Internet, then you will not have access to most online services.  Byzantium
