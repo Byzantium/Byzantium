@@ -34,10 +34,12 @@ case "$1" in
 
 		# Copy the mDNS descriptor into Avahi's configuration
 		# directory
-		cp $INACTIVE/$DESCRIPTOR $ACTIVE
+		if [ -f $INACTIVE/$DESCRIPTOR ]; then
+			cp $INACTIVE/$DESCRIPTOR $ACTIVE
 
-		# Reload Avahi's list of service descriptors.
-		avahi-daemon --reload
+			# Reload Avahi's list of service descriptors.
+			avahi-daemon --reload
+			fi
 		;;
 	'stop')
 		# Terminate Etherpad-Lite.
@@ -45,8 +47,10 @@ case "$1" in
 		rm -f $PID
 
 		# Stop announcing its mDNS descriptor.
-		rm -f $ACTIVE/$DESCRIPTOR
-		avahi-daemon --reload
+		if [ -f $ACTIVE/$DESCRIPTOR ]; then
+			rm -f $ACTIVE/$DESCRIPTOR
+			avahi-daemon --reload
+			fi
 		;;
 	'status')
 		ps ax | grep [n]ode
