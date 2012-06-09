@@ -114,6 +114,7 @@ cp babel/babeld.conf /tmp/fakeroot/etc
 cp dnsmasq/dnsmasq.conf /tmp/fakeroot/etc
 cp etherpad-lite/rc.etherpad-lite /tmp/fakeroot/etc/rc.d
 cp etherpad-lite/settings.json /tmp/fakeroot/opt/etherpad-lite
+cp etherpad-lite/etherpad-lite.service /tmp/fakeroot/etc/avahi/inactive
 cp sudo/etc/sudoers /tmp/fakeroot/etc
 chown root:root /tmp/fakeroot/etc/sudoers
 chmod 0440 /tmp/fakeroot/etc/sudoers
@@ -133,6 +134,7 @@ chmod 0600 /tmp/fakeroot/etc/shadow
 echo "Installing config files for MySQL, ngircd, and PHP."
 cp mysql/my.cnf /tmp/fakeroot/etc
 cp ngircd/ngircd.conf /tmp/fakeroot/etc
+cp ngircd/ngircd.service /tmp/fakeroot/etc/avahi/inactive
 cp ngircd/rc.ngircd /tmp/fakeroot/etc/rc.d
 cp php/etc/httpd/php.ini /tmp/fakeroot/etc/httpd
 
@@ -141,6 +143,7 @@ echo "Installing qwebirc configuration file and initscript."
 mkdir -p /tmp/fakeroot/opt/qwebirc
 cp qwebirc/config.py /tmp/fakeroot/opt/qwebirc
 cp qwebirc/rc.qwebirc /tmp/fakeroot/etc/rc.d
+cp qwebirc/qwebirc.service /tmp/fakeroot/etc/avahi/inactive
 
 # Install the database files.
 echo "Installing database files."
