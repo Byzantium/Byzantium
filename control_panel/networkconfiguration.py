@@ -83,6 +83,9 @@ class NetworkConfiguration(object):
         wired = []
         wireless = []
         (wired, wireless) = self.enumerate_network_interfaces()
+        if debug:
+            print "DEBUG: Contents of wired[]: %s" % str(wired)
+            print "DEBUG: Contents of wireless[]: %s" % str(wireless)
 
         # MOOF MOOF MOOF - call to stub implementation.  We can use the list
         # immediately above (interfaces) as the list to compare the database
@@ -103,11 +106,16 @@ class NetworkConfiguration(object):
 
         # Start with wireless interfaces.
         for i in wireless:
+            if debug:
+                print "DEBUG: Checking to see if %s is in the database." % i
             cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
             if not len(result):
+                if debug:
+                    print "DEBUG: Adding %s to table 'wired'." % i
+
                 # gateway, client_interface, enabled, channel, essid,
                 # mesh_interface
                 template = ('no', (i + ':1'), 'no', '0', '', i, )
@@ -128,12 +136,17 @@ class NetworkConfiguration(object):
             wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
 
         # Wired interfaces.
-        for i in ethernet:
+        for i in wired:
+            if debug:
+                print "DEBUG: Checking to see if %s is in the database." % i
             cursor.execute("SELECT interface, enabled FROM wired WHERE interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
             if not len(result):
+                if debug:
+                    print "DEBUG: Adding %s to table 'wired'." % i
+
                 # enabled, gateway, interface
                 template = ('no', 'no', i, )
                 cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
