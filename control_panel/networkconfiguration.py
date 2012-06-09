@@ -55,6 +55,7 @@ class NetworkConfiguration(object):
     client_ip = ''
     channel = ''
     essid = ''
+    bssid = '02:CA:FF:EE:BA:BE'
     ethernet_interface = ''
     ethernet_ip = ''
     frequency = 0.0
@@ -508,6 +509,16 @@ class NetworkConfiguration(object):
                 output = os.popen(command)
                 time.sleep(1)
 
+            # Set BSSID.
+            if debug:
+                print "DEBUG: Configuring BSSID of wireless interface."
+            command = '/sbin/iwconfig ' + self.mesh_interface + ' ap ' + self.bssid
+            if test:
+                print "NetworkConfiguration.set_ip() command to set the BSSID: %s" % command
+            else:
+                output = os.popen(command)
+                time.sleep(1)
+
             # Set wireless channel.
             if debug:
                 print "DEBUG: Configuring channel of wireless interface."
@@ -547,6 +558,16 @@ class NetworkConfiguration(object):
                     if essid != self.essid:
                         if debug:
                             print "DEBUG: Uh-oh!  ESSID wasn't set!  Starting over."
+                        continue
+
+            # Test the BSSID to see if it's been set properly.
+            for line in configuration:
+                if 'Cell' in line:
+                    line = line.strip()
+                    bssid = line.split(' ')[-1]
+                    if bssid != self.bssid:
+                        if debug:
+                            print "DEBUG: Uh-oh!  BSSID wasn't set!  Starting over."
                         continue
 
             # Check the wireless channel to see if it's been set properly.
