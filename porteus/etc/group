@@ -45,5 +45,5 @@ nogroup:x:99:
 users:x:100:guest
 console:x:101:
 kdm:x:102:
-avahi:x:214:
+avahi:x:214:avahi
 guest:x:1000:guest

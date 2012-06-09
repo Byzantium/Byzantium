@@ -114,14 +114,15 @@ cp sudo/etc/sudoers /tmp/fakeroot/etc
 chown root:root /tmp/fakeroot/etc/sudoers
 chmod 0440 /tmp/fakeroot/etc/sudoers
 
-# Add the custom passwd files.
+# Add the custom passwd and group files.
 echo "Installing custom system configuration files."
 cp etc/passwd /tmp/fakeroot/etc
 cp etc/shadow /tmp/fakeroot/etc
 cp etc/hosts /tmp/fakeroot/etc
 cp etc/HOSTNAME /tmp/fakeroot/etc
 cp etc/inittab /tmp/fakeroot/etc
-chown root:root /tmp/fakeroot/etc/passwd /tmp/fakeroot/etc/shadow /tmp/fakeroot/etc/hosts /tmp/fakeroot/etc/HOSTNAME /tmp/fakeroot/etc/inittab
+cp etc/group /tmp/fakeroot/etc
+chown root:root /tmp/fakeroot/etc/passwd /tmp/fakeroot/etc/shadow /tmp/fakeroot/etc/hosts /tmp/fakeroot/etc/HOSTNAME /tmp/fakeroot/etc/inittab /tmp/fakeroot/etc/group
 chmod 0600 /tmp/fakeroot/etc/shadow
 
 # These belong in modules!
