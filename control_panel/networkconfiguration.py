@@ -80,7 +80,10 @@ class NetworkConfiguration(object):
         self.reinitialize_attributes()
 
         # Get a list of all network interfaces on the node (sans loopback).
-        interfaces = self.enumerate_network_interfaces()
+        ethernet = self.enumerate_network_interfaces('/proc/net/dev')
+
+        # Get a list of all wireless interfaces on the node (sans loopback).
+        wireless = self.enumerate_network_interfaces('/proc/net/wireless')
 
         # MOOF MOOF MOOF - call to stub implementation.  We can use the list
         # immediately above (interfaces) as the list to compare the database
@@ -90,15 +93,10 @@ class NetworkConfiguration(object):
         #    print "DEBUG: Pruning missing network interfaces."
         #self.prune(interfaces)
 
-        # Split the network interface list into two other lists, one for
-        # Ethernet and one for wireless.
-        ethernet = []
-        wireless = []
-        for i in interfaces:
-            if i.startswith('eth'):
-                ethernet.append(i)
-            else:
-                wireless.append(i)
+        # Compare the two lists of interfaces and remove the wireless
+        # interfaces from the set of all network interfaces.
+        for interface in wireless:
+            ethernet.remove(interface)
         if debug:
             print "DEBUG: Contents of Ethernet interface table: %s" % str(ethernet)
             print "DEBUG: Contents of wireless interface table: %s" % str(wireless)
@@ -204,21 +202,23 @@ class NetworkConfiguration(object):
     #        print "DEBUG: Entered NetworkConfiguration.prune()"
 
     # Utility method to enumerate all of the network interfaces on a node.
-    def enumerate_network_interfaces(self):
+    # Takes one argument, the name of a pseudofile in /proc/net/ to parse.
+    def enumerate_network_interfaces(self, procfile):
         if debug:
             print "DEBUG: Entered NetworkConfiguration.enumerate_network_interfaces()."
+            print "DEBUG: Reading contents of %s." % procfile
         interfaces = []
 
         # Enumerate network interfaces.
-        procnetdev = open("/proc/net/dev", "r")
+        procnet = open(procfile, "r")
 
         # Smoke test by trying to read the first two lines from the pseudofile
         # (which comprises the column headers.  If this fails, make it default
         # to 'lo' (loopback).
-        headers = procnetdev.readline()
-        headers = procnetdev.readline()
+        headers = procnet.readline()
+        headers = procnet.readline()
         if not headers:
-            procnetdev.close()
+            procnet.close()
             return ['lo']
 
         # Begin parsing the contents of /proc/net/dev and extracting the names
@@ -227,7 +227,7 @@ class NetworkConfiguration(object):
             print "Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
             return ['lo']
         else:
-            for line in procnetdev:
+            for line in procnet:
                 interface = line.split()[0]
                 interface = interface.strip()
                 interface = interface.strip(':')
