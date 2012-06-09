@@ -16,9 +16,6 @@
 # Make rc.sshd executable.
 chmod +x /etc/rc.d/rc.sshd
 
-# Use ifplugd to watch any Ethernet interfaces on this node.
-/etc/rc.d/rc.ifplugd start
-
 # Start rrdtool up to gather stats on the network interfaces.
 /usr/local/bin/traffic_stats.sh &
 
