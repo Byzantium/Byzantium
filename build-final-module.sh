@@ -76,6 +76,9 @@ echo "Installing custom initscripts."
 cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.inet1 /tmp/fakeroot/etc/rc.d
 chmod +x /tmp/fakeroot/etc/rc.d/rc.*
 
+# Set up mDNS service descriptor repository.
+mkdir -p /tmp/fakeroot/etc/avahi/inactive
+
 # This stuff probably belongs in the controlpanel package.
 echo "Installing rrdtool shell script."
 cp traffic_stats.sh /tmp/fakeroot/usr/local/bin
