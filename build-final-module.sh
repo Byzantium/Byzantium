@@ -140,6 +140,7 @@ echo "Installing qwebirc configuration file and initscript."
 mkdir -p /tmp/fakeroot/opt/qwebirc
 cp qwebirc/config.py /tmp/fakeroot/opt/qwebirc
 cp qwebirc/rc.qwebirc /tmp/fakeroot/etc/rc.d
+cp qwebirc/qwebirc.service /tmp/fakeroot/etc/avahi/inactive
 
 # Install the database files.
 echo "Installing database files."
