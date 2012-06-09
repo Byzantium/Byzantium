@@ -2,5 +2,5 @@
 Icon=/usr/share/pixmaps/porteus/byzantium-icon.png
 Name=Control Panel
 Name[en_US]=Control Panel
-Type=Link
-URL[$e]=firefox http://localhost:8080/
+Type=Application
+Exec=firefox http://localhost:8080/
