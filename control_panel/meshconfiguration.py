@@ -38,7 +38,7 @@ from control_panel import *
 # Allows the user to configure mesh networking on wireless network interfaces.
 class MeshConfiguration(object):
     # Class constants.
-    babeld = '/usr/bin/babeld'
+    babeld = '/usr/local/bin/babeld'
     babeld_pid = '/var/run/babeld.pid'
     babeld_timeout = 3
 
