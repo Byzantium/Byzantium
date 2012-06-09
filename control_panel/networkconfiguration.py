@@ -80,10 +80,9 @@ class NetworkConfiguration(object):
         self.reinitialize_attributes()
 
         # Get a list of all network interfaces on the node (sans loopback).
-        ethernet = self.enumerate_network_interfaces('/proc/net/dev')
-
-        # Get a list of all wireless interfaces on the node (sans loopback).
-        wireless = self.enumerate_network_interfaces('/proc/net/wireless')
+        wired = []
+        wireless = []
+        (wired, wireless) = self.enumerate_network_interfaces()
 
         # MOOF MOOF MOOF - call to stub implementation.  We can use the list
         # immediately above (interfaces) as the list to compare the database
@@ -92,14 +91,6 @@ class NetworkConfiguration(object):
         #if debug:
         #    print "DEBUG: Pruning missing network interfaces."
         #self.prune(interfaces)
-
-        # Compare the two lists of interfaces and remove the wireless
-        # interfaces from the set of all network interfaces.
-        for interface in wireless:
-            ethernet.remove(interface)
-        if debug:
-            print "DEBUG: Contents of Ethernet interface table: %s" % str(ethernet)
-            print "DEBUG: Contents of wireless interface table: %s" % str(wireless)
 
         # Build tables containing the interfaces extant.  At the same time,
         # search the network configuration databases for interfaces that are
@@ -202,41 +193,36 @@ class NetworkConfiguration(object):
     #        print "DEBUG: Entered NetworkConfiguration.prune()"
 
     # Utility method to enumerate all of the network interfaces on a node.
-    # Takes one argument, the name of a pseudofile in /proc/net/ to parse.
-    def enumerate_network_interfaces(self, procfile):
+    # Returns two lists, one of wired interfaces and one of wireless
+    # interfaces.
+    def enumerate_network_interfaces(self):
         if debug:
             print "DEBUG: Entered NetworkConfiguration.enumerate_network_interfaces()."
             print "DEBUG: Reading contents of %s." % procfile
-        interfaces = []
+        wired = []
+        wireless = []
 
         # Enumerate network interfaces.
-        procnet = open(procfile, "r")
-
-        # Smoke test by trying to read the first two lines from the pseudofile
-        # (which comprises the column headers.  If this fails, make it default
-        # to 'lo' (loopback).
-        headers = procnet.readline()
-        headers = procnet.readline()
-        if not headers:
-            procnet.close()
-            return ['lo']
-
-        # Begin parsing the contents of /proc/net/dev and extracting the names
-        # of the interfaces.
-        if test:
-            print "Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
-            return ['lo']
-        else:
-            for line in procnet:
-                interface = line.split()[0]
-                interface = interface.strip()
-                interface = interface.strip(':')
-                interfaces.append(interface)
+        interfaces = os.listdir('/sys/class/net')
 
         # Remove the loopback interface because that's our failure case.
         if 'lo' in interfaces:
             interfaces.remove('lo')
-        return interfaces
+
+        # Failure case: If the list of interfaces is empty, return lists
+        # containing only the loopback.
+        if not interfaces:
+            return(['lo'], ['lo'])
+
+        # For each network interface's pseudofile in /sys, test to see if a
+        # subdirectory 'wireless/' exists.  Use this to sort the list of
+        # interfaces into wired and wireless.
+        for i in interfaces:
+            if os.path.isdir('/sys/class/net/' + i + '/wireless'):
+                wireless.append(i)
+            else:
+                wired.append(i)
+        return (wired, wireless)
 
     # Allows the user to enter the ESSID and wireless channel of their node.
     # Takes as an argument the value of the 'interface' variable defined in
