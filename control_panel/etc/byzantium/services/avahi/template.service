@@ -1,9 +1,11 @@
 <?xml version="1.0" standalone='no'?>
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
-	<name>%(desciption)s</name>
+	<name>%(name)s</name>
 	<service>
-		<type>%(type)s</type>
+		<type>%(stype)s</type>
+		<subtype>%(subtype)s</subtype>
 		<port>%(port)d</port>
+		%(text)s
 	</service>
 </service-group>
