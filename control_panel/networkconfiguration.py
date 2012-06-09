@@ -198,7 +198,7 @@ class NetworkConfiguration(object):
     def enumerate_network_interfaces(self):
         if debug:
             print "DEBUG: Entered NetworkConfiguration.enumerate_network_interfaces()."
-            print "DEBUG: Reading contents of %s." % procfile
+            print "DEBUG: Reading contents of /sys/class/net/."
         wired = []
         wireless = []
 
@@ -212,12 +212,16 @@ class NetworkConfiguration(object):
         # Failure case: If the list of interfaces is empty, return lists
         # containing only the loopback.
         if not interfaces:
+            if debug:
+                print "DEBUG: No interfaces found.  Defaulting."
             return(['lo'], ['lo'])
 
         # For each network interface's pseudofile in /sys, test to see if a
         # subdirectory 'wireless/' exists.  Use this to sort the list of
         # interfaces into wired and wireless.
         for i in interfaces:
+            if debug:
+                print "DEBUG: Adding network interface %s." % i
             if os.path.isdir('/sys/class/net/' + i + '/wireless'):
                 wireless.append(i)
             else:
