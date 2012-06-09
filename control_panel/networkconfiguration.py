@@ -234,7 +234,8 @@ class NetworkConfiguration(object):
                 interfaces.append(interface)
 
         # Remove the loopback interface because that's our failure case.
-        interfaces.remove('lo')
+        if 'lo' in interfaces:
+            interfaces.remove('lo')
         return interfaces
 
     # Allows the user to enter the ESSID and wireless channel of their node.
