@@ -91,7 +91,7 @@ if __name__ == '__main__':
     sys.exit(1)
 
   print 'miniDNS :: * 60 IN A %s\n' % ip
-  
+
   try:
     while 1:
       data, addr = udps.recvfrom(1024)

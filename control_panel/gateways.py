@@ -353,6 +353,16 @@ class Gateways(object):
         else:
             process = subprocess.Popen(nat_command)
 
+        # Tell avahi-daemon to re-read /etc/resolv.conf and begin propagating
+        # the IP addresses of the DNSes in there across the mesh.
+        avahi_command = ['/usr/sbin/avahi-daemon', '-r']
+        if debug:
+            print "DEBUG: Avahi command: %s" % str(avahi_command)
+        if test:
+            print "TEST: Pretending to reload avahi-daemon's configs."
+        else:
+            process = subprocess.Popen(avahi_command)
+
         # Set up a list of mesh interfaces for which babeld is already running.
         interfaces = []
         connection = sqlite3.connect(self.meshconfdb)
