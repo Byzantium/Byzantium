@@ -111,6 +111,7 @@ cp babel/babeld.conf /tmp/fakeroot/etc
 cp dnsmasq/dnsmasq.conf /tmp/fakeroot/etc
 cp etherpad-lite/rc.etherpad-lite /tmp/fakeroot/etc/rc.d
 cp etherpad-lite/settings.json /tmp/fakeroot/opt/etherpad-lite
+cp etherpad-lite/etherpad-lite.service /tmp/fakeroot/etc/avahi/inactive
 cp sudo/etc/sudoers /tmp/fakeroot/etc
 chown root:root /tmp/fakeroot/etc/sudoers
 chmod 0440 /tmp/fakeroot/etc/sudoers
