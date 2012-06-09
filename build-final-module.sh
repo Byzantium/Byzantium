@@ -131,6 +131,7 @@ chmod 0600 /tmp/fakeroot/etc/shadow
 echo "Installing config files for MySQL, ngircd, and PHP."
 cp mysql/my.cnf /tmp/fakeroot/etc
 cp ngircd/ngircd.conf /tmp/fakeroot/etc
+cp ngircd/ngircd.service /tmp/fakeroot/etc/avahi/inactive
 cp ngircd/rc.ngircd /tmp/fakeroot/etc/rc.d
 cp php/etc/httpd/php.ini /tmp/fakeroot/etc/httpd
 
