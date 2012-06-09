@@ -525,6 +525,7 @@ class NetworkConfiguration(object):
                 output = os.popen(command)
                 configuration = output.readlines()
 
+            break_flag = False
             # Test the interface by going through the captured text to see if
             # it's in ad-hoc mode.  If it's not, go back to the top of the
             # loop to try again.
@@ -535,37 +536,39 @@ class NetworkConfiguration(object):
                     if mode != 'Ad-Hoc':
                         if debug:
                             print "DEBUG: Uh-oh!  Not in ad-hoc mode!  Starting over."
-                        continue
+                        break_flag = True
+                        break
 
-            # Test the ESSID to see if it's been set properly.
-            for line in configuration:
+                # Test the ESSID to see if it's been set properly.
                 if 'ESSID' in line:
                     line = line.strip()
                     essid = line.split(' ')[-1].split(':')[1]
                     if essid != self.essid:
                         if debug:
                             print "DEBUG: Uh-oh!  ESSID wasn't set!  Starting over."
-                        continue
+                        break_flag = True
+                        break
 
-            # Test the BSSID to see if it's been set properly.
-            for line in configuration:
+                # Test the BSSID to see if it's been set properly.
                 if 'Cell' in line:
                     line = line.strip()
                     bssid = line.split(' ')[-1]
                     if bssid != self.bssid:
                         if debug:
                             print "DEBUG: Uh-oh!  BSSID wasn't set!  Starting over."
-                        continue
+                        break_flag = True
+                        break
 
-            # Check the wireless channel to see if it's been set properly.
-            for line in configuration:
+                # Check the wireless channel to see if it's been set properly.
                 if 'Frequency' in line:
                     line = line.strip()
                     frequency = line.split(' ')[2].split(':')[1]
                     if frequency != self.frequency:
                         if debug:
                             print "DEBUG: Uh-oh!  Wireless channel wasn't set!  starting over."
-                        continue
+                        break_flag = True
+                        break
+
             if debug:
                 print "DEBUG: Hit bottom of the wireless configuration loop."
 
@@ -576,7 +579,9 @@ class NetworkConfiguration(object):
 
             # "Victory is mine!"
             #     --Stewie, _Family Guy_
-            break
+            if break_flag:
+                break
+
         if debug:
             print "DEBUG: Wireless interface configured successfully."
 
