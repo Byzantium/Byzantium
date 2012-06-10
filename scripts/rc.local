@@ -32,5 +32,9 @@ chmod +x /etc/rc.d/rc.sshd
 # running instance and error out.
 /etc/rc.d/rc.httpd start
 
+# Start the Avahi daemons.
+/etc/rc.d/rc.avahidaemon start
+/etc/rc.d/rc.avahidnsconfd start
+
 # Start the control panel.
 /etc/rc.d/rc.byzantium start

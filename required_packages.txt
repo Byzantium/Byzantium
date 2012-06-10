@@ -12,6 +12,7 @@ cryptoki-2.20-noarch-1_SBo.xzm
 curl-7.21.4-i486-1.xzm
 dnsmasq-2.57-i486-1.xzm
 doxygen-1.7.3-i486-1.xzm
+erlang-otp-14B02-i486-1_SBo.xzm
 etherpad-lite.xzm
 flex-2.5.35-i486-1.xzm
 gd-2.0.35-i486-4.xzm
@@ -19,11 +20,13 @@ httpd-2.2.22-i486-1_slack13.37.xzm
 icu4c-4.6.1-i486-1_SBo.xzm
 iproute2-2.6.37-i486-1_slack13.37.xzm
 irssi-0.8.15-i486-3.xzm
+jdk-6u25-i586-1.xzm
 libarchive-2.8.4-i486-1.xzm
 libdaemon-0.14-i486-1_SBo.xzm
 libevent-2.0.10-i486-1_SBo.xzm
 libmcrypt-2.5.8-i486-1.xzm
 locales-en_US.utf8-i486.xzm
+lua-5.1.5-i486-1_SBo.xzm
 mysql-5.1.56-i486-1.xzm
 ngircd-17.1-i486-1_SBo.xzm
 node-0.6.11.xzm

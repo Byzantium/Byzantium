@@ -171,6 +171,7 @@ cd ~guest/Byzantium/captive_portal
 cp captive_portal.py /tmp/fakeroot/usr/local/sbin
 cp captive-portal.sh /tmp/fakeroot/usr/local/sbin
 cp mop_up_dead_clients.py /tmp/fakeroot/usr/local/sbin
+cp fake_dns.py /tmp/fakeroot/usr/local/sbin
 cp etc/captiveportal/captiveportal.conf /tmp/fakeroot/etc/captiveportal/
 cp srv/captiveportal/* /tmp/fakeroot/srv/captiveportal/
 
