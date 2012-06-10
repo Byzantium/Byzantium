@@ -11,7 +11,7 @@
 # - Add code to configure encryption on wireless gateways.
 # - Make it possible to specify IP configuration information on a wireless
 #   uplink.
-# - Add code to enumerate_network_interfaces() to delete interfaces from the
+# - Add code to update_network_interfaces() to delete interfaces from the
 #   database if they don't exist anymore.
 
 # Import external modules.
@@ -34,11 +34,6 @@ from control_panel import *
 # node into a gateway from the mesh to another network (usually the global Net).
 class Gateways(object):
     # Class constants.
-    # babeld related paths.
-    babeld = '/usr/local/bin/babeld'
-    babeld_pid = '/var/run/babeld.pid'
-    babeld_timeout = 3
-
     # Path to network configuration database.
     if test:
         netconfdb = '/home/drwho/network.sqlite'
@@ -67,13 +62,13 @@ class Gateways(object):
         ethernet_buttons = ""
         wireless_buttons = ""
 
+        # To find any new network interfaces, rescan the network interfaces on
+        # the node.
+        self.update_network_interfaces()
+
         # Open a connection to the network configuration database.
         connection = sqlite3.connect(self.netconfdb)
         cursor = connection.cursor()
-
-        # To find any new network interfaces, rescan the network interfaces on
-        # the node.
-        self.enumerate_network_interfaces()
 
         # Generate a list of Ethernet interfaces on the node that are enabled.
         # Each interface gets its own button in a table.
@@ -112,12 +107,12 @@ class Gateways(object):
                     traceback.error)
     index.exposed = True
 
-    # Utility method to enumerate all of the network interfaces on a node.  If
-    # any new ones are detected they are added to the network.sqlite database.
-    # Takes no arguments; returns nothing (but alters the database).
-    def enumerate_network_interfaces(self):
+    # Utility method to update the list of all network interfaces on a node.
+    # New ones detected are added to the network.sqlite database.  Takes no
+    # arguments; returns nothing (but alters the database).
+    def update_network_interfaces(self):
         if debug:
-            print "DEBUG: Entered NetworkConfiguration.enumerate_network_interfaces()."
+            print "DEBUG: Entered Gateways.update_network_interfaces()."
         interfaces = []
 
         # Open the kernel's canonical list of network interfaces.
@@ -147,6 +142,7 @@ class Gateways(object):
 
         # Begin parsing the contents of /proc/net/dev to extract the names of
         # the interfaces.
+        interfaces = []
         if test:
             print "TEST: Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
             return
@@ -155,33 +151,75 @@ class Gateways(object):
                 interface = line.split()[0]
                 interface = interface.strip()
                 interface = interface.strip(':')
+                interfaces.append(interface)
 
-                if debug:
-                    print "DEBUG: Testing interface %s." % interface
+            # Walk through the list of interfaces just generated and see if
+            # each one is already in the database.  If it's not, add it.
+            for interface in interfaces:
+                found = ''
 
-                # Detect wired interfaces (/eth[0-9]/ and /usb[0-9]/) and add
-                # new ones to the network configuration database.
+                # See if it's in the table of wired interfaces.
                 template = (interface, )
-                if ('eth' in interface) or ('usb' in interface):
-                    cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
-                    result = cursor.fetchall()
-                    if not len(result):
-                        if debug:
-                            print "DEBUG: Adding interface %s to table 'wired'." % interface
-
-                        # The interface isn't in the database, so add it.
-                        template = ('no', 'no', interface, )
-                        cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
-                        connection.commit()
+                if debug:
+                    print "DEBUG: Checking to see if interface %s is a known wired interface..." % interface
+                cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
+                result = cursor.fetchall()
+                if not len(result):
+                    if debug:
+                        print "DEBUG: Interface %s isn't a known wired interface.  Checking wireless interfaces..." % interface
                 else:
-                    # If it's not a wired interface, then it must be wireless.
+                    if debug:
+                        print "DEBUG: Interface %s is a known wired interface." % interface
+                    found = 'wired'
+
+                # If it's not in the wired table, check the wireless table.
+                if not found:
                     cursor.execute("SELECT mesh_interface FROM wireless WHERE mesh_interface=?;", template)
                     result = cursor.fetchall()
+
+                    # If it's not in there, either, figure out which table it
+                    # has to go in.
                     if not len(result):
-                        # The interface isn't in the database, so add it.
+                        if debug:
+                            print "DEBUG: %s isn't a known wireless interface, either.  Figuring out where it has to go..." % interface
+                    else:
+                        if debug:
+                            print "DEBUG: %s is a known wireless interface." % interface
+                        found = 'wireless'
+
+                # If it still hasn't been found, figure out where it has to go.
+                if not found:
+                    if debug:
+                        print "DEBUG: Interface %s really is new.  Figuring out where it should go." % interface
+                    table = ''
+
+                    # Look in /proc/net/wireless.  If it's in there, it
+                    # goes in the wireless table.  Otherwise it goes in
+                    # the wired table.
+                    procnetwireless = open('/proc/net/wireless', 'r')
+                    headers = procnetwireless.readline()
+                    headers = procnetwireless.readline()
+                    for line in procnetwireless:
+                        if new_interface in line:
+                            if debug:
+                                print "DEBUG: Goes in wireless table."
+                            table = 'wireless'
+                    procnetwireless.close()
+
+                    # Failing that, it goes in the wired table.
+                    if not table:
+                        if debug:
+                            print "DEBUG: Goes in wired table."
+                        table = 'wired'
+
+                    # If we've made it this far, we know what to do.
+                    if table == 'wired':
+                        template = ('no', 'no', interface, )
+                        cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
+                    else:
                         template = ('no', interface + ':1', 'no', 0, '', interface , )
                         cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?);", template)
-                        connection.commit()
+                    connection.commit()
 
         # Close the network configuration database and return.
         cursor.close()
@@ -282,7 +320,7 @@ class Gateways(object):
     # Method that does the deed of turning an interface into a gateway.  This
     def activate(self, interface=None):
         if debug:
-            print "DEBUG: Entered Gateways.activat()."
+            print "DEBUG: Entered Gateways.activate()."
 
         # Test to see if wireless configuration attributes are set, and if they
         # are, use iwconfig to set up the interface.
@@ -315,11 +353,15 @@ class Gateways(object):
         else:
             process = subprocess.Popen(nat_command)
 
-        # Assemble a new invocation of babeld.
-        common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
-                              '-g', '33123', '-C', 'redistribute if',
-			      interface, 'metric 128']
-        unique_babeld_opts = []
+        # Tell avahi-daemon to re-read /etc/resolv.conf and begin propagating
+        # the IP addresses of the DNSes in there across the mesh.
+        avahi_command = ['/usr/sbin/avahi-daemon', '-r']
+        if debug:
+            print "DEBUG: Avahi command: %s" % str(avahi_command)
+        if test:
+            print "TEST: Pretending to reload avahi-daemon's configs."
+        else:
+            process = subprocess.Popen(avahi_command)
 
         # Set up a list of mesh interfaces for which babeld is already running.
         interfaces = []
@@ -331,32 +373,6 @@ class Gateways(object):
             interfaces.append(i[0])
         interfaces.append(interface)
         cursor.close()
-
-        # Assemble the invocation of babeld.
-        babeld_command = []
-        babeld_command.append(self.babeld)
-        babeld_command = babeld_command + common_babeld_opts
-        babeld_command = babeld_command + unique_babeld_opts + interfaces
-
-        # Kill the old instance of babeld.
-        if debug:
-            print "DEBUG: Pretending to kill running babeld."
-        else:
-            pid = ''
-            if os.path.exists(self.babeld_pid):
-                pidfile = open(self.babeld_pid, 'r')
-                pid = pidfile.readline()
-                pidfile.close()
-            if pid:
-                os.kill(int(pid), signal.SIGTERM)
-                time.sleep(self.babeld_timeout)
-
-        # Re-run babeld with the extra option to propagate the gateway route.
-        if debug:
-            print "DEBUG: Pretending to re-run babeld to propagate gateway route."
-        else:
-            process = subprocess.Popen(babeld_command)
-            time.sleep(self.babeld_timeout)
 
         # Update the network configuration database to reflect the fact that
         # the interface is now a gateway.  Search the table of Ethernet

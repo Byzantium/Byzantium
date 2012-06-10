@@ -5,13 +5,13 @@
 */
 {
   //Ip and port which etherpad should bind at
-  //"ip": "0.0.0.0",
+  "ip": "0.0.0.0",
   "port" : 9001,
   
   //The Type of the database. You can choose between dirty, sqlite and mysql
   //You should use mysql or sqlite for anything else than testing or development
   //"dbType" : "dirty",
-  "dbType" : "mysql",
+  //"dbType" : "mysql",
 
   //the database specific settings
   //"dbSettings" : {

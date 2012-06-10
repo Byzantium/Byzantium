@@ -8,32 +8,51 @@
 # v1.0	- Initial release.
 
 # TODO:
-# - Make this run without privileges!
+# - 
 
 # Variables
 BASE=/opt/qwebirc
 PID=/var/run/qwebirc.pid
+DESCRIPTOR="qwebirc.service"
+INACTIVE=/etc/avahi/inactive
+ACTIVE=/etc/avahi/services
 
 # Core code.
 # Here's where the heavy lifting happens - this parses the arguments passed to
 # script and triggers what has to be triggered.
 case "$1" in
 	'start')
-		# Start up the server.  It'll drop into the background on its own.
+		# Start up the server.  It'll drop into the background on its
+		# own.
 		cd $BASE
 		./run.py
 	
 		# Save the PID.
 		sleep 5
 		ps ax | grep [r]un.py | grep -v 'grep' | awk '{print $1}' > $PID
+
+		# Copy the mDNS descriptor into Avahi's configuration
+		# directory
+		if [ -f $INACTIVE/$DESCRIPTOR ]; then
+			cp $INACTIVE/$DESCRIPTOR $ACTIVE
+
+			# Reload Avahi's list of service descriptors.
+			avahi-daemon --reload
+			fi
 		;;
 	'stop')
 		kill `cat $PID`
 		rm -f $PID
+
+		# Stop announcing its mDNS descriptor.
+		if [ -f $ACTIVE/$DESCRIPTOR ]; then
+			rm -f $ACTIVE/$DESCRIPTOR
+			avahi-daemon --reload
+			fi
 		;;
 	'status')
-		# Extract the PID from the process list, in case the PID file doesn't
-		# line up anymore.
+		# Extract the PID from the process list, in case the PID file
+		# doesn't line up anymore.
 		ps ax | grep [r]un.py | grep -v 'grep' | awk '{print $1}'
 		;;
 	*)

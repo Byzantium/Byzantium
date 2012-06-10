@@ -73,7 +73,7 @@ cp 11-media-by-label-auto-mount.rules /tmp/fakeroot/etc/udev/rules.d
 
 # Could these be placed in a module?
 echo "Installing custom initscripts."
-cp rc.local rc.mysqld rc.ssl rc.setup_mysql /tmp/fakeroot/etc/rc.d
+cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.inet1 /tmp/fakeroot/etc/rc.d
 chmod +x /tmp/fakeroot/etc/rc.d/rc.*
 
 # This stuff probably belongs in the controlpanel package.
@@ -110,24 +110,28 @@ cp -rv apache/etc/httpd/* /tmp/fakeroot/etc/httpd
 cp babel/babeld.conf /tmp/fakeroot/etc
 cp dnsmasq/dnsmasq.conf /tmp/fakeroot/etc
 cp etherpad-lite/rc.etherpad-lite /tmp/fakeroot/etc/rc.d
+cp etherpad-lite/settings.json /tmp/fakeroot/opt/etherpad-lite
+cp etherpad-lite/etherpad-lite.service /tmp/fakeroot/etc/avahi/inactive
 cp sudo/etc/sudoers /tmp/fakeroot/etc
 chown root:root /tmp/fakeroot/etc/sudoers
 chmod 0440 /tmp/fakeroot/etc/sudoers
 
-# Add the custom passwd files.
+# Add the custom passwd and group files.
 echo "Installing custom system configuration files."
 cp etc/passwd /tmp/fakeroot/etc
 cp etc/shadow /tmp/fakeroot/etc
 cp etc/hosts /tmp/fakeroot/etc
 cp etc/HOSTNAME /tmp/fakeroot/etc
 cp etc/inittab /tmp/fakeroot/etc
-chown root:root /tmp/fakeroot/etc/passwd /tmp/fakeroot/etc/shadow /tmp/fakeroot/etc/hosts /tmp/fakeroot/etc/HOSTNAME /tmp/fakeroot/etc/inittab
+cp etc/group /tmp/fakeroot/etc
+chown root:root /tmp/fakeroot/etc/passwd /tmp/fakeroot/etc/shadow /tmp/fakeroot/etc/hosts /tmp/fakeroot/etc/HOSTNAME /tmp/fakeroot/etc/inittab /tmp/fakeroot/etc/group
 chmod 0600 /tmp/fakeroot/etc/shadow
 
 # These belong in modules!
 echo "Installing config files for MySQL, ngircd, and PHP."
 cp mysql/my.cnf /tmp/fakeroot/etc
 cp ngircd/ngircd.conf /tmp/fakeroot/etc
+cp ngircd/ngircd.service /tmp/fakeroot/etc/avahi/inactive
 cp ngircd/rc.ngircd /tmp/fakeroot/etc/rc.d
 cp php/etc/httpd/php.ini /tmp/fakeroot/etc/httpd
 
@@ -136,6 +140,7 @@ echo "Installing qwebirc configuration file and initscript."
 mkdir -p /tmp/fakeroot/opt/qwebirc
 cp qwebirc/config.py /tmp/fakeroot/opt/qwebirc
 cp qwebirc/rc.qwebirc /tmp/fakeroot/etc/rc.d
+cp qwebirc/qwebirc.service /tmp/fakeroot/etc/avahi/inactive
 
 # Install the database files.
 echo "Installing database files."

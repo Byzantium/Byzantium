@@ -55,6 +55,7 @@ class NetworkConfiguration(object):
     client_ip = ''
     channel = ''
     essid = ''
+    bssid = '02:CA:FF:EE:BA:BE'
     ethernet_interface = ''
     ethernet_ip = ''
     frequency = 0.0
@@ -80,10 +81,12 @@ class NetworkConfiguration(object):
         self.reinitialize_attributes()
 
         # Get a list of all network interfaces on the node (sans loopback).
-        ethernet = self.enumerate_network_interfaces('/proc/net/dev')
-
-        # Get a list of all wireless interfaces on the node (sans loopback).
-        wireless = self.enumerate_network_interfaces('/proc/net/wireless')
+        wired = []
+        wireless = []
+        (wired, wireless) = self.enumerate_network_interfaces()
+        if debug:
+            print "DEBUG: Contents of wired[]: %s" % str(wired)
+            print "DEBUG: Contents of wireless[]: %s" % str(wireless)
 
         # MOOF MOOF MOOF - call to stub implementation.  We can use the list
         # immediately above (interfaces) as the list to compare the database
@@ -92,14 +95,6 @@ class NetworkConfiguration(object):
         #if debug:
         #    print "DEBUG: Pruning missing network interfaces."
         #self.prune(interfaces)
-
-        # Compare the two lists of interfaces and remove the wireless
-        # interfaces from the set of all network interfaces.
-        for interface in wireless:
-            ethernet.remove(interface)
-        if debug:
-            print "DEBUG: Contents of Ethernet interface table: %s" % str(ethernet)
-            print "DEBUG: Contents of wireless interface table: %s" % str(wireless)
 
         # Build tables containing the interfaces extant.  At the same time,
         # search the network configuration databases for interfaces that are
@@ -112,11 +107,16 @@ class NetworkConfiguration(object):
 
         # Start with wireless interfaces.
         for i in wireless:
+            if debug:
+                print "DEBUG: Checking to see if %s is in the database." % i
             cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
             if not len(result):
+                if debug:
+                    print "DEBUG: Adding %s to table 'wired'." % i
+
                 # gateway, client_interface, enabled, channel, essid,
                 # mesh_interface
                 template = ('no', (i + ':1'), 'no', '0', '', i, )
@@ -137,12 +137,17 @@ class NetworkConfiguration(object):
             wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
 
         # Wired interfaces.
-        for i in ethernet:
+        for i in wired:
+            if debug:
+                print "DEBUG: Checking to see if %s is in the database." % i
             cursor.execute("SELECT interface, enabled FROM wired WHERE interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
             if not len(result):
+                if debug:
+                    print "DEBUG: Adding %s to table 'wired'." % i
+
                 # enabled, gateway, interface
                 template = ('no', 'no', i, )
                 cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
@@ -202,40 +207,40 @@ class NetworkConfiguration(object):
     #        print "DEBUG: Entered NetworkConfiguration.prune()"
 
     # Utility method to enumerate all of the network interfaces on a node.
-    # Takes one argument, the name of a pseudofile in /proc/net/ to parse.
-    def enumerate_network_interfaces(self, procfile):
+    # Returns two lists, one of wired interfaces and one of wireless
+    # interfaces.
+    def enumerate_network_interfaces(self):
         if debug:
             print "DEBUG: Entered NetworkConfiguration.enumerate_network_interfaces()."
-            print "DEBUG: Reading contents of %s." % procfile
-        interfaces = []
+            print "DEBUG: Reading contents of /sys/class/net/."
+        wired = []
+        wireless = []
 
         # Enumerate network interfaces.
-        procnet = open(procfile, "r")
-
-        # Smoke test by trying to read the first two lines from the pseudofile
-        # (which comprises the column headers.  If this fails, make it default
-        # to 'lo' (loopback).
-        headers = procnet.readline()
-        headers = procnet.readline()
-        if not headers:
-            procnet.close()
-            return ['lo']
-
-        # Begin parsing the contents of /proc/net/dev and extracting the names
-        # of the interfaces.
-        if test:
-            print "Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
-            return ['lo']
-        else:
-            for line in procnet:
-                interface = line.split()[0]
-                interface = interface.strip()
-                interface = interface.strip(':')
-                interfaces.append(interface)
+        interfaces = os.listdir('/sys/class/net')
 
         # Remove the loopback interface because that's our failure case.
-        interfaces.remove('lo')
-        return interfaces
+        if 'lo' in interfaces:
+            interfaces.remove('lo')
+
+        # Failure case: If the list of interfaces is empty, return lists
+        # containing only the loopback.
+        if not interfaces:
+            if debug:
+                print "DEBUG: No interfaces found.  Defaulting."
+            return(['lo'], ['lo'])
+
+        # For each network interface's pseudofile in /sys, test to see if a
+        # subdirectory 'wireless/' exists.  Use this to sort the list of
+        # interfaces into wired and wireless.
+        for i in interfaces:
+            if debug:
+                print "DEBUG: Adding network interface %s." % i
+            if os.path.isdir('/sys/class/net/' + i + '/wireless'):
+                wireless.append(i)
+            else:
+                wired.append(i)
+        return (wired, wireless)
 
     # Allows the user to enter the ESSID and wireless channel of their node.
     # Takes as an argument the value of the 'interface' variable defined in
@@ -504,6 +509,16 @@ class NetworkConfiguration(object):
                 output = os.popen(command)
                 time.sleep(1)
 
+            # Set BSSID.
+            if debug:
+                print "DEBUG: Configuring BSSID of wireless interface."
+            command = '/sbin/iwconfig ' + self.mesh_interface + ' ap ' + self.bssid
+            if test:
+                print "NetworkConfiguration.set_ip() command to set the BSSID: %s" % command
+            else:
+                output = os.popen(command)
+                time.sleep(1)
+
             # Set wireless channel.
             if debug:
                 print "DEBUG: Configuring channel of wireless interface."
@@ -523,6 +538,7 @@ class NetworkConfiguration(object):
                 output = os.popen(command)
                 configuration = output.readlines()
 
+            break_flag = False
             # Test the interface by going through the captured text to see if
             # it's in ad-hoc mode.  If it's not, go back to the top of the
             # loop to try again.
@@ -533,27 +549,39 @@ class NetworkConfiguration(object):
                     if mode != 'Ad-Hoc':
                         if debug:
                             print "DEBUG: Uh-oh!  Not in ad-hoc mode!  Starting over."
-                        continue
+                        break_flag = True
+                        break
 
-            # Test the ESSID to see if it's been set properly.
-            for line in configuration:
+                # Test the ESSID to see if it's been set properly.
                 if 'ESSID' in line:
                     line = line.strip()
                     essid = line.split(' ')[-1].split(':')[1]
                     if essid != self.essid:
                         if debug:
                             print "DEBUG: Uh-oh!  ESSID wasn't set!  Starting over."
-                        continue
+                        break_flag = True
+                        break
 
-            # Check the wireless channel to see if it's been set properly.
-            for line in configuration:
+                # Test the BSSID to see if it's been set properly.
+                if 'Cell' in line:
+                    line = line.strip()
+                    bssid = line.split(' ')[-1]
+                    if bssid != self.bssid:
+                        if debug:
+                            print "DEBUG: Uh-oh!  BSSID wasn't set!  Starting over."
+                        break_flag = True
+                        break
+
+                # Check the wireless channel to see if it's been set properly.
                 if 'Frequency' in line:
                     line = line.strip()
                     frequency = line.split(' ')[2].split(':')[1]
                     if frequency != self.frequency:
                         if debug:
                             print "DEBUG: Uh-oh!  Wireless channel wasn't set!  starting over."
-                        continue
+                        break_flag = True
+                        break
+
             if debug:
                 print "DEBUG: Hit bottom of the wireless configuration loop."
 
@@ -564,7 +592,9 @@ class NetworkConfiguration(object):
 
             # "Victory is mine!"
             #     --Stewie, _Family Guy_
-            break
+            if break_flag:
+                break
+
         if debug:
             print "DEBUG: Wireless interface configured successfully."
 
@@ -788,12 +818,6 @@ class NetworkConfiguration(object):
 
         # Open the include file so it can be written to.
         file = open(self.dnsmasq_include_file, 'w')
-
-        # Add the configuration directive that intercepts resolution attempts
-        # for all possible domains to catch clients.  This resolves issue #93
-        # at Github.
-        intercept_domains = 'address=/#/' + starting_ip + '\n'
-        file.write(intercept_domains)
 
         # Write the DHCP range for this node's clients.
         file.write(dhcp_range)

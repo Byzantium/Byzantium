@@ -193,7 +193,7 @@ class MeshConfiguration(object):
         # babeld is used on the node.  See the following file to see why:
         # http://www.pps.jussieu.fr/~jch/software/babel/CHANGES.text
         common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
-			      '-g', '33123' ]
+			      '-g', '33123' , '-c', '/etc/babeld.conf']
 
         # Create a set of unique command line options for babeld.  Right now,
         # this variable is empty but it might be used in the future.  Maybe

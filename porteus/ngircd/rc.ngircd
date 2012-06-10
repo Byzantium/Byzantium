@@ -15,6 +15,9 @@
 CONFIG=/etc/ngircd.conf
 ARGS=""
 PID=/var/run/ngircd/ngircd.pid
+DESCRIPTOR="ngircd.service"
+INACTIVE=/etc/avahi/inactive
+ACTIVE=/etc/avahi/services
 
 # Core code.
 # Here's where the heavy lifting happens - this parses the arguments passed to
@@ -23,10 +26,25 @@ case "$1" in
 	'start')
 		# Start ngircd.
 		ngircd $ARGS -f $CONFIG
+
+		# Copy the mDNS descriptor into Avahi's configuration
+		# directory
+		if [ -f $INACTIVE/$DESCRIPTOR ]; then
+			cp $INACTIVE/$DESCRIPTOR $ACTIVE
+
+			# Reload Avahi's list of service descriptors.
+			avahi-daemon --reload
+			fi
 		;;
 	'stop')
 		# Terminate ngircd.
 		kill `cat $PID`
+
+		# Stop announcing its mDNS descriptor.
+		if [ -f $ACTIVE/$DESCRIPTOR ]; then
+			rm -f $ACTIVE/$DESCRIPTOR
+			avahi-daemon --reload
+			fi
 		;;
 	'status')
 		ps ax | grep [n]gircd
