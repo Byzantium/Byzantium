@@ -43,6 +43,8 @@ case "$1" in
 	    -j DNAT --to-destination $CLIENTIP:31337
         $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 \
 	    -j DNAT --to-destination $CLIENTIP:31338
+        $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 53 \
+	    -j DNAT --to-destination $CLIENTIP:31339
 
         # All other traffic which is marked 99 is just dropped
         $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
