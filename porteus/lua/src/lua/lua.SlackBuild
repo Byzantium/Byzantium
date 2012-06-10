@@ -1,0 +1,106 @@
+#!/bin/sh
+
+# Slackware build script for Lua
+
+# Written by Menno Duursma
+# Modified by the SlackBuilds.org project
+# Modified by Aaron W. Hsu
+# Updated by ponce
+
+# This program is free software. It comes without any warranty.
+# Granted WTFPL, Version 2, as published by Sam Hocevar. See
+# http://sam.zoy.org/wtfpl/COPYING for more details.
+
+PRGNAM=lua
+VERSION=${VERSION:-5.1.5}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-${VERSION}.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+
+# Fix up a to-be-installed header and the pkgconfig file
+sed -i "s|/usr/local|/usr|" src/luaconf.h
+sed -i "s|lib/lua|lib$LIBDIRSUFFIX/lua|" src/luaconf.h
+sed -i "s|/usr/local|/usr|" etc/lua.pc
+sed -i "s|prefix}/lib|prefix}/lib${LIBDIRSUFFIX}|g" etc/lua.pc
+
+make linux \
+  CFLAGS="$SLKCFLAGS \$(MYCFLAGS)" \
+  INSTALL_TOP=/usr \
+  INSTALL_LIB=/usr/lib${LIBDIRSUFFIX} \
+  INSTALL_LMOD=/usr/share/lua/5.1 \
+  INSTALL_CMOD=/usr/lib${LIBDIRSUFFIX}/lua/5.1
+
+make linux install \
+  CFLAGS="$SLKCFLAGS \$(MYCFLAGS)" \
+  INSTALL_TOP=$PKG/usr \
+  INSTALL_LIB=$PKG/usr/lib${LIBDIRSUFFIX} \
+  INSTALL_LMOD=$PKG/usr/share/lua/5.1 \
+  INSTALL_CMOD=$PKG/usr/lib${LIBDIRSUFFIX}/lua/5.1
+
+# Now let's build the shared library
+mkdir -p shared
+cd shared
+  ar -x $PKG/usr/lib${LIBDIRSUFFIX}/liblua.a
+  gcc -ldl -lreadline -lhistory -lncurses -lm -shared *.o -o liblua.so.$VERSION
+  cp -a liblua.so.$VERSION $PKG/usr/lib${LIBDIRSUFFIX}
+  ( cd $PKG/usr/lib${LIBDIRSUFFIX}
+    ln -s liblua.so.$VERSION liblua.so.5.1
+    ln -s liblua.so.$VERSION liblua.so.5
+    ln -s liblua.so.$VERSION liblua.so
+  )
+cd ..
+
+# and install the pkgconfig file
+mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}/pkgconfig
+cat etc/lua.pc > $PKG/usr/lib${LIBDIRSUFFIX}/pkgconfig/lua.pc
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/{extras,html}
+cp -a COPYRIGHT HISTORY INSTALL README $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a doc/*.html doc/logo.gif doc/lua.css $PKG/usr/doc/$PRGNAM-$VERSION/html
+cp -a etc test $PKG/usr/doc/$PRGNAM-$VERSION/extras
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
