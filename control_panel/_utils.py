@@ -21,7 +21,7 @@ class config:
 	def __init__(self):
 		self.services_cache = '/tmp/byz_services.json'
 		self.service_template = '/etc/byzantium/services/avahi/template.service'
-		self.services_store_dir = '/etc/avahi/services-available'
+		self.services_store_dir = '/etc/avahi/inactive'
 		self.services_live_dir = '/etc/avahi/services'
 
 
