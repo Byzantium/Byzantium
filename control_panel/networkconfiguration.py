@@ -819,12 +819,6 @@ class NetworkConfiguration(object):
         # Open the include file so it can be written to.
         file = open(self.dnsmasq_include_file, 'w')
 
-        # Add the configuration directive that intercepts resolution attempts
-        # for all possible domains to catch clients.  This resolves issue #93
-        # at Github.
-        intercept_domains = 'address=/#/' + starting_ip + '\n'
-        file.write(intercept_domains)
-
         # Write the DHCP range for this node's clients.
         file.write(dhcp_range)
 
