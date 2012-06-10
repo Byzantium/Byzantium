@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 # http://minidns.googlecode.com/hg/minidns
+# Found by: Haxwithaxe
 
+# Import Python modules.
 import sys
 import socket
 import fcntl
@@ -9,12 +11,16 @@ import struct
 
 # DNSQuery class from http://code.activestate.com/recipes/491264-mini-fake-dns-server/
 class DNSQuery:
+  # 'data' is the actual DNS resolution request from the client.
   def __init__(self, data):
     self.data=data
     self.domain=''
 
     tipo = (ord(data[2]) >> 3) & 15   # Opcode bits
-    if tipo == 0:                     # Standard query
+
+    # Determine if the client is making a standard resolution request.
+    # Otherwise, don't do anything because it's not a resolution request.
+    if tipo == 0:
       ini=12
       lon=ord(data[ini])
       while lon != 0:
@@ -22,15 +28,26 @@ class DNSQuery:
         ini+=lon+1
         lon=ord(data[ini])
 
+  # Build a reply packet for the client.
   def respuesta(self, ip):
     packet=''
     if self.domain:
       packet+=self.data[:2] + "\x81\x80"
-      packet+=self.data[4:6] + self.data[4:6] + '\x00\x00\x00\x00'   # Questions and Answers Counts
-      packet+=self.data[12:]                                         # Original Domain Name Question
-      packet+='\xc0\x0c'                                             # Pointer to domain name
-      packet+='\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'             # Response type, ttl and resource data length -> 4 bytes
-      packet+=str.join('',map(lambda x: chr(int(x)), ip.split('.'))) # 4bytes of IP
+
+      # Question and answer counts.
+      packet+=self.data[4:6] + self.data[4:6] + '\x00\x00\x00\x00'
+
+      # A copy of the original resolution query from the client.
+      packet+=self.data[12:]
+
+      # Pointer to the domain name.
+      packet+='\xc0\x0c'
+
+      # Response type, TTL of the reply, and length of data in reply.
+      packet+='\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'
+
+      # The IP address of the server the DNS is running on.
+      packet+=str.join('',map(lambda x: chr(int(x)), ip.split('.')))
     return packet
 
 # get_ip_address code from http://code.activestate.com/recipes/439094-get-the-ip-address-associated-with-a-network-inter/
@@ -48,8 +65,7 @@ def get_ip_address(ifname):
 
 def usage():
   print "Usage:"
-  print "\t# minidns [ip | interface]"
-  print ""
+  print "\t# minidns [ip | interface]\n"
   print "Description:"
   print "\tMiniDNS will respond to all DNS queries with a single IPv4 address."
   print "\tYou may specify the IP address to be returned as the first argument"
@@ -63,10 +79,14 @@ def usage():
 
   sys.exit(1)
 
+# Core code.
 if __name__ == '__main__':
+  # Set defaults for basic operation.  Hopefully these will be overridden on
+  # the command line.
   ip = None
   iface = 'eth0'
 
+  # Parse the argument vector.
   if len(sys.argv) == 2:
     if sys.argv[-1] == '-h' or sys.argv[-1] == '--help':
       usage()
@@ -76,29 +96,44 @@ if __name__ == '__main__':
       else:
         iface = sys.argv[-1]
 
+  # In the event that an interface name was given but not an IP address, get
+  # the IP address.
   if ip is None:
     ip = get_ip_address(iface)
 
+  # If the IP address can't be gotten somehow, carp.
   if ip is None:
     print "ERROR: Invalid IP address or interface name specified!"
     usage()
 
+  # Open a socket to listen on.  Haxwithaxe set this to port 31339/udp because
+  # this is the DNS hijacker bit of the captive portal.  Only clients that
+  # aren't in the whitelist will see it.
   try:
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udps.bind(('',31339))  # Listen on 31339 instead of 53 (for captive guests)
+    udps.bind(('',31339))
   except Exception, e:
     print "Failed to create socket on UDP port 31339:", e
     sys.exit(1)
 
+  # Print something for anyone watching a TTY.  All 'A' records this daemon
+  # serves up have a TTL of 60 seconds.
   print 'miniDNS :: * 60 IN A %s\n' % ip
 
+  # The do-stuff loop.
   try:
     while 1:
+      # Receive a DNS resolution request from a client.
       data, addr = udps.recvfrom(1024)
+
+      # Generate the response.
       p=DNSQuery(data)
+
+      # Send the response to the client.
       udps.sendto(p.respuesta(ip), addr)
       print 'Request: %s -> %s' % (p.domain, ip)
   except KeyboardInterrupt:
     print '\nBye!'
     udps.close()
 
+# Fin.
