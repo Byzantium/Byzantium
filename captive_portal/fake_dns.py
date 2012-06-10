@@ -33,8 +33,6 @@ class DNSQuery:
       packet+=str.join('',map(lambda x: chr(int(x)), ip.split('.'))) # 4bytes of IP
     return packet
 
-
-
 # get_ip_address code from http://code.activestate.com/recipes/439094-get-the-ip-address-associated-with-a-network-inter/
 def get_ip_address(ifname):
   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -47,7 +45,6 @@ def get_ip_address(ifname):
     )[20:24])
   except:
     return None
-
 
 def usage():
   print "Usage:"
@@ -65,7 +62,6 @@ def usage():
   print "\twill be used."
 
   sys.exit(1)
-
 
 if __name__ == '__main__':
   ip = None
