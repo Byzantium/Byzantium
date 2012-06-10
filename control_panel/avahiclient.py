@@ -58,7 +58,7 @@ def browse_callback(sdRef, flags, interfaceIndex, errorCode, serviceName, regtyp
 	finally:
 		resolve_sdRef.close()
 
-if __name__ == '__main__':
+def run():
 	browse_sdRef = pybonjour.DNSServiceBrowse(regtype = SERVICE_TYPE, callBack = browse_callback)
 	try:
 		try:
@@ -70,3 +70,6 @@ if __name__ == '__main__':
 			pass
 	finally:
 		browse_sdRef.close()
+
+if __name__ == '__main__':
+	run()
