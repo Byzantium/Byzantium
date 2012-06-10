@@ -51,10 +51,17 @@ class DNSQuery:
     return packet
 
 # get_ip_address code from http://code.activestate.com/recipes/439094-get-the-ip-address-associated-with-a-network-inter/
+# Method that acquires the IP address of a network interface on the system
+# this daemon is running on.  It will only be invoked if an IP address is not
+# passed on the command line to the daemon.
 def get_ip_address(ifname):
+  # > LOOK
+  # You are in a maze of twisty passages, all alike.
+  # > GO WEST
   s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
   try:
+    # It is dark here.  You are likely to be eaten by a grue.
+    # > _
     return socket.inet_ntoa(fcntl.ioctl(
         s.fileno(),
         0x8915,  # SIOCGIFADDR
@@ -63,6 +70,7 @@ def get_ip_address(ifname):
   except:
     return None
 
+# Display usage information to the user.
 def usage():
   print "Usage:"
   print "\t# minidns [ip | interface]\n"
@@ -76,7 +84,6 @@ def usage():
   print "\t\t# minidns eth0\n"
   print "\tIf no interface or IP address is specified, the IP address of eth0"
   print "\twill be used."
-
   sys.exit(1)
 
 # Core code.
