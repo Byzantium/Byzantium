@@ -385,9 +385,25 @@ if test:
     print "Idle client monitor command that would be executed:"
     print str(idle_client_reaper)
 else:
+    if debug:
+        print "DEBUG: Starting mop_up_dead_clients.py."
     reaper = subprocess.Popen(idle_client_reaper)
 if reaper:
     print "ERROR: mop_up_dead_clients.py did not start."
+
+# Start the fake DNS server that hijacks every resolution request with the
+# IP address of the client interface.
+dns_hijacker = ['/usr/local/sbin/fake_dns.py', address]
+hijacker = 0
+if test:
+    print "Command that would start the fake DNS server:"
+    print str(dns_hijacker)
+else:
+    if debug:
+        print "DEBUG: Starting fake_dns.py."
+    hijacker = subprocess.Popen(dns_hijacker)
+if hijacker:
+    print "ERROR: fake_dns.py did not start."
 
 # Now do some error checking in case IP tables went pear-shaped.  This appears
 # oddly specific, but /usr/sbin/iptables treats these two kinds of errors
