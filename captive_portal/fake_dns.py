@@ -50,21 +50,19 @@ def get_ip_address(ifname):
 
 
 def usage():
-  print ""
   print "Usage:"
-  print ""
   print "\t# minidns [ip | interface]"
   print ""
   print "Description:"
-  print ""
   print "\tMiniDNS will respond to all DNS queries with a single IPv4 address."
-  print ""
-  print "\tYou may specify the IP address to be returned as the first argument on the command line:\n"
+  print "\tYou may specify the IP address to be returned as the first argument"
+  print "\ton the command line:\n"
   print "\t\t# minidns 1.2.3.4\n"
-  print "\tAlternatively, you may specify an interface name and MiniDNS will use the IP address currently assigned to that interface:\n"
+  print "\tAlternatively, you may specify an interface name and MiniDNS will"
+  print "\tuse the IP address currently assigned to that interface:\n"
   print "\t\t# minidns eth0\n"
-  print "\tIf no interface or IP address is specified, the IP address of eth0 will be used."
-  print ""
+  print "\tIf no interface or IP address is specified, the IP address of eth0"
+  print "\twill be used."
 
   sys.exit(1)
 
