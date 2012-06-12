@@ -35,6 +35,7 @@ openldap-client-2.4.23-i486-1.xzm
 pcre-8.12-i486-1.xzm
 php-5.3.10-i486-1_slack13.37.xzm
 pyOpenSSL-0.13-i486-1_SBo.xzm
+pybonjour-1.1.1-i486-1_SBo.xzm
 pysetuptools-0.6c11-i486-1_SBo.xzm
 python-twisted-11.0.0-i486-1_SBo.xzm
 qwebirc.xzm
