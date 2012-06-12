@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+         |-----handy-ruler------------------------------------------------------|
+pybonjour: pybonjour (Pure-Python interface to Apple Bonjour)
+pybonjour:
+pybonjour: pybonjour provides a pure-Python interface to Apple Bonjour and
+pybonjour: compatible DNS-SD libraries (such as Avahi). It allows Python scripts
+pybonjour: to take advantage of Zero Configuration Networking (Zeroconf) to
+pybonjour: register, discover and resolve services on both local and wide-area
+pybonjour: networks. Since pybonjour is implemented in pure Python, scripts that
+pybonjour: use it can easily be ported to Mac OS X, Windows, Linux, and other
+pybonjour: systems that run Bonjour.
+pybonjour:
+pybonjour:
