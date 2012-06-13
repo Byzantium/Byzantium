@@ -8,6 +8,7 @@ babeld-1.3.1.xzm
 babelweb-0.2.4.xzm
 bison-2.4.3-i486-2.xzm
 boost-1.45.0-i486-1.xzm
+cmake-2.8.4-i486-1.xzm
 cryptoki-2.20-noarch-1_SBo.xzm
 curl-7.21.4-i486-1.xzm
 dnsmasq-2.57-i486-1.xzm
@@ -16,6 +17,7 @@ erlang-otp-14B02-i486-1_SBo.xzm
 etherpad-lite.xzm
 flex-2.5.35-i486-1.xzm
 gd-2.0.35-i486-4.xzm
+git-1.7.4.4-i486-1.xzm
 httpd-2.2.22-i486-1_slack13.37.xzm
 icu4c-4.6.1-i486-1_SBo.xzm
 iproute2-2.6.37-i486-1_slack13.37.xzm
@@ -29,7 +31,7 @@ locales-en_US.utf8-i486.xzm
 lua-5.1.5-i486-1_SBo.xzm
 mysql-5.1.56-i486-1.xzm
 ngircd-17.1-i486-1_SBo.xzm
-node-0.6.11.xzm
+node-0.6.16-i486-1_SBo.xzm
 npm-1.1.22.xzm
 openldap-client-2.4.23-i486-1.xzm
 pcre-8.12-i486-1.xzm
@@ -40,6 +42,8 @@ pysetuptools-0.6c11-i486-1_SBo.xzm
 python-twisted-11.0.0-i486-1_SBo.xzm
 qwebirc.xzm
 rrdtool-1.4.5-i486-1_dw.xzm
+sqlitebrowser-2.0b1-i486-2_dw.xzm
+subversion-1.6.16-i486-1.xzm
 sudo-1.7.4p6-i486-1.xzm
 t1lib-5.1.2-i486-2.xzm
 truecrypt-7.1-i486-1_SBo.xzm
