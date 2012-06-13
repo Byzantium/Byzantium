@@ -8,15 +8,16 @@
 # Bail on errors
 set -e
 
+BUILD_HOME=${BUILD_HOME:-/home/guest}
 # Create the fakeroot.
-cd ~guest/Byzantium
+cd $BUILD_HOME/Byzantium
 echo "Deleting and recreating the fakeroot..."
 rm -rf /tmp/fakeroot
 mkdir -p /tmp/fakeroot
 
 # Test to see if the Byzantium SVN repository has been checked out into the
 # home directory of the guest user.  ABEND if it's not.
-if [ ! -d /home/guest/byzantium ]; then
+if [ ! -d $BUILD_HOME/byzantium ]; then
     echo "ERROR: Byzantium SVN package repository not found in ~/guest."
     exit 1
     fi
@@ -25,7 +26,7 @@ if [ ! -d /home/guest/byzantium ]; then
 # libraries and executables under the hood of Byzantium.
 for i in `cat required_packages.txt` ; do
     echo "Now installing $i to /tmp/fakeroot..."
-    xzm2dir /home/guest/byzantium/$i /tmp/fakeroot
+    xzm2dir $BUILD_HOME/byzantium/$i /tmp/fakeroot
     echo "Done."
     done
 
