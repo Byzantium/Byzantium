@@ -49,26 +49,26 @@ echo "Creating directories for the traffic graphs."
 mkdir -p /tmp/fakeroot/srv/controlpanel/graphs
 
 echo "Copying control panel's HTML templates into place."
-cp -rv ~guest/Byzantium/control_panel/srv/controlpanel/* /tmp/fakeroot/srv/controlpanel
+cp -rv $BUILD_HOME/Byzantium/control_panel/srv/controlpanel/* /tmp/fakeroot/srv/controlpanel
 
 echo "Installing control panel config files."
 mkdir -p /tmp/fakeroot/etc/controlpanel
-cp ~guest/Byzantium/control_panel/etc/controlpanel/* /tmp/fakeroot/etc/controlpanel
+cp $BUILD_HOME/Byzantium/control_panel/etc/controlpanel/* /tmp/fakeroot/etc/controlpanel
 
 echo "Installing control panel's SQLite databases and schemas."
 mkdir -p /tmp/fakeroot/var/db/controlpanel
-cp -rv ~guest/Byzantium/control_panel/var/db/controlpanel/* /tmp/fakeroot/var/db/controlpanel
+cp -rv $BUILD_HOME/Byzantium/control_panel/var/db/controlpanel/* /tmp/fakeroot/var/db/controlpanel
 
 # We need to upgrade the version of Wicd to fix a bug, this is our own fix.
 # Note that when Poteus Linux updates to the latest stable version of wicd
 # this will become obsolete.
 echo "Installing wicd-cli patch."
 mkdir -p /tmp/fakeroot/usr/share/wicd/cli
-cp ~guest/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py /tmp/fakeroot/usr/share/wicd/cli/
+cp $BUILD_HOME/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py /tmp/fakeroot/usr/share/wicd/cli/
 
 # Install our custom udev automount rules.
 echo "Installing udev media-by-label rule patch."
-cd ~guest/Byzantium/scripts
+cd $BUILD_HOME/Byzantium/scripts
 mkdir -p /tmp/fakeroot/etc/udev/rules.d
 cp 11-media-by-label-auto-mount.rules /tmp/fakeroot/etc/udev/rules.d
 
@@ -168,7 +168,7 @@ chmod 0750 /tmp/fakeroot/var/run/ngircd
 echo "Installing captive portal."
 mkdir -p /tmp/fakeroot/srv/captiveportal
 mkdir -p /tmp/fakeroot/etc/captiveportal
-cd ~guest/Byzantium/captive_portal
+cd $BUILD_HOME/Byzantium/captive_portal
 cp captive_portal.py /tmp/fakeroot/usr/local/sbin
 cp captive-portal.sh /tmp/fakeroot/usr/local/sbin
 cp mop_up_dead_clients.py /tmp/fakeroot/usr/local/sbin
