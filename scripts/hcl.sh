@@ -30,6 +30,16 @@ dump_hadware_info(){
 	done
 }
 
+scrub_dump(){
+	# scrub MACs
+	sed -i 's/[A-Fa-f0-9]\:[A-Fa-f0-9]\:[A-Fa-f0-9]\:[A-Fa-f0-9]\:[A-Fa-f0-9]/00:00:00:00:00:00/g' $1
+	# scrub ipv4 !!BROKEN!!
+	sed -i '/127\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}/! s/[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}/1.1.1.1/g'
+	# scrub ipv6
+	#sed -i 's/[A-Fa-f0-9]\{0,2\}:[:A-Fa-f0-9]//g'
+
+}
+
 ask_yn(){
 	yn='[y/n]'
 	question=$1
@@ -40,8 +50,15 @@ ask_yn(){
 		yn='[y/N]'
 	fi
 	echo $question $yn
-	read answer
-	return $answer
+	read -n 1 answer
+	if [[ ${answer,,} == 'y' ]] ;then
+		return true
+	elif [[ ${answer,,} == 'n' ]] ;then
+		return false
+	else
+		echo "${answer} is not a valid option. Please try again."
+		return ask_yn $question $default
+	fi
 }
 ask_oneliner(){
 	question=$1
@@ -51,10 +68,14 @@ ask_oneliner(){
 }
 
 ask_multiline(){
-question=$1
-	echo "${question} [press <enter> when done]"
-	# add magic multiline read equiv here FIXME
-	answer='' # faking it
+	question=$1
+	answer=''
+	ui='junk'
+	echo "${question} [press <enter> twice when done]"
+	while [[ $ui != '' ]] ;do
+		read ui
+		answer="${answer}\n${ui}"
+	done
 	return $answer
 }
 
@@ -63,13 +84,15 @@ ask_for_user_input_en(){
 	box_info_model=ask_oneliner 'Please give the model of this computer as specifically as possible (full model numbers are often written on the bottom side of laptops or behind the battery or battery cover).'
 	box_info_wireless=ask_oneliner 'Please give the make, model, and chipset (lspci or lsusb help to find this sometimes) of your wireless card that you used with byzantium. Also include the original manufacturer if you know that.'
 	all_working=ask_yn 'Is everything working correctly?' 'y'
-	what_broke=ask_multiline 'what is not working properly?'
-	why_what_broke=ask multiline "Do you know why it doesn't work properly? If so please say why in as much detail as possible."
+	if ! $all_working ;then
+		what_broke=ask_multiline 'what is not working properly?'
+		why_what_broke=ask multiline "Do you know why it doesn't work properly? If so please say why in as much detail as possible."
+	fi
 }
 
 dump_hardware_info_en(){
 	do_dump=ask_yn 'May we dump the output of hardware enumeration scripts for posting to public websites (anything that looks like a mac or IP address will be scrubbed before hand)?' 'y'
-	if [[ $do_dump == 'y' ]] ;then
+	if $do_dump ;then
 		dump_harware_info
 		scrub_dump
 		package_loc=package_dump
