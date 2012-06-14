@@ -99,8 +99,14 @@ cp etc/ssl/openssl.cnf /tmp/fakeroot/etc/ssl
 echo "Installing the service directory."
 cd ../service_directory
 cp index.html /tmp/fakeroot/srv/httpd/htdocs
-cp services.py /tmp/fakeroot/srv/httpd/cgi-bin
+cp -r services.py _services.py _utils.py tmpl /tmp/fakeroot/srv/httpd/cgi-bin
 chmod 0755 /tmp/fakeroot/srv/httpd/cgi-bin/services.py
+mkdir -p /tmp/fakeroot/opt/byzantium/avahi/
+cp avahiclient.sh avahiclient.py /tmp/fakeroot/opt/byzantium/avahi/
+chmod -R 0755 /tmp/fakeroot/opt/byzantium/avahi/
+cp rc.avahiclient /tmp/fakeroot/etc/rc.d/
+chmod 0755 /tmp/fakeroot/etc/rc.d/rc.avahiclient
+
 
 # Add the custom Firefox configuration.
 echo "Installing Mozilla configs for the guest user."
