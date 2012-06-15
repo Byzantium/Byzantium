@@ -393,7 +393,7 @@ else:
     if debug:
         print "DEBUG: Starting mop_up_dead_clients.py."
     reaper = subprocess.Popen(idle_client_reaper)
-if reaper:
+if not reaper:
     print "ERROR: mop_up_dead_clients.py did not start."
 
 # Start the fake DNS server that hijacks every resolution request with the
@@ -407,7 +407,7 @@ else:
     if debug:
         print "DEBUG: Starting fake_dns.py."
     hijacker = subprocess.Popen(dns_hijacker)
-if hijacker:
+if not hijacker:
     print "ERROR: fake_dns.py did not start."
 
 # Now do some error checking in case IP tables went pear-shaped.  This appears
