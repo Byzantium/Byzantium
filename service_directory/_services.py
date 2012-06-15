@@ -39,7 +39,7 @@ def get_local_services_list():
 	results = cursor.fetchall()
 	for service in results:
 		debug("DEBUG: Value of service: %s" % str(service))
-		service_list += [{'name':service[0],'path':'/'+service[0],'description':''}]
+		service_list += [{'name':service[0],'path':'/'+service[0]+'/','description':''}]
 
 		# Clean up after ourselves.
 		debug("DEBUG: Closing service database.",5)
