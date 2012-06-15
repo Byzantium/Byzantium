@@ -119,8 +119,11 @@ class CaptivePortal(object):
     # index(): Pretends to be / and /index.html.
     def index(self):
         # Identify the primary language the client's web browser supports.
-        clientlang = cherrypy.request.headers['Accept-Language']
-        clientlang = clientlang.split(',')[0].lower()
+        try:
+            clientlang = cherrypy.request.headers['Accept-Language']
+            clientlang = clientlang.split(',')[0].lower()
+        except:
+            clientlang = 'en-us'
         if debug:
             print "DEBUG: Current browser language: %s" % clientlang
 
