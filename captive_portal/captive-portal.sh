@@ -8,6 +8,7 @@
 # License: GPLv3
 
 IPTABLES=/usr/sbin/iptables
+ARP=/sbin/arp
 
 # Set up the choice tree of options that can be passed to this script.
 case "$1" in
@@ -72,7 +73,7 @@ case "$1" in
         CLIENT=$2
 
         # Isolate the MAC address of the client in question.
-        CLIENTMAC=`arp -n | grep ':' | grep $CLIENT | awk '{print $3}'`
+        CLIENTMAC=`$ARP -n | grep ':' | grep $CLIENT | awk '{print $3}'`
 
         # Add the MAC address of the client to the whitelist, so it'll be able
         # to access the mesh even if its IP address changes.
@@ -86,7 +87,7 @@ case "$1" in
         CLIENT=$2
 
         # Isolate the MAC address of the client in question.
-        CLIENTMAC=`arp -n | grep ':' | grep $CLIENT | awk '{print $3}'`
+        CLIENTMAC=`$ARP -n | grep ':' | grep $CLIENT | awk '{print $3}'`
 
         # Delete the MAC address of the client from the whitelist.
         $IPTABLES -t mangle -D internet -m mac --mac-source \
