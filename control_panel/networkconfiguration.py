@@ -681,7 +681,7 @@ class NetworkConfiguration(object):
             # control panel tries to open it.
             if debug:
                 print "DEBUG: Trying to open %s." % captive_portal_pidfile
-            pidfile = open(captive_portal_pidfile, 'r')
+            pidfile = open(str(captive_portal_pidfile), 'r')
             portal_pid = 0
             if pidfile:
                 portal_pid = pidfile.readline()
