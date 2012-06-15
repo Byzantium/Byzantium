@@ -8,15 +8,16 @@
 # Bail on errors
 set -e
 
+BUILD_HOME=${BUILD_HOME:-/home/guest}
 # Create the fakeroot.
-cd ~guest/Byzantium
+cd $BUILD_HOME/Byzantium
 echo "Deleting and recreating the fakeroot..."
 rm -rf /tmp/fakeroot
 mkdir -p /tmp/fakeroot
 
 # Test to see if the Byzantium SVN repository has been checked out into the
 # home directory of the guest user.  ABEND if it's not.
-if [ ! -d /home/guest/byzantium ]; then
+if [ ! -d $BUILD_HOME/byzantium ]; then
     echo "ERROR: Byzantium SVN package repository not found in ~/guest."
     exit 1
     fi
@@ -25,7 +26,7 @@ if [ ! -d /home/guest/byzantium ]; then
 # libraries and executables under the hood of Byzantium.
 for i in `cat required_packages.txt` ; do
     echo "Now installing $i to /tmp/fakeroot..."
-    xzm2dir /home/guest/byzantium/$i /tmp/fakeroot
+    xzm2dir $BUILD_HOME/byzantium/$i /tmp/fakeroot
     echo "Done."
     done
 
@@ -48,26 +49,26 @@ echo "Creating directories for the traffic graphs."
 mkdir -p /tmp/fakeroot/srv/controlpanel/graphs
 
 echo "Copying control panel's HTML templates into place."
-cp -rv ~guest/Byzantium/control_panel/srv/controlpanel/* /tmp/fakeroot/srv/controlpanel
+cp -rv $BUILD_HOME/Byzantium/control_panel/srv/controlpanel/* /tmp/fakeroot/srv/controlpanel
 
 echo "Installing control panel config files."
 mkdir -p /tmp/fakeroot/etc/controlpanel
-cp ~guest/Byzantium/control_panel/etc/controlpanel/* /tmp/fakeroot/etc/controlpanel
+cp $BUILD_HOME/Byzantium/control_panel/etc/controlpanel/* /tmp/fakeroot/etc/controlpanel
 
 echo "Installing control panel's SQLite databases and schemas."
 mkdir -p /tmp/fakeroot/var/db/controlpanel
-cp -rv ~guest/Byzantium/control_panel/var/db/controlpanel/* /tmp/fakeroot/var/db/controlpanel
+cp -rv $BUILD_HOME/Byzantium/control_panel/var/db/controlpanel/* /tmp/fakeroot/var/db/controlpanel
 
 # We need to upgrade the version of Wicd to fix a bug, this is our own fix.
 # Note that when Poteus Linux updates to the latest stable version of wicd
 # this will become obsolete.
 echo "Installing wicd-cli patch."
 mkdir -p /tmp/fakeroot/usr/share/wicd/cli
-cp ~guest/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py /tmp/fakeroot/usr/share/wicd/cli/
+cp $BUILD_HOME/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py /tmp/fakeroot/usr/share/wicd/cli/
 
 # Install our custom udev automount rules.
 echo "Installing udev media-by-label rule patch."
-cd ~guest/Byzantium/scripts
+cd $BUILD_HOME/Byzantium/scripts
 mkdir -p /tmp/fakeroot/etc/udev/rules.d
 cp 11-media-by-label-auto-mount.rules /tmp/fakeroot/etc/udev/rules.d
 
@@ -98,8 +99,14 @@ cp etc/ssl/openssl.cnf /tmp/fakeroot/etc/ssl
 echo "Installing the service directory."
 cd ../service_directory
 cp index.html /tmp/fakeroot/srv/httpd/htdocs
-cp services.py /tmp/fakeroot/srv/httpd/cgi-bin
+cp -r services.py _services.py _utils.py tmpl /tmp/fakeroot/srv/httpd/cgi-bin
 chmod 0755 /tmp/fakeroot/srv/httpd/cgi-bin/services.py
+mkdir -p /tmp/fakeroot/opt/byzantium/avahi/
+cp avahiclient.sh avahiclient.py /tmp/fakeroot/opt/byzantium/avahi/
+chmod -R 0755 /tmp/fakeroot/opt/byzantium/avahi/
+cp rc.avahiclient /tmp/fakeroot/etc/rc.d/
+chmod 0755 /tmp/fakeroot/etc/rc.d/rc.avahiclient
+
 
 # Add the custom Firefox configuration.
 echo "Installing Mozilla configs for the guest user."
@@ -167,7 +174,7 @@ chmod 0750 /tmp/fakeroot/var/run/ngircd
 echo "Installing captive portal."
 mkdir -p /tmp/fakeroot/srv/captiveportal
 mkdir -p /tmp/fakeroot/etc/captiveportal
-cd ~guest/Byzantium/captive_portal
+cd $BUILD_HOME/Byzantium/captive_portal
 cp captive_portal.py /tmp/fakeroot/usr/local/sbin
 cp captive-portal.sh /tmp/fakeroot/usr/local/sbin
 cp mop_up_dead_clients.py /tmp/fakeroot/usr/local/sbin

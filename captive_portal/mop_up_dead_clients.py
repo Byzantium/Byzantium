@@ -15,7 +15,7 @@ import subprocess
 CACHEFILE = '/tmp/captive_portal-mopup.cache'
 STASHTO = 'ram' # options are 'ram','disk'
 MAXIDLESEC = 18000 # max idle time in seconds (18000s == 5hr)
-CHECKEVERY = 1800 # check every CHECKEVERY seconds for idle clients (1800s == 30min)
+CHECKEVERY = 1800.0 # check every CHECKEVERY seconds for idle clients (1800s == 30min)
 IPTABLESCMD = ['/usr/sbin/iptables','-t','mangle','-L','internet','-n','-v']
 USAGE = '''[(-c|--cache) <cache file>]\n\t[(-s|--stashto) <disk|ram>]\n\t[(-m|--maxidle) <time before idle client expires in seconds>]\n\t[(-i|--checkinterval) <time between each check for idle clients in\n\t\tseconds>]'''
 
@@ -91,6 +91,10 @@ def get_packetcounts():
     # Roll through the captured output from iptables to pick out the packet
     # counts on a per client basis.
     for line in stdout.split('\n')[2:]:
+        # If the line's empty, just exit this method so it doesn't error out
+        # later.
+        if not line:
+            break
         larr = line.strip().split()
 
         # If the string's contents after being cleaned up are null, skip this

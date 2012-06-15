@@ -33,7 +33,7 @@ case "$1" in
 			cp $INACTIVE/$DESCRIPTOR $ACTIVE
 
 			# Reload Avahi's list of service descriptors.
-			avahi-daemon --reload
+			/usr/sbin/avahi-daemon --reload
 			fi
 		;;
 	'stop')
@@ -43,7 +43,7 @@ case "$1" in
 		# Stop announcing its mDNS descriptor.
 		if [ -f $ACTIVE/$DESCRIPTOR ]; then
 			rm -f $ACTIVE/$DESCRIPTOR
-			avahi-daemon --reload
+			/usr/sbin/avahi-daemon --reload
 			fi
 		;;
 	'status')
