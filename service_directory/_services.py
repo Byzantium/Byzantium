@@ -35,12 +35,10 @@ def get_local_services_list():
 
 	# Pull a list of daemons running on the node. This means that most of the web apps users will access will be displayed.
 	debug("DEBUG: Getting list of running servers from database.",5)
-	cursor.execute("SELECT name,showtouser FROM daemons WHERE status='active';")
+	cursor.execute("SELECT name FROM daemons WHERE status='active' AND showtouser='yes';")
 	results = cursor.fetchall()
 	for service in results:
 		debug("DEBUG: Value of service: %s" % str(service))
-		# Test to see if the daemon is one that can be shown to the user.  If it's not, skip to the next iteration.
-		if service[1] == 'no': debug("DEBUG: This daemon won't be shown to the user.")
 		service_list += [{'name':service[0],'path':'/'+service[0],'description':''}]
 
 		# Clean up after ourselves.
