@@ -123,6 +123,8 @@ class CaptivePortal(object):
             clientlang = cherrypy.request.headers['Accept-Language']
             clientlang = clientlang.split(',')[0].lower()
         except:
+            if debug:
+                print "DEBUG: Client language not found.  Defaulting to en-us."
             clientlang = 'en-us'
         if debug:
             print "DEBUG: Current browser language: %s" % clientlang
