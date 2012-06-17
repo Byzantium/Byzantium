@@ -88,6 +88,10 @@ def get_packetcounts():
     p.wait()
     stdout, stderr = p.communicate()
 
+    # If nothing was returned from iptables, return an empty list.
+    if not stdout:
+        return packetcounts
+
     # Roll through the captured output from iptables to pick out the packet
     # counts on a per client basis.
     for line in stdout.split('\n')[2:]:
@@ -180,9 +184,9 @@ def main(args):
             if '--maxidle' in args:
                 MAXIDLESEC = args[args.index('--maxidle')+1]
             if '-i' in args:
-                CHECKEVERY = args[args.index('-i')+1]
+                CHECKEVERY = float(args[args.index('-i')+1])
             if '--checkinterval' in args:
-                CHECKEVERY = args[args.index('--checkinterval')+1]
+                CHECKEVERY = float(args[args.index('--checkinterval')+1])
             if '--help' in args:
                 print "USAGE: %s" % sys.argv[0], USAGE
                 sys.exit(1)
@@ -193,7 +197,7 @@ def main(args):
         # give the node a chance to have some clients associate with it.
         # Otherwise this daemon will immediately try to build a list of
         # associated clients, not find any, and crash.
-        time.sleep(int(CHECKEVERY) * 3)
+        time.sleep(CHECKEVERY * 3)
 
         # Go into a loop of mopping up and sleeping endlessly.
         while True:
