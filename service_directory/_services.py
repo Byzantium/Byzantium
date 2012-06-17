@@ -74,7 +74,10 @@ def get_remote_services_list():
 	return service_list
 
 def get_services_list():
-	return get_local_services_list()+get_remote_services_list()
+	local_srvc = get_local_services_list()
+	remote_srvc = get_remote_services_list()
+	local_srvc.update(remote_srvc)
+	return remote_srvc
 
 if __name__ == '__main__':
 	debug(get_services_list(),0)
