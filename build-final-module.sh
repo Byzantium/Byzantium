@@ -167,7 +167,7 @@ cp byzantium-icon.png /tmp/fakeroot/usr/share/pixmaps/porteus
 # Create the runtime directory for ngircd because its package doesn't.
 echo "Setting up directories for ngircd."
 mkdir /tmp/fakeroot/var/run/ngircd
-chown ngircd.root /tmp/fakeroot/var/run/ngircd
+chown ngircd:root /tmp/fakeroot/var/run/ngircd
 chmod 0750 /tmp/fakeroot/var/run/ngircd
 
 # Install the captive portal daemon.
