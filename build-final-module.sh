@@ -143,7 +143,6 @@ chmod -R 0755 ${FAKE_ROOT}/opt/byzantium/avahi/
 cp rc.avahiclient ${FAKE_ROOT}/etc/rc.d/
 chmod 0755 ${FAKE_ROOT}/etc/rc.d/rc.avahiclient
 
-
 # Add the custom Firefox configuration.
 echo "Installing Mozilla configs for the guest user."
 cd ../porteus
@@ -161,6 +160,7 @@ cp etherpad-lite/etherpad-lite.service ${FAKE_ROOT}/etc/avahi/inactive
 cp sudo/etc/sudoers ${FAKE_ROOT}/etc
 chown root:root ${FAKE_ROOT}/etc/sudoers
 chmod 0440 ${FAKE_ROOT}/etc/sudoers
+cp avahi/etc/avahi/avahi-daemon.conf ${FAKE_ROOT}/etc/avahi
 
 # Add the custom passwd and group files.
 echo "Installing custom system configuration files."

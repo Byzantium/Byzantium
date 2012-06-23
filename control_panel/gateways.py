@@ -327,21 +327,31 @@ class Gateways(object):
         if self.essid:
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
             if debug:
-                print "DEBUG: Pretending to set ESSID %s." % self.essid
+                print "DEBUG: Setting ESSID to %s." % self.essid
+            if test:
+                print "TEST: Command to set ESSID:"
+                print str(command)
             else:
                 process = subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
             if debug:
-                print "DEBUG: Pretending to set channel %s." % self.channel
+                print "DEBUG: Setting channel %s." % self.channel
+            if test:
+                print "TEST: Command to set channel:"
+                print str(command)
             else:
                 process = subprocess.Popen(command)
 
         # If we have to configure layers 1 and 2, then it's a safe bet that we
         # should use DHCP to set up layer 3.
-        command = ['/sbin/dhcpcd', interface]
+        command = ['/sbin/dhcpcd', '-G', interface]
         if debug:
-            print "DEBUG: Pretending to run dhcpcd against interface %s." % interface
+            print "DEBUG: Preparing to configure interface %s." % interface
+        if test:
+            print "TEST: Pretending to run dhcpcd against interface %s." % interface
+            print "TEST: Command that would be run:"
+            print str(command)
         else:
             process = subprocess.Popen(command)
 
@@ -349,7 +359,10 @@ class Gateways(object):
         nat_command = ['/usr/sbin/iptables', '-t', 'nat', '-A', 'POSTROUTING',
                       '-o', str(interface), '-j', 'MASQUERADE']
         if debug:
-            print "DEBUG: Pretending to set up NAT on interface %s." % interface
+            print "DEBUG: Setting up NAT on interface %s." % interface
+        if test:
+            print "DEBUG: NAT command:"
+            print str(nat_command)
         else:
             process = subprocess.Popen(nat_command)
 
@@ -359,7 +372,7 @@ class Gateways(object):
         if debug:
             print "DEBUG: Avahi command: %s" % str(avahi_command)
         if test:
-            print "TEST: Pretending to reload avahi-daemon's configs."
+            print "TEST: Pretending to reload avahi-daemon's configs to propagate the external DNS."
         else:
             process = subprocess.Popen(avahi_command)
 
