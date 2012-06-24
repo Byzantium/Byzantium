@@ -79,7 +79,7 @@ fi
 [ -x /etc/rc.d/rc.bluetooth ] && sh /etc/rc.d/rc.bluetooth start &
 
 # Start wicd:
-[ -x /etc/rc.d/rc.wicd ] && sh /etc/rc.d/rc.wicd start &
+#[ -x /etc/rc.d/rc.wicd ] && sh /etc/rc.d/rc.wicd start &
 
 # Start dnsmasq, a simple DHCP/DNS server:
 #[ -x /etc/rc.d/rc.dnsmasq ] && sh /etc/rc.d/rc.dnsmasq start &
