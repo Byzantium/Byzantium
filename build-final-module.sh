@@ -110,7 +110,7 @@ cp 11-media-by-label-auto-mount.rules ${FAKE_ROOT}/etc/udev/rules.d
 
 # Could these be placed in a module?
 echo "Installing custom initscripts."
-cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.inet1 ${FAKE_ROOT}/etc/rc.d
+cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.inet1 rc.M ${FAKE_ROOT}/etc/rc.d
 chmod +x ${FAKE_ROOT}/etc/rc.d/rc.*
 
 # Set up mDNS service descriptor repository.
