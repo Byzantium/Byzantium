@@ -127,8 +127,8 @@ if __name__ == '__main__':
     sys.exit(1)
 
   # Print something for anyone watching a TTY.  All 'A' records this daemon
-  # serves up have a TTL of 60 seconds.
-  print 'miniDNS :: * 60 IN A %s\n' % ip
+  # serves up have a TTL of 15 seconds.
+  print 'miniDNS :: * 15 IN A %s\n' % ip
 
   # The do-stuff loop.
   try:
