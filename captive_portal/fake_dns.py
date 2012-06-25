@@ -44,7 +44,10 @@ class DNSQuery:
       packet+='\xc0\x0c'
 
       # Response type, TTL of the reply, and length of data in reply.
-      packet+='\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'
+      packet+='\x00\x01'  # TYPE: A record
+      packet+='\x00\x01'  # CLASS: IN (Internet)
+      packet+='\x00\x00\x00\x0f'  # TTL: 15 sec
+      packet+='\x00\x04'  # Length of data: 4 bytes
 
       # The IP address of the server the DNS is running on.
       packet+=str.join('',map(lambda x: chr(int(x)), ip.split('.')))
