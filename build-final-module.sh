@@ -98,7 +98,9 @@ cp -rv $BUILD_HOME/Byzantium/control_panel/var/db/controlpanel/* ${FAKE_ROOT}/va
 # Create the xdg directory tree and populate it with our wicd disabler.
 echo "Creating desktop environment autostart directories."
 mkdir -p ${FAKE_ROOT}/etc/xdg/autostart/
+mkdir -p ${FAKE_ROOT}/usr/share/autostart/
 cp -rv $BUILD_HOME/porteus/etc/xdg/autostart/wicd-tray.desktop ${FAKE_ROOT}/etc/xdg/autostart
+cp -rv $BUILD_HOME/porteus/usr/share/autostart/wicd-tray.desktop ${FAKE_ROOT}/usr/share/autostart
 
 # Install our custom udev automount rules.
 echo "Installing udev media-by-label rule patch."
