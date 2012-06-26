@@ -1,0 +1,17 @@
+[Desktop Entry]
+Categories=Application;Network;
+Exec=wicd-gtk
+GenericName=Network Manager
+Icon=wicd-gtk
+Icon[en_US]=wicd-gtk
+Name=Wicd Network Manager Tray
+Name[en_US]=Wicd Network Manager Tray
+Comment=Display network connection status in the system tray
+Comment[en_US]=Display network connection status in the system tray
+Terminal=false
+Type=Application
+Version=1.0
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after=panel
+OnlyShowIn=LXDE
+Hidden=true
