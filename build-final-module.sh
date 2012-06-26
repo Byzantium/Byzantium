@@ -95,13 +95,6 @@ echo "Installing control panel's SQLite databases and schemas."
 mkdir -p ${FAKE_ROOT}/var/db/controlpanel
 cp -rv $BUILD_HOME/Byzantium/control_panel/var/db/controlpanel/* ${FAKE_ROOT}/var/db/controlpanel
 
-# We need to upgrade the version of Wicd to fix a bug, this is our own fix.
-# Note that when Poteus Linux updates to the latest stable version of wicd
-# this will become obsolete.
-echo "Installing wicd-cli patch."
-mkdir -p ${FAKE_ROOT}/usr/share/wicd/cli
-cp $BUILD_HOME/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py ${FAKE_ROOT}/usr/share/wicd/cli/
-
 # Install our custom udev automount rules.
 echo "Installing udev media-by-label rule patch."
 cd $BUILD_HOME/Byzantium/scripts
