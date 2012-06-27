@@ -49,6 +49,7 @@ sudo-1.7.4p6-i486-1.xzm
 t1lib-5.1.2-i486-2.xzm
 truecrypt-7.1-i486-1_SBo.xzm
 vim-7.3.154-i486-1.xzm
+wicd-1.7.0_whiteout-i486-2.xzm
 wxGTK-2.8.12-i486-2_SBo.xzm
 zope.interface-3.7.0-i486-1_SBo.xzm
 zzz-htdocs.xzm
