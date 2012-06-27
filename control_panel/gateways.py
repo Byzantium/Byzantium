@@ -200,7 +200,7 @@ class Gateways(object):
                     headers = procnetwireless.readline()
                     headers = procnetwireless.readline()
                     for line in procnetwireless:
-                        if new_interface in line:
+                        if interface in line:
                             if debug:
                                 print "DEBUG: Goes in wireless table."
                             table = 'wireless'
