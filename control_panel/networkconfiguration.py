@@ -675,18 +675,15 @@ class NetworkConfiguration(object):
                 if debug:
                     print "DEBUG: Unable to find PID file %s of captive portal daemon." % captive_portal_pidfile
 
-            # Try to open the PID file.  Add an error catcher here because
-            # there are circmstances under which the captive portal daemon
-            # could die between the time the PID file is written and the
-            # control panel tries to open it.
+            # Try to open the PID file.
             if debug:
                 print "DEBUG: Trying to open %s." % captive_portal_pidfile
-            pidfile = open(str(captive_portal_pidfile), 'r')
             portal_pid = 0
-            if pidfile:
+            try:
+                pidfile = open(str(captive_portal_pidfile), 'r')
                 portal_pid = pidfile.readline()
                 pidfile.close()
-            else:
+            except:
                 error = error + "<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n"
 
             if debug:
