@@ -33,7 +33,7 @@ user_pref("browser.sessionstore.resume_session_once", true);
 user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("browser.startup.homepage", "http://localhost:8080/");
 user_pref("browser.startup.homepage_override.buildID", "20110501235237");
-user_pref("browser.startup.homepage_override.mstone", "rv:2.0.1");
+user_pref("browser.startup.homepage_override.mstone", "ignore");
 user_pref("browser.urlbar.autocomplete.enabled", false);
 user_pref("extensions.blocklist.pingCountVersion", -1);
 user_pref("extensions.bootstrappedAddons", "{}");
