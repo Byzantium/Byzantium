@@ -345,7 +345,7 @@ class Gateways(object):
 
         # If we have to configure layers 1 and 2, then it's a safe bet that we
         # should use DHCP to set up layer 3.
-        command = ['/sbin/dhcpcd', interface]
+        command = ['/sbin/dhcpcd', '-w', interface]
         if debug:
             print "DEBUG: Preparing to configure interface %s." % interface
         if test:
