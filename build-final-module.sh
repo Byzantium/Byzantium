@@ -116,6 +116,9 @@ chmod +x ${FAKE_ROOT}/etc/rc.d/rc.*
 # Set up mDNS service descriptor repository.
 mkdir -p ${FAKE_ROOT}/etc/avahi/inactive
 
+# Configure libnss to reference mDNS for resolution in addition to DNS.
+cp ${FAKE_ROOT}/etc/nsswitch.conf-mdns ${FAKE_ROOT}/etc/nsswitch.conf
+
 # This stuff probably belongs in the controlpanel package.
 echo "Installing rrdtool shell script."
 cp traffic_stats.sh ${FAKE_ROOT}/usr/local/bin
