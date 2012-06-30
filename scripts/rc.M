@@ -97,7 +97,7 @@ fi
 #fi
 
 # Start netatalk. (a file/print server for Macs using Appletalk)
-[ -x /etc/rc.d/rc.atalk ] && sh /etc/rc.d/rc.atalk &
+#[ -x /etc/rc.d/rc.atalk ] && sh /etc/rc.d/rc.atalk &
 
 # Start smartd, which monitors the status of S.M.A.R.T. compatible
 # hard drives and reports any problems.  Note some devices (which aren't
@@ -160,7 +160,7 @@ fi
 
 # Start the SASL authentication server.  This provides SASL
 # authentication services for sendmail:
-[ -x /etc/rc.d/rc.saslauthd ] && sh /etc/rc.d/rc.saslauthd start &
+#[ -x /etc/rc.d/rc.saslauthd ] && sh /etc/rc.d/rc.saslauthd start &
 
 # Start the sendmail daemon:
 #[ -x /etc/rc.d/rc.sendmail ] && sh /etc/rc.d/rc.sendmail start &
@@ -181,11 +181,11 @@ fi
 #[ -x /etc/rc.d/rc.httpd ] && sh /etc/rc.d/rc.httpd start &
 
 # Start OpenLDAP:
-[ -x /etc/rc.d/rc.openldap ] && sh /etc/rc.d/rc.openldap start &
+#[ -x /etc/rc.d/rc.openldap ] && sh /etc/rc.d/rc.openldap start &
 
 # Start Samba (a file/print server for Win95/NT machines).
 # Samba can be started in /etc/inetd.conf instead.
-[ -x /etc/rc.d/rc.samba ] && sh /etc/rc.d/rc.samba start &
+#[ -x /etc/rc.d/rc.samba ] && sh /etc/rc.d/rc.samba start &
 
 # Start the GPM mouse server:
 #[ -x /etc/rc.d/rc.gpm ] && sh /etc/rc.d/rc.gpm start &
