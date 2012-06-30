@@ -126,7 +126,7 @@ cp traffic_stats.sh ${FAKE_ROOT}/usr/local/bin
 echo "Installing the control panel."
 cd ../control_panel
 mkdir -p ${FAKE_ROOT}/usr/local/sbin
-cp *.py ${FAKE_ROOT}/usr/local/sbin
+cp *.py *.sh ${FAKE_ROOT}/usr/local/sbin
 cp etc/rc.d/rc.byzantium ${FAKE_ROOT}/etc/rc.d/
 
 echo "Installing OpenSSL configuration file."
