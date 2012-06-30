@@ -350,7 +350,7 @@ class NetworkConfiguration(object):
             # Pick a random IP address in 192.168/16.
             addr = '192.168.'
             addr = addr + str(random.randint(0, 254)) + '.'
-            addr = addr + str(random.randint(0, 254))
+            addr = addr + str(random.randint(1, 254))
 
             # Run arping to see if any node in range has claimed that IP address
             # and capture the return code.
