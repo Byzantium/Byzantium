@@ -17,7 +17,7 @@ AVAHI=/usr/sbin/avahi-daemon
 
 # Make sure that at least one command line argument has been passed to this
 # script.  ABEND if not.
-if [ $# -lt 2 ]; then
+if [ $# -lt 1 ]; then
     echo "ERROR: Insufficient command line arguments given to $0."
     echo "USAGE: $0 [interface name]"
     exit 1

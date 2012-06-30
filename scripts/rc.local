@@ -29,6 +29,7 @@ chmod +x /etc/rc.d/rc.sshd
 # Start the Avahi daemons.
 /etc/rc.d/rc.avahidaemon start
 /etc/rc.d/rc.avahidnsconfd start
+/etc/rc.d/rc.avahiclient start
 
 # Start the control panel.
 /etc/rc.d/rc.byzantium start
