@@ -11,7 +11,7 @@
 # successful, non-zero if not.
 
 # Set up global variables.
-DHCPCD=/usr/sbin/dhcpcd
+DHCPCD=/sbin/dhcpcd
 IPTABLES=/usr/sbin/iptables
 AVAHI=/usr/sbin/avahi-daemon
 
