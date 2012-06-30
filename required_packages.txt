@@ -21,7 +21,15 @@ git-1.7.4.4-i486-1.xzm
 httpd-2.2.22-i486-1_slack13.37.xzm
 icu4c-4.6.1-i486-1_SBo.xzm
 iproute2-2.6.37-i486-1_slack13.37.xzm
+ipw2100-fw-1.3-fw-1.xzm
+ipw2200-fw-3.1-fw-1.xzm
 irssi-0.8.15-i486-3.xzm
+iwlwifi-100-ucode-39.31.5.1-fw-1.xzm
+iwlwifi-1000-ucode-128.50.3.1-fw-1.xzm
+iwlwifi-3945-ucode-15.32.2.9-fw-1.xzm
+iwlwifi-4965-ucode-228.61.2.24-fw-1.xzm
+iwlwifi-5000-ucode-8.83.5.1-fw-1.xzm
+iwlwifi-5150-ucode-8.24.2.2-fw-1.xzm
 iwlwifi-6000-ucode-9.221.4.1-fw-1.xzm
 jdk-6u25-i586-1.xzm
 libarchive-2.8.4-i486-1.xzm
@@ -44,6 +52,10 @@ pysetuptools-0.6c11-i486-1_SBo.xzm
 python-twisted-11.0.0-i486-1_SBo.xzm
 qwebirc.xzm
 rrdtool-1.4.5-i486-1_dw.xzm
+rt2860-firmware-26-fw-1.xzm
+rt2870-firmware-22-fw-1.xzm
+rt61-firmware-1.2-fw-1.xzm
+rt71w-firmware-1.8-fw-1.xzm
 sqlitebrowser-2.0b1-i486-2_dw.xzm
 subversion-1.6.16-i486-1.xzm
 sudo-1.7.4p6-i486-1.xzm
@@ -52,4 +64,5 @@ truecrypt-7.1-i486-1_SBo.xzm
 vim-7.3.154-i486-1.xzm
 wxGTK-2.8.12-i486-2_SBo.xzm
 zope.interface-3.7.0-i486-1_SBo.xzm
+zd1211-firmware-1.4-fw-1.xzm
 zzz-htdocs.xzm
