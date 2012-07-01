@@ -1,0 +1,446 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta name="robots" content="index,follow">
+
+<title>carl9170 - Linux Wireless</title>
+<script type="text/javascript" src="/moin/common/js/common.js"></script>
+
+<script type="text/javascript">
+<!--
+var search_hint = "Search";
+//-->
+</script>
+
+
+<link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="/moin/linuxwireless/css/common.css">
+<link rel="stylesheet" type="text/css" charset="utf-8" media="screen" href="/moin/linuxwireless/css/screen.css">
+<link rel="stylesheet" type="text/css" charset="utf-8" media="print" href="/moin/linuxwireless/css/print.css">
+<link rel="stylesheet" type="text/css" charset="utf-8" media="projection" href="/moin/linuxwireless/css/projection.css">
+
+<!-- css only for MS IE6/IE7 browsers -->
+<!--[if lt IE 8]>
+   <link rel="stylesheet" type="text/css" charset="utf-8" media="all" href="/moin/linuxwireless/css/msie.css">
+<![endif]-->
+
+
+
+
+<link rel="shortcut icon" href="/favicon.png" type="image/png">
+
+<link rel="Start" href="/welcome">
+<link rel="Alternate" title="Wiki Markup" href="/en/users/Drivers/carl9170?action=raw">
+<link rel="Alternate" media="print" title="Print View" href="/en/users/Drivers/carl9170?action=print">
+<link rel="Up" href="/en/users/Drivers">
+<link rel="Appendix" title="carl9170-1.fw-1.9.4" href="/en/users/Drivers/carl9170?action=AttachFile&amp;do=view&amp;target=carl9170-1.fw-1.9.4">
+<link rel="Search" href="/FindPage">
+<link rel="Index" href="/TitleIndex">
+<link rel="Glossary" href="/WordIndex">
+<link rel="Help" href="/HelpOnFormatting">
+</head>
+
+<body  lang="en" dir="ltr">
+<div id="all">
+<div id="nbtm0" class="navibtm" style="left: 243px;"><a href="/en/users">users</a></div><div id="ntop0" class="navitop" style="left: 243px;"></div><div class="navitxtbg" style="left: 243px;"></div><div id="ntxt0" class="navitxt" style="left: 243px;"><ul id="ni0" class="navi_items"><li><a href="/en/users/Support">Support</a></li><li><a href="/en/users/Drivers">Drivers</a></li><li><a href="/en/users/Devices">Devices</a></li><li><a href="/en/users/Download">Download</a></li><li><a href="/en/users/Documentation">Documentation</a></li></ul></div><div id="nbtm1" class="navibtm" style="left: 391px;"><a href="/en/vendors">vendors</a></div><div id="nbtm2" class="navibtm" style="left: 539px;"><a href="/en/developers">developers</a></div>
+<div id="header"><a id="headerlink" href="/"></a></div>
+<div id="search"><form method="get" action="/search"><input type="hidden" name="action" value="fullsearch"><input type="hidden" name="titlesearch" value="0"><input type="text" name="value" size="20" placeholder="search"></form></div>
+<div id="page" lang="en" dir="ltr">
+<div id="pagecontent">
+<div dir="ltr" id="content" lang="en"><span class="anchor" id="top"></span>
+<span class="anchor" id="line-1"></span><p class="line862">Go back &ndash;&gt; <a href="/en/users/Drivers/Atheros">Atheros Linux wireless drivers</a> <span class="anchor" id="line-2"></span><span class="anchor" id="line-3"></span><p class="line867">
+<h1 id="carl9170">carl9170</h1>
+<span class="anchor" id="line-4"></span><span class="anchor" id="line-5"></span><p class="line874">carl9170 is the 802.11 draft-n USB driver with GPLv2 firmware for Atheros USB AR9170 devices. <span class="anchor" id="line-6"></span><span class="anchor" id="line-7"></span><p class="line867"><div class="table-of-contents"><p class="table-of-contents-heading">Contents<ol><li>
+<a href="#carl9170">carl9170</a></li><li>
+<a href="#caveats">caveats</a><ol><li>
+<a href="#Firmware">Firmware</a></li><li>
+<a href="#Recovery">Recovery</a></li><li>
+<a href="#Multiple_Interfaces">Multiple Interfaces</a></li><li>
+<a href="#A802.11n_Compatibility">802.11n Compatibility</a></li></ol></li><li>
+<a href="#available_devices">available devices</a></li><li>
+<a href="#features">features</a><ol><li>
+<a href="#working">working</a></li><li>
+<a href="#not_working_yet">not working yet</a></li><li>
+<a href="#not_supported">not supported</a></li></ol></li><li>
+<a href="#Code">Code</a></li><li>
+<a href="#Firmware-1">Firmware</a><ol><li>
+<a href="#Firmware_source_code">Firmware source code</a></li><li>
+<a href="#Firmware_binary">Firmware binary</a></li></ol></li><li>
+<a href="#FAQ">FAQ</a><ol><li>
+<a href="#General_FAQ">General FAQ</a></li><li>
+<a href="#Recovery_FAQ">Recovery FAQ</a></li><li>
+<a href="#Multiple_Interfaces_FAQ">Multiple Interfaces FAQ</a></li></ol></li><li>
+<a href="#History">History</a><ol><li>
+<a href="#The_Otus_driver">The Otus driver</a></li><li>
+<a href="#ar9170usb_driver">ar9170usb driver</a></li><li>
+<a href="#carl9170-1">carl9170</a></li></ol></li><li>
+<a href="#Contact">Contact</a></li></ol></div> <span class="anchor" id="line-8"></span><span class="anchor" id="line-9"></span><p class="line867">
+<h1 id="caveats">caveats</h1>
+<span class="anchor" id="line-10"></span><span class="anchor" id="line-11"></span><p class="line867">
+<h2 id="Firmware">Firmware</h2>
+<span class="anchor" id="line-12"></span><p class="line862">Before you can use the driver, you have to <a href="/en/users/Drivers/carl9170#Firmware-1">get the the right firmware</a>. <span class="anchor" id="line-13"></span><span class="anchor" id="line-14"></span><p class="line867">
+<h2 id="Recovery">Recovery</h2>
+<span class="anchor" id="line-15"></span><span class="anchor" id="line-16"></span><p class="line874">Users should be aware that these devices might go mad from time to time. <span class="anchor" id="line-17"></span>Because these BUGs seem to occur too randomly to be identified, but happen <span class="anchor" id="line-18"></span>often enough to be really annoying, the firmware and driver come with some <span class="anchor" id="line-19"></span>convenient features to keep the overall downtime at a minimum and without <span class="anchor" id="line-20"></span>requiring any user intervention. But as mention before there is a caveat: <span class="anchor" id="line-21"></span>The user has to setup everything properly! <span class="anchor" id="line-22"></span><span class="anchor" id="line-23"></span><p class="line874">In general: The userspace has to be able to restore connectivity on its <span class="anchor" id="line-24"></span>own as soon as the device reappears on the USB-Hub. <span class="anchor" id="line-25"></span><span class="anchor" id="line-26"></span><p class="line862">See <a href="/en/users/Drivers/carl9170#Recovery_FAQ">FAQ</a> for more details. <span class="anchor" id="line-27"></span><span class="anchor" id="line-28"></span><p class="line867">
+<h2 id="Multiple_Interfaces">Multiple Interfaces</h2>
+<span class="anchor" id="line-29"></span><span class="anchor" id="line-30"></span><p class="line874">While the driver supports multiple virtual interfaces, in different combinations: <span class="anchor" id="line-31"></span><ul><li>just stations <span class="anchor" id="line-32"></span></li><li>just access points <span class="anchor" id="line-33"></span></li><li>access points (main interface) and stations (all slave) <span class="anchor" id="line-34"></span><span class="anchor" id="line-35"></span></li></ul><p class="line874">there are some important caveats: <span class="anchor" id="line-36"></span>See <a href="/en/users/Drivers/carl9170#Multiple_Interfaces_FAQ">FAQ</a> for more details. <span class="anchor" id="line-37"></span><span class="anchor" id="line-38"></span><p class="line867">
+<h2 id="A802.11n_Compatibility">802.11n Compatibility</h2>
+<span class="anchor" id="line-39"></span><span class="anchor" id="line-40"></span><p class="line874">It's worth mentioning that the chip was designed, produced and sold in the early 802.11n-draft period. <span class="anchor" id="line-41"></span>Compatibility will always be an issue. <span class="anchor" id="line-42"></span><span class="anchor" id="line-43"></span><p class="line862">A <a class="http" href="http://git.kernel.org/?p=linux/kernel/git/chr/carl9170fw.git;a=commitdiff;h=39be7dc384e0dd45dc36b4b517fd9fae874b06f0">known problem</a> is that hardware can not support <span class="anchor" id="line-44"></span><a class="http" href="http://en.wikipedia.org/wiki/IEEE_802.11n-2009#Frame_aggregation">frame aggregation</a> and <span class="anchor" id="line-45"></span><a class="http" href="http://en.wikipedia.org/wiki/Wireless_Multimedia_Extensions">QoS</a> at the same time, meaning the device is not suitable for any serious 802.11n setup. <span class="anchor" id="line-46"></span>Also the hardware crypto has some serious trouble with encrypting/deciphering at high throughput, therefore if possible use 'nohwcrypt=1' as a workaround. <span class="anchor" id="line-47"></span><span class="anchor" id="line-48"></span><div><table><tbody><tr>  <td><p class="line862">Hardware</td>
+  <td colspan="2" style="text-align: center"><p class="line862">Problem</td>
+  <td colspan="2" style="text-align: center"><p class="line862">Solution?</td>
+</tr>
+<tr>  <td><span class="anchor" id="line-49"></span><p class="line891"><strong>BCM4313</strong></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em>Hardware incompatibility</em></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em>replace hardware</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-50"></span><p class="line891"><strong>Any Intel N Wifi Link</strong></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em>Aggregation stalls</em></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em>driver workaround</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-51"></span><p class="line891"><strong>RT28xx/RT3xxx</strong></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em>Random disconnects</em></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em>?</em></td>
+</tr>
+</tbody></table></div><span class="anchor" id="line-52"></span><span class="anchor" id="line-53"></span><p class="line862">See <a href="/en/users/Drivers/carl9170#Contact">Contact</a>, if you want to report issues with specific setups. <span class="anchor" id="line-54"></span><span class="anchor" id="line-55"></span><p class="line867">
+<h1 id="available_devices">available devices</h1>
+<span class="anchor" id="line-56"></span><p class="line867"><div dir="ltr" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.content" lang="en"><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.top"></span>
+<span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-1"></span><p class="line867"><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-2"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-3"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-4"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-5"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-6"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-7"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-8"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-9"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-10"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-11"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-12"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-13"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-14"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-15"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-16"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-17"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-18"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-19"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-20"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-21"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-22"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-23"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-24"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-25"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-26"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-27"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-28"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-29"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-30"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-31"></span><div class="devtable"><form action="/en/users/Drivers/carl9170" method="GET" name="en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.form"><div><input type="submit" value="filter" name="en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.submit"><div><table id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.table"><tbody><tr>  <td class="hcolumn0"><strong>Vendor</strong><br>
+<select name="en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.filter0" onchange="dbw_update_search('en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.');"><option value="[all]">[all]</option>
+<option value="3Com">3Com</option>
+<option value="AVM">AVM</option>
+<option value="Actiontec">Actiontec</option>
+<option value="Airlive">Airlive</option>
+<option value="Arcadyan">Arcadyan</option>
+<option value="Atheros">Atheros</option>
+<option value="Cace">Cace</option>
+<option value="D-Link">D-Link</option>
+<option value="H3C">H3C</option>
+<option value="IO-Data">IO-Data</option>
+<option value="NEC">NEC</option>
+<option value="Netgear">Netgear</option>
+<option value="Planex">Planex</option>
+<option value="Proxim">Proxim</option>
+<option value="Sphairon">Sphairon</option>
+<option value="TP-LINK">TP-LINK</option>
+<option value="WNC">WNC</option>
+<option value="Z-Com">Z-Com</option>
+<option value="Zydas">Zydas</option>
+<option value="Zyxel">Zyxel</option></select></td>
+  <td class="hcolumn1"><strong>Product</strong></td>
+  <td class="hcolumn2"><strong>USB Vendor</strong><br>
+<select name="en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.filter2" onchange="dbw_update_search('en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.');"><option value="[all]">[all]</option>
+<option value="0x0409">0x0409</option>
+<option value="0x04bb">0x04bb</option>
+<option value="0x057c">0x057c</option>
+<option value="0x0586">0x0586</option>
+<option value="0x07d1">0x07d1</option>
+<option value="0x083a">0x083a</option>
+<option value="0x0846">0x0846</option>
+<option value="0x0ace">0x0ace</option>
+<option value="0x0cde">0x0cde</option>
+<option value="0x0cf3">0x0cf3</option>
+<option value="0x1435">0x1435</option>
+<option value="0x1668">0x1668</option>
+<option value="0x1b75">0x1b75</option>
+<option value="0x2019">0x2019</option>
+<option value="0xcace">0xcace</option></select></td>
+  <td class="hcolumn3"><strong>USB Product</strong><br>
+<select name="en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.filter3" onchange="dbw_update_search('en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.');"><option value="[all]">[all]</option>
+<option value="0x0023">0x0023</option>
+<option value="0x0026">0x0026</option>
+<option value="0x0027">0x0027</option>
+<option value="0x0249">0x0249</option>
+<option value="0x02b4">0x02b4</option>
+<option value="0x0300">0x0300</option>
+<option value="0x0326">0x0326</option>
+<option value="0x0804">0x0804</option>
+<option value="0x093f">0x093f</option>
+<option value="0x1001">0x1001</option>
+<option value="0x1002">0x1002</option>
+<option value="0x1010">0x1010</option>
+<option value="0x1011">0x1011</option>
+<option value="0x1200">0x1200</option>
+<option value="0x1221">0x1221</option>
+<option value="0x3417">0x3417</option>
+<option value="0x3a09">0x3a09</option>
+<option value="0x3a0f">0x3a0f</option>
+<option value="0x3c10">0x3c10</option>
+<option value="0x5304">0x5304</option>
+<option value="0x8401">0x8401</option>
+<option value="0x8402">0x8402</option>
+<option value="0x9001">0x9001</option>
+<option value="0x9010">0x9010</option>
+<option value="0x9040">0x9040</option>
+<option value="0x9170">0x9170</option>
+<option value="0xf522">0xf522</option></select></td>
+  <td class="hcolumn4"><strong>MaxPower</strong><br>
+<select name="en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.filter4" onchange="dbw_update_search('en.2Fusers.2FDrivers.2Far9170.2Fdevices.dbw.ar9170.');"><option value="[all]">[all]</option>
+<option value="500mA">500mA</option></select></td>
+</tr>
+<tr>  <td abbr="3Com" class="column0">3Com</td>
+  <td abbr="Dual Band 802.11n USB" class="column1">Dual Band 802.11n USB</td>
+  <td abbr="0x0cf3" class="column2">0x0cf3</td>
+  <td abbr="0x1010" class="column3">0x1010</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Actiontec" class="column0">Actiontec</td>
+  <td abbr="802AIN Wireless N" class="column1">802AIN Wireless N</td>
+  <td abbr="0x1668" class="column2">0x1668</td>
+  <td abbr="0x1200" class="column3">0x1200</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Airlive" class="column0">Airlive</td>
+  <td abbr="X.USB 11a/b/g/n" class="column1">X.USB 11a/b/g/n</td>
+  <td abbr="0x1b75" class="column2">0x1b75</td>
+  <td abbr="0x9170" class="column3">0x9170</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Arcadyan" class="column0">Arcadyan</td>
+  <td abbr="WN7512" class="column1">WN7512</td>
+  <td abbr="0x083a" class="column2">0x083a</td>
+  <td abbr="0xf522" class="column3">0xf522</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Atheros" class="column0">Atheros</td>
+  <td abbr="9170" class="column1">9170</td>
+  <td abbr="0x0cf3" class="column2">0x0cf3</td>
+  <td abbr="0x9170" class="column3">0x9170</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Atheros" class="column0">Atheros</td>
+  <td abbr="TG121N" class="column1">TG121N</td>
+  <td abbr="0x0cf3" class="column2">0x0cf3</td>
+  <td abbr="0x1001" class="column3">0x1001</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="AVM" class="column0">AVM</td>
+  <td abbr="FRITZ!WLAN USB Stick N" class="column1">FRITZ!WLAN USB Stick N</td>
+  <td abbr="0x057c" class="column2">0x057c</td>
+  <td abbr="0x8401" class="column3">0x8401</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="AVM" class="column0">AVM</td>
+  <td abbr="FRITZ!WLAN USB Stick N 2.4" class="column1">FRITZ!WLAN USB Stick N 2.4</td>
+  <td abbr="0x057c" class="column2">0x057c</td>
+  <td abbr="0x8402" class="column3">0x8402</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Cace" class="column0">Cace</td>
+  <td abbr="Airpcap NX" class="column1">Airpcap NX</td>
+  <td abbr="0xcace" class="column2">0xcace</td>
+  <td abbr="0x0300" class="column3">0x0300</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="D-Link" class="column0">D-Link</td>
+  <td abbr="DWA-130 D" class="column1">DWA-130 D</td>
+  <td abbr="0x07d1" class="column2">0x07d1</td>
+  <td abbr="0x3a0f" class="column3">0x3a0f</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="D-Link" class="column0">D-Link</td>
+  <td abbr="DWA-160 A1" class="column1">DWA-160 A1</td>
+  <td abbr="0x07d1" class="column2">0x07d1</td>
+  <td abbr="0x3c10" class="column3">0x3c10</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="D-Link" class="column0">D-Link</td>
+  <td abbr="DWA-160 A2" class="column1">DWA-160 A2</td>
+  <td abbr="0x07d1" class="column2">0x07d1</td>
+  <td abbr="0x3a09" class="column3">0x3a09</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="H3C" class="column0">H3C</td>
+  <td abbr="Dual Band 802.11n USB" class="column1">Dual Band 802.11n USB</td>
+  <td abbr="0x0cf3" class="column2">0x0cf3</td>
+  <td abbr="0x1011" class="column3">0x1011</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="IO-Data" class="column0">IO-Data</td>
+  <td abbr="WNGDNUS2" class="column1">WNGDNUS2</td>
+  <td abbr="0x04bb" class="column2">0x04bb</td>
+  <td abbr="0x093f" class="column3">0x093f</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="NEC" class="column0">NEC</td>
+  <td abbr="WL300NU-AG" class="column1">WL300NU-AG</td>
+  <td abbr="0x0409" class="column2">0x0409</td>
+  <td abbr="0x02b4" class="column3">0x02b4</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="NEC" class="column0">NEC</td>
+  <td abbr="WL300NU-G" class="column1">WL300NU-G</td>
+  <td abbr="0x0409" class="column2">0x0409</td>
+  <td abbr="0x0249" class="column3">0x0249</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Netgear" class="column0">Netgear</td>
+  <td abbr="WN111 v2" class="column1">WN111 v2</td>
+  <td abbr="0x0846" class="column2">0x0846</td>
+  <td abbr="0x9001" class="column3">0x9001</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Netgear" class="column0">Netgear</td>
+  <td abbr="WNA1000" class="column1">WNA1000</td>
+  <td abbr="0x0846" class="column2">0x0846</td>
+  <td abbr="0x9040" class="column3">0x9040</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Netgear" class="column0">Netgear</td>
+  <td abbr="WNDA3100 (v1)" class="column1">WNDA3100 (v1)</td>
+  <td abbr="0x0846" class="column2">0x0846</td>
+  <td abbr="0x9010" class="column3">0x9010</td>
+  <td abbr="500mA" class="column4">500mA</td>
+</tr>
+<tr>  <td abbr="Planex" class="column0">Planex</td>
+  <td abbr="GWUS300" class="column1">GWUS300</td>
+  <td abbr="0x2019" class="column2">0x2019</td>
+  <td abbr="0x5304" class="column3">0x5304</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Proxim" class="column0">Proxim</td>
+  <td abbr="ORiNOCO 802.11n USB" class="column1">ORiNOCO 802.11n USB</td>
+  <td abbr="0x1435" class="column2">0x1435</td>
+  <td abbr="0x0804" class="column3">0x0804</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Sphairon" class="column0">Sphairon</td>
+  <td abbr="Homelink 1202" class="column1">Homelink 1202</td>
+  <td abbr="0x0cde" class="column2">0x0cde</td>
+  <td abbr="0x0027" class="column3">0x0027</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="TP-LINK" class="column0">TP-LINK</td>
+  <td abbr="TL-WN821N v2" class="column1"><a href="http://www.tp-link.com/en/products/details/?model=TL-WN821N">TL-WN821N v2</a></td>
+  <td abbr="0x0cf3" class="column2">0x0cf3</td>
+  <td abbr="0x1002" class="column3">0x1002</td>
+  <td abbr="500mA" class="column4">500mA</td>
+</tr>
+<tr>  <td abbr="WNC" class="column0">WNC</td>
+  <td abbr="Generic 11n USB Dongle" class="column1">Generic 11n USB Dongle</td>
+  <td abbr="0x1435" class="column2">0x1435</td>
+  <td abbr="0x0326" class="column3">0x0326</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Z-Com" class="column0">Z-Com</td>
+  <td abbr="UB81 BG" class="column1">UB81 BG</td>
+  <td abbr="0x0cde" class="column2">0x0cde</td>
+  <td abbr="0x0023" class="column3">0x0023</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Z-Com" class="column0">Z-Com</td>
+  <td abbr="UB82 ABG" class="column1">UB82 ABG</td>
+  <td abbr="0x0cde" class="column2">0x0cde</td>
+  <td abbr="0x0026" class="column3">0x0026</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Zydas" class="column0">Zydas</td>
+  <td abbr="ZD1221" class="column1">ZD1221</td>
+  <td abbr="0x0ace" class="column2">0x0ace</td>
+  <td abbr="0x1221" class="column3">0x1221</td>
+  <td abbr="" class="column4"></td>
+</tr>
+<tr>  <td abbr="Zyxel" class="column0">Zyxel</td>
+  <td abbr="NWD271N" class="column1">NWD271N</td>
+  <td abbr="0x0586" class="column2">0x0586</td>
+  <td abbr="0x3417" class="column3">0x3417</td>
+  <td abbr="" class="column4"></td>
+</tr>
+</tbody></table></div></div></form></div><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.line-32"></span><span class="anchor" id="en.2Fusers.2FDrivers.2Far9170.2Fdevices.bottom"></span></div> <span class="anchor" id="line-57"></span><span class="anchor" id="line-58"></span><p class="line867">
+<h1 id="features">features</h1>
+<span class="anchor" id="line-59"></span><ul><li>802.11abg/bg + draft-n (depending on hardware) <span class="anchor" id="line-60"></span></li><li>1 or 2 spatial streams for 802.11 draft-n (depending on hardware) <span class="anchor" id="line-61"></span></li><li><p class="line891"><a href="/en/users/Drivers/carl9170#Firmware_source_code">GPLv2 firmware</a> <span class="anchor" id="line-62"></span></li><li>Up to 9 (1 Master, 8 Slave) Interfaces <span class="anchor" id="line-63"></span></li><li>programmable LEDs <span class="anchor" id="line-64"></span></li><li>WPS Button (depending on hardware) <span class="anchor" id="line-65"></span><span class="anchor" id="line-66"></span></li></ul><p class="line867">
+<h2 id="working">working</h2>
+<span class="anchor" id="line-67"></span><ul><li>legacy (802.11abg) access point, ad-hoc operation mode <span class="anchor" id="line-68"></span></li><li>802.11 a/b/g/draft-n station mode, monitor (with injection) <span class="anchor" id="line-69"></span></li><li>cryptographic accelerator when operating as a single station, or single access point. <span class="anchor" id="line-70"></span></li><li>Multiple interfaces <span class="anchor" id="line-71"></span></li><li><p class="line862">full support for MRR (minstrel &amp; minstrel_ht) rate control algorithms <span class="anchor" id="line-72"></span></li><li>Input device for WPS button event (depending on hardware) <span class="anchor" id="line-73"></span></li><li>automatic recovery from several fatal events <span class="anchor" id="line-74"></span></li><li>Regulatory domain restrictions <span class="anchor" id="line-75"></span></li><li>channel utilization report <span class="anchor" id="line-76"></span><span class="anchor" id="line-77"></span></li></ul><p class="line867">
+<h2 id="not_working_yet">not working yet</h2>
+<span class="anchor" id="line-78"></span><ul><li>Power Save Mode, It's implemented but buggy <span class="anchor" id="line-79"></span></li><li>Wake-on-LAN support (can resume your system from suspend-to-ram) <span class="anchor" id="line-80"></span></li><li>SMPS <span class="anchor" id="line-81"></span></li><li>long-distance links <span class="anchor" id="line-82"></span></li><li>Hardware WMM <span class="anchor" id="line-83"></span></li><li>RIFS <span class="anchor" id="line-84"></span><span class="anchor" id="line-85"></span></li></ul><p class="line867">
+<h2 id="not_supported">not supported</h2>
+<span class="anchor" id="line-86"></span><ul><li>Accelerator for CCX (Cisco) <span class="anchor" id="line-87"></span></li><li>real 802.11n AP <span class="anchor" id="line-88"></span></li><li>Radar detection <span class="anchor" id="line-89"></span><span class="anchor" id="line-90"></span></li></ul><p class="line867">
+<h1 id="Code">Code</h1>
+<span class="anchor" id="line-91"></span><span class="anchor" id="line-92"></span><p class="line862">The latest version is available from <a href="/en/developers/process#wireless-testing.git">wireless-testing.git</a>. <span class="anchor" id="line-93"></span><span class="anchor" id="line-94"></span><p class="line867">
+<h1 id="Firmware-1">Firmware</h1>
+<span class="anchor" id="line-95"></span><span class="anchor" id="line-96"></span><p class="line867">
+<h2 id="Firmware_source_code">Firmware source code</h2>
+<span class="anchor" id="line-97"></span><span class="anchor" id="line-98"></span><p class="line862">There is code available, check out the <a href="/en/users/Drivers/carl9170.fw">carl9170.fw</a> page for more details. <span class="anchor" id="line-99"></span><span class="anchor" id="line-100"></span><p class="line867">
+<h2 id="Firmware_binary">Firmware binary</h2>
+<span class="anchor" id="line-101"></span><span class="anchor" id="line-102"></span><p class="line874">You can download the GPLv2 Firmware binary: <span class="anchor" id="line-103"></span><span class="anchor" id="line-104"></span><div><table style="width: 80%"><tbody><tr>  <td colspan="2" style="text-align: center"><p class="line891"><strong>for Kernel</strong></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><strong>Firmware Version</strong></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><strong>Download Link</strong></td>
+</tr>
+<tr>  <td colspan="2" style="text-align: center"><span class="anchor" id="line-105"></span><p class="line891"><em>Linux 2.6.x and 3.0</em></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em>1.9.2</em></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em><a class="attachment" href="/en/users/Drivers/carl9170/fw1.9.2?action=AttachFile&amp;do=get&amp;target=carl9170-1.fw" title="carl9170-1.fw">carl9170-1.fw</a></em></td>
+</tr>
+<tr>  <td colspan="2" style="text-align: center"><span class="anchor" id="line-106"></span><p class="line891"><em>Linux 3.1 and newer</em></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em>1.9.5</em></td>
+  <td colspan="2" style="text-align: center"><p class="line891"><em><a class="attachment" href="/en/users/Drivers/carl9170/fw1.9.5?action=AttachFile&amp;do=get&amp;target=carl9170-1.fw" title="carl9170-1.fw">carl9170-1.fw</a></em></td>
+</tr>
+</tbody></table></div><span class="anchor" id="line-107"></span><span class="anchor" id="line-108"></span><p class="line867">
+<h1 id="FAQ">FAQ</h1>
+<span class="anchor" id="line-109"></span><span class="anchor" id="line-110"></span><p class="line867">
+<h2 id="General_FAQ">General FAQ</h2>
+<span class="anchor" id="line-111"></span><p class="line867"><strong>Can I use newer carl9170 firmwares with any old carl9170 driver, or vice versa?</strong> <span class="anchor" id="line-112"></span><ul><li style="list-style-type:none">Depends on the combination. But the driver will evaluate, if it can safely support the firmware, or reject it. <span class="anchor" id="line-113"></span><span class="anchor" id="line-114"></span></li></ul><p class="line867"><strong>Can I use the new carl9170 firmware with driver like otus or ar9170usb?</strong> <span class="anchor" id="line-115"></span><ul><li style="list-style-type:none">No. <span class="anchor" id="line-116"></span><span class="anchor" id="line-117"></span></li></ul><p class="line867"><strong>Does the driver support the original firmwares?</strong> <span class="anchor" id="line-118"></span><ul><li style="list-style-type:none">No. <span class="anchor" id="line-119"></span><span class="anchor" id="line-120"></span></li></ul><p class="line867"><strong>I don't need HT, how do I disable it?</strong> <span class="anchor" id="line-121"></span><ul><li style="list-style-type:none">Through a module parameter. 'noht=1' <span class="anchor" id="line-122"></span><span class="anchor" id="line-123"></span></li></ul><p class="line867"><strong>How can I disable the hardware crypto?</strong> <span class="anchor" id="line-124"></span><ul><li style="list-style-type:none">Through a module parameter. 'nohwcrypt=1' <span class="anchor" id="line-125"></span><span class="anchor" id="line-126"></span></li></ul><p class="line867">
+<h2 id="Recovery_FAQ">Recovery FAQ</h2>
+<span class="anchor" id="line-127"></span><p class="line867"><strong>I get "FW: ... MAC RESET" kernel messages, what are those?</strong> <span class="anchor" id="line-128"></span><ul><li style="list-style-type:none">It's a tx/rx watchdog message. The hardware refused to process in-/outbound frames and the firmware tried to fix it. <span class="anchor" id="line-129"></span><p class="line862">Even under <em>normal</em> conditions the message can be pop up from time to time. <span class="anchor" id="line-130"></span><span class="anchor" id="line-131"></span></li></ul><p class="line867"><strong>How can I check if the recovery option works correctly?</strong> <span class="anchor" id="line-132"></span><ul><li style="list-style-type:none">You can easily test this by physically unplugging and replugging the device. If your connection is coming back, then you are done! If not, you have to find out how your distribution is doing network link hotplugging. <span class="anchor" id="line-133"></span><span class="anchor" id="line-134"></span><span class="anchor" id="line-135"></span></li></ul><p class="line867"><strong>All of a sudden, the device stops working for a few seconds (but recovers)</strong> <span class="anchor" id="line-136"></span><ul><li style="list-style-type:none"><p class="line862">You should check if the driver has issued a device restart. There should be a "restart device (<em>#number</em>)" message in your system's logs. <span class="anchor" id="line-137"></span><span class="anchor" id="line-138"></span></li></ul><div><table><tbody><tr>  <td><p class="line862"> <em>#</em> </td>
+  <td><p class="line862"> </td>
+  <td><p class="line862"> meaning </td>
+</tr>
+<tr>  <td><span class="anchor" id="line-139"></span><p class="line862">1</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>a fatal firmware error has occurred; the previous "FW" message contains more details</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-140"></span><p class="line862">2</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>excessive flood of (non-fatal) firmware errors; check previous messages.</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-141"></span><p class="line862">3</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>Hardware watchdog triggered, because the firmware has crash silently.</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-142"></span><p class="line862">4</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>stuck tx queues. this is almost always a driver bug, so please file a report.</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-143"></span><p class="line862">5</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>your system wasn't able to process requests fast enough; as a result the device has become unresponsive.</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-144"></span><p class="line862">6</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>command timeout. Either fw/driver bugs or a bad cable/hw malfunction.</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-145"></span><p class="line862">7</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>RF/PHY has become too unstable. Check for radars or microwave ovens?</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-146"></span><p class="line862">8</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>lost command response. related to 6/command timeout</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-147"></span><p class="line862">9</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>unexpected/invalid command response. also related to 6/command timeout</em></td>
+</tr>
+<tr>  <td><span class="anchor" id="line-148"></span><p class="line862">10</td>
+  <td><p class="line862"> </td>
+  <td><p class="line891"><em>firmware restart was requested by user (through DebugFS)</em></td>
+</tr>
+</tbody></table></div><span class="anchor" id="line-149"></span><span class="anchor" id="line-150"></span><p class="line867">
+<h2 id="Multiple_Interfaces_FAQ">Multiple Interfaces FAQ</h2>
+<span class="anchor" id="line-151"></span><p class="line867"><strong>Why can't I enable more than two interfaces?</strong> <span class="anchor" id="line-152"></span><ul><li style="list-style-type:none">In order to overcome this limitation, you'll have to configure the firmware to provide more interface instances. But be advised that additional instances are not as free as you might think and you may lose some tx buffers. <span class="anchor" id="line-153"></span><span class="anchor" id="line-154"></span></li></ul><p class="line867"><strong>I've setup a station and I can add more, so but why can't I have an AP now too?</strong> <span class="anchor" id="line-155"></span><ul><li style="list-style-type:none">Because you have to add and initialize the AP first. (TBE) <span class="anchor" id="line-156"></span><span class="anchor" id="line-157"></span></li></ul><p class="line867"><strong>How come my computer seems to be burdened with encrypting/decrypting?</strong> <span class="anchor" id="line-158"></span><ul><li style="list-style-type:none">This is expected, the hardware has problems selecting the right group-keys when multiple different keys are available. Because of this limitation, the driver disables crypto-offload and your CPU has to do it. <span class="anchor" id="line-159"></span><span class="anchor" id="line-160"></span></li></ul><p class="line867"><strong>All of a sudden the device stopped transmitting?!</strong> <span class="anchor" id="line-161"></span><ul><li style="list-style-type:none">Maybe a different interface is scanning, or operating on a different channel. <span class="anchor" id="line-162"></span>Note: All AR9170 only have ONE PHY, it isn't possible to operate on different channels at the same time! <span class="anchor" id="line-163"></span><span class="anchor" id="line-164"></span></li></ul><p class="line867"><strong>Is it possible to mix Legacy, HT20, HT40+, HT40- channel settings?</strong> <span class="anchor" id="line-165"></span><ul><li style="list-style-type:none">No. <span class="anchor" id="line-166"></span><span class="anchor" id="line-167"></span></li></ul><p class="line867"><strong>Is it possible to have different beacon period?</strong> <span class="anchor" id="line-168"></span><ul><li style="list-style-type:none">No, the beacon period must be the same, but you can have different dtim counts. <span class="anchor" id="line-169"></span><span class="anchor" id="line-170"></span></li></ul><p class="line867">
+<h1 id="History">History</h1>
+<span class="anchor" id="line-171"></span><span class="anchor" id="line-172"></span><p class="line867">
+<h2 id="The_Otus_driver">The Otus driver</h2>
+<span class="anchor" id="line-173"></span><span class="anchor" id="line-174"></span><p class="line874">Atheros merged support for their USB AR9170 2-stream 802.11n chipsets <span class="anchor" id="line-175"></span>into the Linux kernel on the v2.6.29 release through a staging driver <span class="anchor" id="line-176"></span>called <a href="/en/users/Drivers/otus">Otus</a>. The shortcomings for this driver was it required its own <span class="anchor" id="line-177"></span>custom supplicant and obviously the code quality was sub-par. <span class="anchor" id="line-178"></span><span class="anchor" id="line-179"></span><p class="line867">
+<h2 id="ar9170usb_driver">ar9170usb driver</h2>
+<span class="anchor" id="line-180"></span><span class="anchor" id="line-181"></span><p class="line874">Shortly after Otus was submitted into staging Johannes Berg put a lot of effort into rewriting the driver <span class="anchor" id="line-182"></span>for proper upstream inclusion. Christian Lamparter simply took what was already <span class="anchor" id="line-183"></span>there, added a few finishing touches to addressed upstream considerations <span class="anchor" id="line-184"></span>and we got it merged on the 2.6.30 release under the <a href="/en/users/Drivers/ar9170">ar9170usb</a> name. <span class="anchor" id="line-185"></span><span class="anchor" id="line-186"></span><p class="line874">During this time a lot of good work went into stabilizing the driver <span class="anchor" id="line-187"></span>to replace the staging Otus driver from Atheros. The project had <span class="anchor" id="line-188"></span>ambitious hopes to completely supersede the original Atheros staging <span class="anchor" id="line-189"></span>driver: <a href="/en/users/Drivers/otus">Otus</a>. <span class="anchor" id="line-190"></span><span class="anchor" id="line-191"></span><p class="line874">To achieve this all functionality, performance, stability and <span class="anchor" id="line-192"></span>quality must have been equally matched. In the end this proved quite <span class="anchor" id="line-193"></span>challenging even though Atheros was kind enough to provide detailed <span class="anchor" id="line-194"></span>documentations, hardware specifications and most importantly, they <span class="anchor" id="line-195"></span>actually released the <strong>firmware source code</strong> <a href="/en/users/Drivers/ar9170.fw">ar9170.fw</a> under <em>GPLv2</em>! <span class="anchor" id="line-196"></span><span class="anchor" id="line-197"></span><p class="line874">It took months to dig through all the code and during this time the <span class="anchor" id="line-198"></span><a href="/en/users/Drivers/ar9170">ar9170usb</a> driver project lost most of its momentum and changes to <span class="anchor" id="line-199"></span>the driver where limited to simple USB IDs updates, API fix-ups and <span class="anchor" id="line-200"></span>serious crash fixes. <span class="anchor" id="line-201"></span><span class="anchor" id="line-202"></span><p class="line867">
+<h2 id="carl9170-1">carl9170</h2>
+<span class="anchor" id="line-203"></span><span class="anchor" id="line-204"></span><p class="line874">Towards the beginning of 2010 a new shiny driver: <span class="anchor" id="line-205"></span>carl9170usb started brewing with the main goal of replacing the <span class="anchor" id="line-206"></span>existing driver and making use of only open firmware. <span class="anchor" id="line-207"></span><span class="anchor" id="line-208"></span><p class="line874">It took 1 year, 5 months, 9 days since this merge of ar9170usb <span class="anchor" id="line-209"></span>upstream to release carl9170 with upstream inclusion intentions. <span class="anchor" id="line-210"></span><span class="anchor" id="line-211"></span><p class="line874">The carl9170 driver actually ends up not only replacing but <span class="anchor" id="line-212"></span><strong>superseding</strong> the staging Otus driver. <span class="anchor" id="line-213"></span><span class="anchor" id="line-214"></span><p class="line867">
+<h1 id="Contact">Contact</h1>
+<span class="anchor" id="line-215"></span><ul><li><p class="line862">no special mailing list, use the <a href="/en/developers/MailingLists">linux wireless list</a> for development and firmware issues <span class="anchor" id="line-216"></span></li></ul><span class="anchor" id="bottom"></span></div></div>
+<div id="bottombar">
+<ul id="username"><li><a href="/en/users/Drivers/carl9170?action=print" rel="nofollow">Print View</a></li><li><a href="/en/users/Drivers/carl9170?action=login" id="login" rel="nofollow">Login</a></li><li><a href="/about">About this site</a></li></ul>
+</div>
+<div id="pagebottom"></div>
+</div>
+
+</div></body>
+</html>
+
