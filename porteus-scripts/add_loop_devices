@@ -1,0 +1,24 @@
+#!/bin/sh
+# script by fanthom
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter your root password below"
+    su - -c "/opt/porteus-scripts/add_loop_devices"
+    exit
+fi
+
+# Variables
+c='\e[36m'
+r='\e[31m'
+e=`tput sgr0`
+
+[ "$1" = "" ] && echo -e $r"Enter number of loops as an argument. Example: add_loop_devices 15"$e && exit
+
+x=`ls -1 /dev/loop* | tail -n1 | sed 's@/dev/loop@@'`; let y=$x+$1
+while [ $x -le $y ]; do
+    mknod /dev/loop$y b 7 $y 2>/dev/null
+    let y=y-1
+done
+
+echo -e $c"Added $1 free loop devices"$e

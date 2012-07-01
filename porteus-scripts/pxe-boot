@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter root's password below"
+    su - -c "/opt/porteus-scripts/pxe-boot"
+    exit
+fi
+
+# start dnsmasq
+/boot/pxelinux.cfg/start
+
+# start webfs server
+/boot/pxelinux.cfg/web/start

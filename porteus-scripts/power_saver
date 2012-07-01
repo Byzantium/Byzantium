@@ -1,0 +1,44 @@
+#!/bin/bash
+# script by fanthom
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter your root password below"
+    su - -c "/opt/porteus-scripts/power_saver" || sleep 1
+    exit
+fi
+
+status=/var/run/power-saver.pid
+drivers="acpi_cpufreq powernow-k6 powernow-k7 powernow-k8 speedstep-smi speedstep-ich eee900freq gx-suspmod longrun longhaul"
+if [ ! -e $status ]; then
+    speed=`grep "cpu MHz" /proc/cpuinfo | head -n1 | awk '{print $4}'`
+    for x in $drivers; do modprobe $x 2>/dev/null && break; done
+    sleep 2
+    speed1=`grep "cpu MHz" /proc/cpuinfo | head -n1 | awk '{print $4}'`
+    if [ "$speed1" != "$speed" ]; then
+	touch /var/run/power-saver.pid
+	echo "Power-Save mode activated, CPU speed has beed decreased to $speed1 MHz and will be increased only when necessary." | fmt -w 80
+	echo "To bring back full CPU speed just run this script once again."
+	echo "Press enter to exit."
+	read
+    else
+	echo "Couldn't activate power-save mode on this CPU, required ACPI kernel driver may be missing. Just in case try to run this script once again." | fmt -w 80
+	echo "Press enter to exit."
+	read
+    fi
+else
+    speed=`grep "cpu MHz" /proc/cpuinfo | head -n1 | awk '{print $4}'`
+    for x in $drivers; do rmmod -f $x 2>/dev/null && break; done
+    sleep 2
+    speed1=`grep "cpu MHz" /proc/cpuinfo | head -n1 | awk '{print $4}'`
+    if [ "$speed1" != "$speed" ]; then
+	rm /var/run/power-saver.pid
+	echo "Power-Save mode deactivated, CPU speed has beed raised to maximum $speed1 MHz and will be constant." | fmt -w 80
+	echo "Press enter to exit"
+	read
+    else
+	echo "Couldn't deactivate power-save mode on this CPU, probably ACPI kernel driver was newer loaded." | fmt -w 80
+	echo "Press enter to exit."
+	read
+    fi
+fi

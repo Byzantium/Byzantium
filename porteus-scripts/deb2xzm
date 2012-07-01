@@ -1,0 +1,16 @@
+#!/bin/sh
+# Script by fanthom
+
+# Variables
+c='\e[36m'
+r='\e[31m'
+e=`tput sgr0`
+
+# Let's start
+if [ "$1" = "" ]; then
+    echo -e "${c}nead a deb package as an argument, example: $0 /mnt/sda2/debian_packages/package.deb"$e | fmt -w 80
+    exit
+fi
+
+mod=`readlink -f $1 | sed s/.deb$/.xzm/g`
+mkdir /tmp/deb2xzm$$ && cp $1 /tmp/deb2xzm$$ && cd /tmp/deb2xzm$$ && /usr/bin/ar x * data.tar.gz && mv data.tar.gz data.tgz && txz2xzm /tmp/deb2xzm$$/data.tgz $mod && rm -r /tmp/deb2xzm$$ && echo && echo -e "${c}Module created as $mod"$e || echo -e "${r}Module creation failed!"$e
