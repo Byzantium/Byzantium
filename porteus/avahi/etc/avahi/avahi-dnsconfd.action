@@ -20,11 +20,25 @@ test "x$AVAHI_INTERFACE" != "x"
 #				  heard on $AVAHI_INTERFACE.
 #   $AVAHI_DNS_SERVERS: The list of all DNS servers found on all interfaces
 
+# Case: A list of DNSes was not passed to this script.
 if [ "x$AVAHI_DNS_SERVERS" = "x" ] ; then
-    test -f /etc/resolv.conf.avahi && mv /etc/resolv.conf.avahi /etc/resolv.conf
+    if [ -f /etc/resolv.conf.avahi ]; then
+        mv /etc/resolv.conf.avahi /etc/resolv.conf
+        echo "No DNSes passed to this script and /etc/resolv.conf.avahi file was renamed to"
+        echo "/etc/resolv.conf."
+    else
+        echo "No DNSes passed to this script and no /etc/resolv.conf.avahi file was found."
+    fi
 else
-    test -f /etc/resolv.conf.avahi || mv /etc/resolv.conf /etc/resolv.conf.avahi
+    # Case: A list of DNSes was passed to this script.
+    if [ ! -f /etc/resolv.conf.avahi ]; then
+        mv /etc/resolv.conf /etc/resolv.conf.avahi
+        echo "IP addresses of DNS passed to this script and no /etc/resolv.conf.avahi was found."
+        echo "Renamed /etc/resolv.conf to /etc/resolv.conf.avahi to back it up."
+    fi
+
+    # Add the IP addresses of the DNSes to /etc/resolv.conf, one per line.
     for n in $AVAHI_DNS_SERVERS ; do 
-        echo "nameserver $n"
-    done > /etc/resolv.conf
+        echo "nameserver $n" >> /etc/resolv.conf
+    done
 fi
