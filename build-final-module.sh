@@ -165,6 +165,9 @@ chown root:root ${FAKE_ROOT}/etc/sudoers
 chmod 0440 ${FAKE_ROOT}/etc/sudoers
 cp avahi/etc/avahi/avahi-daemon.conf ${FAKE_ROOT}/etc/avahi
 
+# Install our custom avahi-dnsconfd.action script.
+cp avahi/etc/avahi/avahi-dnsconfd.action ${FAKE_ROOT}/etc/avahi
+
 # Add the custom passwd and group files.
 echo "Installing custom system configuration files."
 cp etc/passwd ${FAKE_ROOT}/etc
