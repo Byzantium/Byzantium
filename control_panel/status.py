@@ -152,7 +152,7 @@ class Status(object):
         ip_address = ''
         number_of_clients = 0
 
-        query = "SELECT client_interface FROM wireless WHERE client_interface LIKE 'wlan%';"
+        query = "SELECT client_interface FROM wireless;"
         cursor.execute(query)
         result = cursor.fetchall()
 
