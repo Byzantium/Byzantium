@@ -35,10 +35,15 @@ else
         mv /etc/resolv.conf /etc/resolv.conf.avahi
         echo "IP addresses of DNS passed to this script and no /etc/resolv.conf.avahi was found."
         echo "Renamed /etc/resolv.conf to /etc/resolv.conf.avahi to back it up."
+    else
+        echo "An /etc/resolv.conf.avahi file was found.  I don't think this is a good thing."
+        echo "Doing nothing, proceeding to update /etc/resolv.conf."
+        # MOOF MOOF MOOF - This is probably an bug.
     fi
 
     # Add the IP addresses of the DNSes to /etc/resolv.conf, one per line.
     for n in $AVAHI_DNS_SERVERS ; do 
         echo "nameserver $n" >> /etc/resolv.conf
+        echo "Added IP address $n to /etc/resolv.conf."
     done
 fi
