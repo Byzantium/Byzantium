@@ -168,6 +168,11 @@ cp avahi/etc/avahi/avahi-daemon.conf ${FAKE_ROOT}/etc/avahi
 # Install our custom avahi-dnsconfd.action script.
 cp avahi/etc/avahi/avahi-dnsconfd.action ${FAKE_ROOT}/etc/avahi
 
+# Install our custom dhcpcd event script.
+mkdir -p ${FAKE_ROOT}/lib/dhcpcd/dhcpcd-hooks
+cp dhcpcd/lib/dhcpcd/dhcpcd-hooks/20-resolv.conf ${FAKE_ROOT}/lib/dhcpcd/dhcpcd-hooks
+chmod 0444 ${FAKE_ROOT}/lib/dhcpcd/dhcpcd-hooks/20-resolv.conf
+
 # Add the custom passwd and group files.
 echo "Installing custom system configuration files."
 cp etc/passwd ${FAKE_ROOT}/etc
