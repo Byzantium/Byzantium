@@ -13,7 +13,6 @@
 # Set up global variables.
 DHCPCD=/sbin/dhcpcd
 IPTABLES=/usr/sbin/iptables
-AVAHI=/usr/sbin/avahi-daemon
 IP=/sbin/ip
 
 # Make sure that at least one command line argument has been passed to this
@@ -41,10 +40,6 @@ if [ $? -gt 0 ]; then
 
 # Run the iptables utility to set up NAT on the interface.
 $IPTABLES -t nat -A POSTROUTING -o $INTERFACE -j MASQUERADE
-
-# Tell avahi-daemon to re-read /etc/resolv.conf and announce the IP addresses
-# of the DNSes in there across the mesh.
-$AVAHI -r
 
 # Make the default route exportable.
 ROUTE=$($IP route show | grep 'default' | grep "$INTERFACE")
