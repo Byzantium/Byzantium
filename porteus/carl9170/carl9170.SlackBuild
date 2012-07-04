@@ -4,7 +4,7 @@
 
 # Written by Haxwithaxe (me at haxwithaxe dot net)
 
-PRGNAM=carl9170-1
+PRGNAM=carl9170
 VERSION=${VERSION:-1.9.5}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -44,6 +44,7 @@ set -e
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
+cp $PRGNAM.fw $TMP
 cd $TMP
 echo "Disabled the automatic rename of \$FWNAM to \$PRGNAM.fw."
 echo "This is because the shell keeps freaking out on the original filename."
