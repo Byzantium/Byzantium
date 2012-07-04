@@ -8,6 +8,7 @@ A module that reads the database of services running on the node and those found
 __author__ = 'Haxwithaxe (me at haxwithaxe dot net)'
 
 from _utils import *
+import sqlite3
 
 # grab shared config
 conf = config()
@@ -16,7 +17,6 @@ def get_local_services_list():
 	'''
 	Get the list of services running on this node from the databases.
 	'''
-	import sqlite3
 	# Define the location of the service database.
 	servicedb = conf.servicedb
 	service_list = []

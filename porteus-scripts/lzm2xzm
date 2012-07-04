@@ -1,0 +1,55 @@
+#!/bin/sh
+# script by fanthom
+
+# Switch to root
+if [ "$DISPLAY" ]; then
+   if [ `whoami` != "root" ]; then
+      mod=`readlink -f $1`
+      xterm -T "Please enter root's password below" -e su - -c "/opt/porteus-scripts/lzm2xzm $mod"
+      exit
+   fi
+else
+   if [ `whoami` != "root" ]; then
+      echo "Please enter root's password below"
+      mod=`readlink -f $1`
+      su - -c "/opt/porteus-scripts/lzm2xzm $mod"
+      exit
+   fi
+fi
+
+# Variables
+c='\e[36m'
+r='\e[31m'
+e=`tput sgr0`
+
+# Let's start
+if [ "$1" = "" ]; then
+echo && echo -e "${r}need a lzm module or folder containing lzm's as an argument
+examples:
+
+$0 /mnt/sda2/porteus_modules
+$0 /root/module.sq4.lzm
+$0 /root/module.lzm"$e
+exit
+fi
+
+if [ -d "$1" ]; then cd $1; fi
+
+for x in `ls $1 | grep .lzm`; do
+    path=`readlink -f $x`
+    name=`echo $path | rev | cut -d/ -f1 | cut -d. -f2- | rev`
+    dest=`echo $path | rev | cut -d/ -f2- | rev`
+    typ=`file $x | grep "endian"`
+    if [ -n $typ ] > /dev/null 2>&1; then
+        unsquashfs3 -d /tmp/$name$$ $path
+    else	
+        unsquashfs -d /tmp/$name$$ $path
+    fi
+    dir2xzm /tmp/$name$$ $dest/$name.xzm
+    rm -r /tmp/$name$$
+    echo $dest/$name.xzm >> /tmp/list
+done
+
+echo && echo -e "${c}this is the list of converted modules..."$e
+echo && cat /tmp/list
+rm /tmp/list

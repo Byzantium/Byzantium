@@ -1,0 +1,49 @@
+#!/bin/bash
+# convert Slackware's TGZ (or TXZ) package into .xzm compressed file
+# which can be used as a LiveCD module
+#
+# Author: Tomas M. <http://www.linux-live.org>
+# Modifications for Porteus by fanthom
+
+# Switch to root
+if [ "$DISPLAY" ]; then
+   if [ `whoami` != "root" ]; then
+      mod=`readlink -f $1`
+      mod2=`readlink -f $2`
+      xterm -T "Please enter root's password below" -e su - -c "/opt/porteus-scripts/txz2xzm $mod $mod2"
+      exit
+   fi
+else
+   if [ `whoami` != "root" ]; then
+      echo "Please enter root's password below"
+      mod=`readlink -f $1`
+      mod2=`readlink -f $2`
+      su - -c "/opt/porteus-scripts/txz2xzm $mod $mod2"
+      exit
+   fi
+fi
+
+if [ "$1" = "" -o "$2" = "" ]; then
+   echo
+   echo "Convert Slackware's TXZ package into .xzm compressed module"
+   echo "usage: $0 source_filename.txz output_file.xzm"
+   exit 1
+fi
+
+PATH=.:$(dirname $0):/usr/lib:$PATH
+. liblinuxlive || exit 1
+
+TMPDIR=/tmp/txz2xzm$$
+
+installpkg -root $TMPDIR $1
+if [ $? != 0 ]; then echo "error installing package"; exit; fi
+
+# optimalization procedures, this doesn't hurt
+find $TMPDIR/usr{/local,/}{man,info} -type l -name "*.gz" 2>/dev/null | xargs -r gunzip -f
+find $TMPDIR/usr{/local,/}{man,info} -type f -name "*.gz" 2>/dev/null | xargs -r gunzip
+rm -f $TMPDIR/{usr,usr/local,var}/man/cat*/*
+
+create_module $TMPDIR "$2"
+if [ $? != 0 ]; then echo "error building compressed image"; exit; fi
+
+rm -Rf $TMPDIR

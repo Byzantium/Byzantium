@@ -92,7 +92,7 @@ class Status(object):
 
         connection = sqlite3.connect(self.netconfdb)
         cursor = connection.cursor()
-        query = "SELECT mesh_interface, essid, channel FROM wireless WHERE mesh_interface LIKE 'wlan%';"
+        query = "SELECT mesh_interface, essid, channel FROM wireless;"
         cursor.execute(query)
         result = cursor.fetchall()
 
@@ -152,7 +152,7 @@ class Status(object):
         ip_address = ''
         number_of_clients = 0
 
-        query = "SELECT client_interface FROM wireless WHERE client_interface LIKE 'wlan%';"
+        query = "SELECT client_interface FROM wireless;"
         cursor.execute(query)
         result = cursor.fetchall()
 

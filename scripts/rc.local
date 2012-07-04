@@ -7,12 +7,6 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
-# Terminate GPM if it started.
-/etc/rc.d/rc.gpm stop
-
-# Terminate cupsd.
-/etc/rc.d/rc.cups stop
-
 # Make rc.sshd executable.
 chmod +x /etc/rc.d/rc.sshd
 
@@ -35,6 +29,7 @@ chmod +x /etc/rc.d/rc.sshd
 # Start the Avahi daemons.
 /etc/rc.d/rc.avahidaemon start
 /etc/rc.d/rc.avahidnsconfd start
+/etc/rc.d/rc.avahiclient start
 
 # Start the control panel.
 /etc/rc.d/rc.byzantium start

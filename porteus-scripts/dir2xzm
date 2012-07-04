@@ -1,0 +1,37 @@
+#!/bin/bash
+# convert directory tree into .xzm compressed file
+# which can be used as a LiveCD module
+#
+# Author: Tomas M. <http://www.linux-live.org>
+# Modifications for Porteus by fanthom
+
+# Switch to root
+if [ "$DISPLAY" ]; then
+   if [ `whoami` != "root" ]; then
+      mod=`readlink -f $1`
+      mod2=`readlink -f $2`
+      xterm -T "Please enter root's password below" -e su - -c "/opt/porteus-scripts/dir2xzm $mod $mod2"
+      exit
+   fi
+else
+   if [ `whoami` != "root" ]; then
+      echo "Please enter root's password below"
+      mod=`readlink -f $1`
+      mod2=`readlink -f $2`
+      su - -c "/opt/porteus-scripts/dir2xzm $mod $mod2"
+      exit
+   fi
+fi
+
+PATH=.:$(dirname $0):/usr/lib:$PATH
+. liblinuxlive || exit 1
+
+if [ ! -d "$1" -o "$2" = "" ]; then
+   echo
+   echo "Convert directory tree into .xzm compressed module"
+   echo "usage: $0 source_directory output_file.xzm"
+   exit 1
+fi
+
+create_module "$1" "$2"
+if [ $? != 0 ]; then echo "error building compressed image"; exit 1; fi

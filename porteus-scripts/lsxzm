@@ -1,0 +1,28 @@
+#!/bin/sh
+fu(){
+echo "Usage: lsxzm /path/to/specific/module.xzm"
+exit
+}
+fa(){
+echo "Authored by 82issa"
+echo "This command is used to list the contents of Porteus modules"
+echo "without extracting it.  A tool for Exploring modules."
+fu
+}
+sa(){
+echo "You are having some sort of syntax error."
+exit
+}
+if [ -f "$1" -a "$1" != "" ]; then
+unsquashfs -l -d / $1
+exit
+elif [ "$1" = "" ]; then fu
+else
+case $1 in
+-?)fa;;
+--help)fa;;
+--about)fa;;
+*)sa;;
+esac
+fi
+done

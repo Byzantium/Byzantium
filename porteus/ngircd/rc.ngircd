@@ -25,7 +25,7 @@ ACTIVE=/etc/avahi/services
 case "$1" in
 	'start')
 		# Start ngircd.
-		ngircd $ARGS -f $CONFIG
+		/usr/sbin/ngircd $ARGS -f $CONFIG
 
 		# Copy the mDNS descriptor into Avahi's configuration
 		# directory

@@ -1,0 +1,116 @@
+#!/bin/bash
+# Deactivate module from the root directory structure on the fly
+# This may fail for many cases, most likely when your module is 'busy'
+# - for example if you have files open from the module yet.
+#
+# Author: Tomas M. <http://www.linux-live.org>
+# Modifications for Porteus by fanthom/brokenman
+
+# Switch to root
+if [ "$DISPLAY" ]; then
+    if [ `whoami` != "root" ]; then
+	xterm -T "Please enter root's password below" -e su -c "/opt/porteus-scripts/deactivate $1 && sleep 2"
+	exit
+    fi
+else
+    if [ `whoami` != "root" ]; then
+	echo "Please enter root's password below"
+	su -c "/opt/porteus-scripts/deactivate $1"
+	exit
+    fi
+fi
+
+if [ "$1" = "-k" ]; then
+   CALLED_BY_GUI_HELPER=1
+   shift
+fi
+
+if [ -e /opt/porteus-scripts/xdeactivate -a "$DISPLAY" -a ! "$CALLED_BY_GUI_HELPER" ]; then
+   exec /opt/porteus-scripts/xdeactivate "$@" 2>/dev/null
+fi
+
+PATH=.:$(dirname $0):/usr/lib:$PATH
+. liblinuxlive || exit 5
+
+MODULE=$(basename "$1" .xzm).xzm
+IMAGES=/mnt/live/memory/images
+IPREV=empty
+
+if [ "$MODULE" = "" -o ! -e "$IMAGES/$MODULE" ]; then
+   echo
+   echo "Deactivate module from the root filesystem while running Linux Live"
+   echo "Usage: $0 module.xzm"
+   exit 1
+fi
+
+# if the module contains /var/lock/deactivatelock, deny deactivation
+if [ -e "$IMAGES/$MODULE/var/lock/deactivatelock" ]; then
+   echo "Can't deactivate the given module, I am sorry."
+   exit 2
+fi
+
+# check if module contains *.desktop files
+lxuser=`ps aux | grep lxsession | grep -v grep | cut -d " " -f1`
+if [ "$lxuser" ]; then desktop=`find $IMAGES/$MODULE/usr/share/applications -name "*.desktop" | wc -l`; fi
+
+try_remount()
+{
+   mount -t aufs -o remount,verbose,del:$IMAGES/$MODULE aufs / 2>/dev/null
+}
+
+# Try to simply remove the dir first. If succeeds, finish
+rmdir "$IMAGES/$MODULE" 2>/dev/null && exit 0
+# OK the previous trick didn't work. So we have a real module here.
+
+# First, try to stop all daemons which may be started by this module
+find_n_run_scripts $IMAGES/$MODULE stop deactivate
+
+# detach it from aufs union. This may take a long time, remounting the
+# root directory is an expensive operation.
+try_remount
+
+# if remount fails, try to free all inotify watchers and remount again
+while [ $? -ne 0 -a "$IPREV" != "$INODE" ]; do
+   IPREV="$INODE"
+   INODE=$(dmesg | fgrep "test_inode_busy" | tail -n 1 | cut -d : -f 4 | cut -b 8-)
+   if [ "$INODE" != "" ]; then
+      find / -noleaf -xdev -inum "$INODE"
+      find / -noleaf -xdev -inum "$INODE" | xargs touch
+      try_remount
+   fi
+done
+
+if [ $? -ne 0 ]; then
+   echo "The module can't be removed, because it's busy (used)." >&2
+   exit 3
+fi
+
+# if we are here, the module has been successfuly removed from aufs union
+# so now we have to umount the xzm file and then free the loop device
+LOOP=$(cat /proc/mounts | grep "$IMAGES/$MODULE " | cut -d " " -f 1)
+umount -n "$IMAGES/$MODULE" 2>/dev/null
+if [ $? -ne 0 ]; then
+   exit 4
+fi
+losetup -d "$LOOP" 2>/dev/null # sometimes it's freed by umount automatically
+rmdir "$IMAGES/$MODULE" # if not empty or busy, a message will be shown
+
+# Rebuild the system configuration cache
+echo "Updating shared library links:  /sbin/ldconfig"
+/sbin/ldconfig
+echo "Updating MIME database:  /usr/bin/update-mime-database /usr/share/mime"
+/usr/bin/update-mime-database /usr/share/mime > /dev/null 2>&1
+
+# Update KDE menu
+kdeuser=`ps aux | grep /usr/bin/startkde | grep -v grep | cut -d " " -f1`
+if [ "$kdeuser" ]; then
+    echo "Updating KDE menu: kbuildsycoca"
+    for x in "$kdeuser"; do su --login $x -c "kbuildsycoca"; done
+fi
+
+# Update LXDE menu
+if [ "$lxuser" -a "$desktop" != "0" ]; then
+    echo "Updating LXDE menu: rm ~/.cache/menus/*; lxpanelctl restart"
+    for x in "$lxuser"; do su --login $x -c "rm ~/.cache/menus/*; lxpanelctl restart"; done
+fi
+

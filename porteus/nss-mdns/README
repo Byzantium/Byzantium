@@ -1,0 +1,10 @@
+nss-mdns is a plugin for the GNU Name Service Switch (NSS) functionality
+of the GNU C Library (glibc) which provides host name resolution via
+Multicast DNS (a.k.a. Zeroconf, a.k.a. Apple Rendezvous, a.k.a Apple Bonjour).
+This effectively allows name resolution by common Unix/Linux programs in the
+ad-hoc mDNS domain .local.
+
+To test, the following command should return a mapping for the remote host:
+  getent hosts <hostname>.local
+
+This requires avahi.

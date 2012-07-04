@@ -44,7 +44,10 @@ class DNSQuery:
       packet+='\xc0\x0c'
 
       # Response type, TTL of the reply, and length of data in reply.
-      packet+='\x00\x01\x00\x01\x00\x00\x00\x3c\x00\x04'
+      packet+='\x00\x01'  # TYPE: A record
+      packet+='\x00\x01'  # CLASS: IN (Internet)
+      packet+='\x00\x00\x00\x0f'  # TTL: 15 sec
+      packet+='\x00\x04'  # Length of data: 4 bytes
 
       # The IP address of the server the DNS is running on.
       packet+=str.join('',map(lambda x: chr(int(x)), ip.split('.')))
@@ -124,8 +127,8 @@ if __name__ == '__main__':
     sys.exit(1)
 
   # Print something for anyone watching a TTY.  All 'A' records this daemon
-  # serves up have a TTL of 60 seconds.
-  print 'miniDNS :: * 60 IN A %s\n' % ip
+  # serves up have a TTL of 15 seconds.
+  print 'miniDNS :: * 15 IN A %s\n' % ip
 
   # The do-stuff loop.
   try:

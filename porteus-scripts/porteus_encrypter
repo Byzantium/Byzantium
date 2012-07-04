@@ -1,0 +1,125 @@
+#!/bin/sh
+# script by fanthom
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter your root password below"
+    su - -c "/opt/porteus-scripts/porteus_encrypter" || sleep 1
+    exit
+fi
+
+# Variables
+rtcp=`awk 'c-->0;/Porteus data found in/{c=1}' /mnt/live/var/log/livedbg | cut -d/ -f3`
+c='\e[36m'
+r='\e[31m'
+e=`tput sgr0`
+
+# Let's start
+clear
+echo -e "${c}Welcome to the "Porteus Encrypter" tool, which encrypts your exisiting
+Porteus installation. As you probably know, keeping Porteus unencrypted on a usb stick
+leaves you at risk for loosing private data such as bookmarks, passwords, contacts, etc.
+To prevent this, we can encrypt almost everything--except for the kernel, initrd and a few
+syslinux files in the /boot folder.
+In case you lose your pendrive, whoever finds (or takes) it will not be able to gain access
+to your private data. This tool will guide you through the entire encryption process.
+
+Press enter to continue or ctrl+c to exit."$e | fmt -w 80
+read
+echo -e "${c}Provide the desired size (in MB) of the encrypted container.
+Be aware that you wont be able to resize it in the future.
+e.g.: 1024"$e | fmt -w 80
+read size
+echo -e "${c}This may take a while - be patient..."$e
+
+# Load required kernel modules
+modprobe cryptoloop
+modprobe blowfish
+
+# Add free loop device
+x=`grep /dev/loop /proc/mounts | tail -n1 | cut -d " " -f1 | sed 's@/dev/loop@@'`; let y=x+1
+loop=/dev/loop$y
+[ -e $loop ] || mknod $loop b 7 $y
+
+rm -r /mnt/crypt 2>/dev/null; mkdir /mnt/crypt
+dd if=/dev/urandom of=/mnt/porteus.enc bs=1M count=$size
+if [ $? -eq 0 ]; then
+    echo -e "${c}Provide a password which will be used to open the container (be aware that you wont be able to change it in the future)"$e | fmt -w 80
+else
+    echo -e "${r}Couldn't create conatiner image, not enough space on the device? Press enter to exit..."$e | fmt -w 80
+    read
+    exit
+fi
+losetup -e blowfish $loop /mnt/porteus.enc
+mkfs.xfs $loop >/dev/null 2>&1
+mount $loop /mnt/crypt
+
+echo -e "${c}Copying /porteus folder to the container, please be patient..."$e
+cp -r /mnt/live/mnt/$rtcp/porteus /mnt/crypt
+if [ $? -eq 0 ]; then
+    echo -e "${c}All ok - tweaking initrd now..."$e
+    umount /mnt/crypt
+    sleep 2
+    losetup -d $loop
+else
+    echo -e "${r}Couldn't copy all the data, try creating a bigger container file - press enter to exit..."$e | fmt -w 80
+    read
+    exit
+fi
+
+# tweaking of initrd and linuxrc
+cp /mnt/live/mnt/$rtcp/boot/initrd.xz /tmp
+xz -d /tmp/initrd.xz
+mkdir /mnt/initrd
+mount -o loop /tmp/initrd /mnt/initrd
+rm /mnt/initrd/bin/{mount,losetup}
+cp /sbin/{mount,losetup} /mnt/initrd/bin
+cp -P --parents /lib/modules/`uname -r`/kernel/drivers/block/cryptoloop.ko /mnt/initrd
+cp -P --parents /lib/modules/`uname -r`/kernel/crypto/blowfish.ko /mnt/initrd
+cp -P --parents /lib/modules/`uname -r`/kernel/crypto/cbc.ko /mnt/initrd
+cp -P --parents /lib/modules/`uname -r`/kernel/crypto/crypto_blkcipher.ko /mnt/initrd
+cp -P --parents /lib/modules/`uname -r`/kernel/crypto/cryptomgr.ko /mnt/initrd
+cp -P --parents /lib/modules/`uname -r`/kernel/crypto/aead.ko /mnt/initrd
+cp -P --parents /lib/modules/`uname -r`/kernel/crypto/crypto_algapi.ko /mnt/initrd
+depmod -b /mnt/initrd
+sed '1,/*.sgn/ !d' /mnt/initrd/linuxrc > /mnt/initrd/linuxrc1
+echo 'modprobe cryptoloop
+modprobe blowfish
+echo; echo "current partition list:"
+ls -1 /dev/sd* 2>/dev/null
+ls -1 /dev/sr* 2>/dev/null
+echo
+echo "Please provide partition letter (sda, sdb2, sr0, etc) which contains encrypted container"
+read BOOTDEV
+mount_device $BOOTDEV
+echo "Welcome stranger - authorization required"
+losetup /dev/loop0 -e blowfish /mnt/$BOOTDEV/porteus.enc
+if [ $? -ne 0 ]; then
+    echo; echo "Incorrect password? Reboot and try again..."
+fi
+mkdir /mnt/encrypted
+mount -n /dev/loop0 /mnt/encrypted 2>/dev/null
+SGNDEV=encrypted
+echo' >> /mnt/initrd/linuxrc1
+sed '/ && PTH=/,$ !d' /mnt/initrd/linuxrc >> /mnt/initrd/linuxrc1
+mv /mnt/initrd/linuxrc1 /mnt/initrd/linuxrc
+chmod +x /mnt/initrd/linuxrc
+umount /mnt/initrd
+xz --check=crc32 --x86 --lzma2 /tmp/initrd
+rmdir /mnt/crypt /mnt/initrd
+
+echo -e "${c}Press enter to copy porteus.enc and tweaked initrd to /dev/$rtcp"$e | fmt -w 80
+read
+if [ ! -d /mnt/$rtcp/boot ]; then
+    echo "mounting /dev/$rtcp to /mnt/$rtcp"
+    mkdir /mnt/$rtcp && mount /dev/$rtcp /mnt/$rtcp
+fi
+
+mv /mnt/porteus.enc /mnt/$rtcp && mv /tmp/initrd.xz /mnt/$rtcp/boot/initrd-enc.xz
+if [ $? -eq 0 ]; then
+    echo -e "${c}All operations are finished succesfully, plese modify your bootloader config to point to the new initrd-enc.xz\nExample: 'APPEND initrd=initrd-enc.xz'\nReboot your system and enjoy encrypted Porteus!"$e | fmt -w 80
+    read
+else
+    echo -e "${r}Couldn't copy required files to /mnt/live/mnt/$rtcp - not enough space? press enter to exit..."$e | fmt -w 80
+    read
+fi

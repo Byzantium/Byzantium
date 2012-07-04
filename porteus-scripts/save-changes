@@ -1,0 +1,42 @@
+#!/bin/bash
+# Save changes in porteus
+# Author: Brokenman <brokenman@porteus.org>
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter your root password below"
+    su - -c "/opt/porteus-scripts/save-changes"
+    exit
+fi
+
+echo
+ch=/mnt/live/memory/changes
+
+usage(){
+echo
+echo "save-changes /path/to/resulting/module.xzm"
+echo
+echo "You must give a path to save your changes to."
+}
+
+if [ "$1" == "" -o "$1" == "-h" -o "$1" == "--help" ]; then
+  usage
+  exit
+fi
+
+# Make sure given path ends in .xzm
+if [ `echo $1|awk -F. '{print$NF}'` != "xzm" ]; then
+  echo 
+  echo "Your path must end in .xzm"
+  echo "Example: /tmp/changes.xzm"
+  echo
+  exit
+fi
+
+dir2xzm $ch $1
+
+echo
+echo "Your changes module has been created!"
+echo "$1
+echo
+exit

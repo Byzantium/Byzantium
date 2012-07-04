@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# This started life as the avahi-dnsconfd.action script from the Avahi package
+# but it does more than we need.. which breaks Avahi, incidentally.  We
+# deleted the netconfig stuff because we don't need it.
+
+set -e
+test "x$AVAHI_INTERFACE" != "x"
+
+# Command line arguments:
+#   $1 "+" if a new DNS server was found, "-" if one was removed
+#   $2 DNS Server address
+#   $3 interface index where this server was found on
+#   $4 protocol number where this server was found on
+
+# Available environment variables:
+#   $AVAHI_INTERFACE: The interface which heard the announcement of the
+#		      DNS on the gateway node.
+#   $AVAHI_INTERFACE_DNS_SERVERS: A whitespace seperated list of DNS servers
+#				  heard on $AVAHI_INTERFACE.
+#   $AVAHI_DNS_SERVERS: The list of all DNS servers found on all interfaces
+
+# Case: A list of DNSes was not passed to this script.
+if [ "x$AVAHI_DNS_SERVERS" = "x" ] ; then
+    if [ -f /etc/resolv.conf.avahi ]; then
+        mv /etc/resolv.conf.avahi /etc/resolv.conf
+        echo "No DNSes passed to this script and /etc/resolv.conf.avahi file was renamed to"
+        echo "/etc/resolv.conf."
+    else
+        echo "No DNSes passed to this script and no /etc/resolv.conf.avahi file was found."
+    fi
+else
+    # Case: A list of DNSes was passed to this script.
+    if [ ! -f /etc/resolv.conf.avahi ]; then
+        mv /etc/resolv.conf /etc/resolv.conf.avahi
+        echo "IP addresses of DNS passed to this script and no /etc/resolv.conf.avahi was found."
+        echo "Renamed /etc/resolv.conf to /etc/resolv.conf.avahi to back it up."
+    else
+        echo "An /etc/resolv.conf.avahi file was found.  I don't think this is a good thing."
+        echo "Doing nothing, proceeding to update /etc/resolv.conf."
+        # MOOF MOOF MOOF - This is probably an bug.
+    fi
+
+    # Add the IP addresses of the DNSes to /etc/resolv.conf, one per line.
+    for n in $AVAHI_DNS_SERVERS ; do 
+        echo "nameserver $n" >> /etc/resolv.conf
+        echo "Added IP address $n to /etc/resolv.conf."
+    done
+fi

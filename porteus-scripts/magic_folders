@@ -1,0 +1,120 @@
+#!/bin/sh
+# script by fanthom
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter your root password below"
+    su - -c "/opt/porteus-scripts/magic_folders" || sleep 1
+    exit
+fi
+
+# Variables
+rtcp=`awk 'c-->0;/Porteus data found in/{c=1}' /mnt/live/var/log/livedbg`
+c='\e[36m'
+r='\e[31m'
+e=`tput sgr0`
+
+# Functions
+bind() {
+echo && echo -e "${c}Please provide the full path to a SOURCE directory in your live filesystem (aufs) from which changes will be stored.  Changes to this directory will then be stored on a real filesystem."$e | fmt -w 80
+echo -e "${c}Example:
+/home/guest/.mozilla"$e
+read -e src
+while [ ! -d "$src" ]; do
+    echo -e "${r}$src folder does not exist, please try again..."$e
+    read -e src
+done
+
+echo && echo -e "${c}Please provide the full path to a TARGET directory or .dat image file on a real filesystem where the changes from $src will be stored."$e | fmt -w 80
+echo -e "${c}Example:
+/mnt/sdb2/magic_folders/root
+/mnt/sda6/root-save.dat"$e
+read -e dest
+
+pth=`echo $dest | cut -d/ -f3`
+while [ ! -b /dev/$pth ]; do
+    echo -e "${r}$pth device does not exist, please try again..."$e
+    read -e dest
+    pth=`echo $dest | cut -d/ -f3`
+done
+
+if [ ! -e $dest ]; then
+    echo && echo -e "${c}$dest does not exist - do you want me to create it now? Answer y/n"$e
+    read -e ans
+    if [ "$ans" = "y" ]; then
+        echo && echo -e "${c}Will the changes be stored in a .dat image (recommended for FAT/NTFS partitions)? Answer y/n (if you answer 'n' then it will be assumed that you want to store them in a folder)"$e | fmt -w 80
+        read ans
+        if [ "$ans" = "y" ]; then
+            echo && echo -e "${c}Please provide a size in MB for the .dat image file\nExample: if you enter '500' then a 500 MB .dat file will be created"$e | fmt -w 80
+            read size
+            MB=$(($size*1024))
+            dd if=/dev/zero of=$dest bs=1024 count=$MB 2> /dev/null
+            if [ $? -ne 0 ]; then echo -e "${r}Couldn't create $dest - not enough space for the image?  Or, is this a read only filesystem?  Press enter to clean up $dest and exit"$e | fmt -w 80; read; rm -r $dest;exit; fi
+            # check if free loop exist
+            x=`grep /dev/loop /proc/mounts | tail -n1 | cut -d " " -f1 | sed 's@/dev/loop@@'`; let y=x+1
+            if [ ! -e /dev/loop$y ]; then
+                mknod /dev/loop$y b 7 $y
+            fi
+            losetup /dev/loop$y $dest
+            mkfs.xfs /dev/loop$y >/dev/null 2>&1
+            sleep 2
+            losetup -d /dev/loop$y
+            echo && echo -e "${c}created $dest with $size KB size"
+        else
+            mkdir -p $dest
+            if [ $? -ne 0 ]; then echo -e "${r}Couldn't create $dest folder - is this a read only filesystem?  Press enter to exit"$e | fmt -w 80; read; exit; fi
+        fi
+    else
+	echo -e "${r}Destination folder/image must exist, we can't continue - exiting..."$e; exit
+    fi
+fi
+
+mkdir -p $rtcp/rootcopy/etc/magic_folders
+if [ $? -ne 0 ]; then echo -e "${r}Couldn't create $rtcp/rootcopy/etc/magic_folders directory - is this a read only filesystem?  Press enter to exit"$e | fmt -w 80; read; exit; fi
+echo "$dest $src" >> $rtcp/rootcopy/etc/magic_folders/folders.cfg
+echo -e "${c}syncing folders (copying data from $src to $dest) - wait a while..."$e
+cp -af $src/* $dest 2>/dev/null
+cp -af $src/.[a-zA-Z0-9]* $dest 2>/dev/null
+echo -e "${c}Do you want to activate $dest right now? Answer y/n (if you answer 'n' then it will be assumed that you want to activate it during next boot)"$e | fmt -w 80
+read ans
+if [ "$ans" = "y" ]; then
+    echo -e "${c}mounting (binding) $src to $dest on the fly..."$e
+    mount -o bind $src $dest
+fi
+echo
+}
+
+message() {
+clear && echo -e "${c}This is your current configuration file $rtcp/rootcopy/etc/magic_folders/folders.cfg:"$e
+echo && cat $rtcp/rootcopy/etc/magic_folders/folders.cfg
+echo && echo -e "${r}You can add or remove other "Magic folders" by using text editiors like mcedit or kwrite - correct paths are required.
+The syntax of config file is: /path/for_storing/changes /path/from_where/changes_will_be_stored"$e | fmt -w 80
+echo
+}
+
+# Let's start
+clear
+echo -e "${c}Welcome to the "Magic Folders" setup tool (idea borrowed from http://code.google.com/p/fidoslax project).
+This tool will let you select individuals folders to be saved on a real filesystem (for FAT and NTFS please use .dat images) and not in the PC memory.
+For example, if you choose the /home/guest directory as a 'source' then all settings and files from the /home/guest folder will be saved on a
+writable media and available after reboot. If you choose /home/guest/.mozilla as a source, then only firefox settings will be stored.
+If the destination folder/image file does not exist then this script has ability to create it for the user.
+
+The "Magic folders" idea differs from the 'changes=' cheatcode, where all files from the entire system are saved to the same location.
+This method gives you the flexibility of choice: you can decide which and where particular data should be stored.
+
+Press enter to proceed"$e | fmt -w 80
+
+read
+bind
+echo && echo -e "${c}Add another pair of folders? Answer y/n"$e
+read -e ans
+if [ "$ans" = "y" ]; then
+    bind
+    message
+else
+    message
+fi
+
+echo -e "${c}All jobs are finished now, press enter to exit..."$e
+read

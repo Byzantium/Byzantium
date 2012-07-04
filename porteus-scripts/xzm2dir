@@ -1,0 +1,33 @@
+#!/bin/bash
+# convert .xzm compressed file back into directory tree
+#
+# Author: Tomas M. <http://www.linux-live.org>
+# Modifications for Porteus by fanthom
+
+# Switch to root
+if [ "$DISPLAY" ]; then
+   if [ `whoami` != "root" ]; then
+      mod=`readlink -f $1`
+      mod2=`readlink -f $2`
+      xterm -T "Please enter root's password below" -e su - -c "/opt/porteus-scripts/xzm2dir $mod $mod2"
+      exit
+   fi
+else
+   if [ `whoami` != "root" ]; then
+      echo "Please enter root's password below"
+      su -c "/opt/porteus-scripts/xzm2dir $1 $2"
+      exit
+   fi
+fi
+
+if [ ! -d "$2" ]; then
+   echo 
+   echo "Convert .xzm compressed module back into directory tree"
+   echo "usage: $0 source_file.xzm existing_output_directory"
+   exit 1
+fi
+
+PATH=.:$(dirname $0):/usr/lib:$PATH
+. liblinuxlive || exit 1
+
+unsquashfs -f -dest "$2" "$1"

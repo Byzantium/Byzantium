@@ -200,7 +200,7 @@ class Gateways(object):
                     headers = procnetwireless.readline()
                     headers = procnetwireless.readline()
                     for line in procnetwireless:
-                        if new_interface in line:
+                        if interface in line:
                             if debug:
                                 print "DEBUG: Goes in wireless table."
                             table = 'wireless'
@@ -327,41 +327,38 @@ class Gateways(object):
         if self.essid:
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
             if debug:
-                print "DEBUG: Pretending to set ESSID %s." % self.essid
+                print "DEBUG: Setting ESSID to %s." % self.essid
+            if test:
+                print "TEST: Command to set ESSID:"
+                print str(command)
             else:
                 process = subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
             if debug:
-                print "DEBUG: Pretending to set channel %s." % self.channel
+                print "DEBUG: Setting channel %s." % self.channel
+            if test:
+                print "TEST: Command to set channel:"
+                print str(command)
             else:
                 process = subprocess.Popen(command)
 
         # If we have to configure layers 1 and 2, then it's a safe bet that we
-        # should use DHCP to set up layer 3.
-        command = ['/sbin/dhcpcd', interface]
+        # should use DHCP to set up layer 3.  This is wrapped in a shell script
+        # because of a timing conflict between the time dhcpcd starts, the
+        # time dhcpcd gets IP configuration information (or not) and when
+        # avahi-daemon is bounced.
+        command = ['/usr/local/sbin/gateway.sh', interface]
         if debug:
-            print "DEBUG: Pretending to run dhcpcd against interface %s." % interface
+            print "DEBUG: Preparing to configure interface %s." % interface
+        if test:
+            print "TEST: Pretending to run gateway.sh on interface %s." % interface
+            print "TEST: Command that would be run:"
+            print str(command)
         else:
             process = subprocess.Popen(command)
 
-        # Turn on NAT using iptables to the network interface in question.
-        nat_command = ['/usr/sbin/iptables', '-t', 'nat', '-A', 'POSTROUTING',
-                      '-o', str(interface), '-j', 'MASQUERADE']
-        if debug:
-            print "DEBUG: Pretending to set up NAT on interface %s." % interface
-        else:
-            process = subprocess.Popen(nat_command)
-
-        # Tell avahi-daemon to re-read /etc/resolv.conf and begin propagating
-        # the IP addresses of the DNSes in there across the mesh.
-        avahi_command = ['/usr/sbin/avahi-daemon', '-r']
-        if debug:
-            print "DEBUG: Avahi command: %s" % str(avahi_command)
-        if test:
-            print "TEST: Pretending to reload avahi-daemon's configs."
-        else:
-            process = subprocess.Popen(avahi_command)
+        # See what value was returned by the script.
 
         # Set up a list of mesh interfaces for which babeld is already running.
         interfaces = []

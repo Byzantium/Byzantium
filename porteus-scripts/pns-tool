@@ -1,0 +1,338 @@
+#!/bin/bash
+# script by fanthom
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter your root password below"
+    su - -c "/opt/porteus-scripts/pns-tool `whoami`" || sleep 1
+    exit
+fi
+
+# Variables
+dir="/tmp/pns-tool"
+file="$dir/etc/rc.d/rc3.d/S-pns"
+supplicant="$dir/etc/wpa_supplicant.conf"
+inet="$dir/etc/rc.d/rc.inet1"
+c='\e[36m'
+r='\e[31m'
+e=`tput sgr0`
+
+# Check if script was run by normal user
+if [ "$1" ]; then pth=home/$1; else pth=root; fi
+
+# Clearing old files from previous pns-tool run (if any)
+rm -r $dir > /dev/null 2>&1
+rm /$pth/zzz-pns-tool-configs.xzm > /dev/null 2>&1
+rm -r /etc/dhcpc/* > /dev/null 2>&1
+rm -r /var/run/wpa_supplicant/ > /dev/null 2>&1
+
+mkdir -p $dir/etc/rc.d/rc3.d
+clear
+# Killing running instances of dhcpcd and wpa_supplicant (if any)
+proc1=`ps x | grep wpa_supplicant | awk '{print $1}' | head -n1`
+proc2=`ps x | grep dhcpcd | awk '{print $1}' | head -n1`
+kill -9 $proc1 > /dev/null 2>&1
+kill -9 $proc2 > /dev/null 2>&1
+# once again to be 100% sure :)
+unset proc1 && unset proc2
+proc1=`ps x | grep wpa_supplicant | awk '{print $1}' | head -n1`
+proc2=`ps x | grep dhcpcd | awk '{print $1}' | head -n1`
+kill -9 $proc1 > /dev/null 2>&1
+kill -9 $proc2 > /dev/null 2>&1
+
+## Starting the script
+# Welcome message
+echo -e "${c}Script by fanthom,
+
+Welcome to Porteus-Network-Setup-Tool.  This script will let you configure your wired/wireless network device.
+First, I need to gather some required information so please answer all of the questions carefully.
+After each comment field press enter to move forward.
+Remember - you can break this script at any time by pressing ctrl+c without any harm to your current system configuration.
+
+Press enter to proceed."$e | fmt -w 80
+read
+clear
+echo -e "${c}This is the list of available interfaces.
+If your network card is not listed below then load all necessary drivers/firmware and restart this script.
+Some useful debug information can be found by running dmesg in a terminal.  For example the 'dmesg | grep firmware' command should 
+reveal if you need additional firmware for your device"$e | fmt -w 80; echo
+ls /sys/class/net;echo
+echo -e "${c}Please type the name of the interface which you want to configure (eth0,ath1,wlan0) or type '?' for more detailed info"$e | fmt -w 80
+read -e dev;echo
+if [ "$dev" = "?" ]; then
+    echo -e "${r}This is the output of the ifconfig command:"$e;echo;echo
+    ifconfig
+    echo -e "${r}This is the output of the iwconfig command"$e;echo;echo
+    iwconfig
+    echo -e "${c}Please type the name of the interface which you want to configure (eth0,ath1,wlan0) or press ctrl+c to exit:"$e | fmt -w 80
+    read -e dev
+fi
+ifconfig $dev up
+echo -e "${c}Do you want to obtain your ip address through a dhcp server (must be available in the network)? Answer y/n"$e | fmt -w 80
+read -e dhcp; echo
+YES() {
+    echo -e "${r}Good, dhcpd makes the life easier"$e;echo
+}
+NO() {
+    echo -e "${c}Please type in the ip address for $dev (e.g. 192.168.1.10):"$e
+    read -e ip
+    echo "ifconfig $dev $ip" >> $file
+    echo -e "${c}Please type in the ip address of the router/gateway (e.g. 192.168.1.1):"$e
+    read -e router
+    echo "route add default gw $router $dev" >> $file
+    echo -e "${c}Please provide the ip address of the DNS service (e.g. Google DNS: 8.8.8.8):"$e
+    read -e DNS
+    echo "echo "nameserver $DNS" > /etc/resolv.conf" >> $file
+
+    # Disabling dhcpcd service
+    cp /etc/rc.d/rc.inet1 $inet
+    sed -i $inet -e 's/echo/#echo/g'
+    sed -i $inet -e 's/for/#for/g'
+    sed -i $inet -e 's@/sbin@#/sbin@g'
+    sed -i $inet -e 's/done/#done/g'
+}
+case "$dhcp" in
+y) YES ;;
+n) NO ;;
+*)
+echo -e "${r}Choose y or n"$e
+exit 1 ;;
+esac
+
+echo -e "${c}Is $dev a wifi card? Answer y/n"$e
+read -e wifi
+NO() {
+    echo -e "${r}Everything is set up now, let's go to the testing stage..."$e
+}
+YES() {
+    clear
+    # Disabling wired networks
+    #ifconfig eth0 down > /dev/null 2>&1 & ifconfig eth1 down > /dev/null 2>&1 & ifconfig eth2 down > /dev/null 2>&1
+    echo -e "${c}This is the list of all available wifi networks in your neighbourhood - wait for scan"$e;echo | fmt -w 80
+    iwlist $dev sc >/tmp/wifi$$
+    grep ESSID /tmp/wifi$$;echo
+    echo -e "${c}Please provide the name (ESSID) of your wifi network (put in quotes only if they are included in the name of the wifi network),"$c | fmt -w 80
+    echo -e "${c}Type '?' for more detailed info or press enter if ESSID is hidden"$e
+    read -e ssid;echo
+    if [ ! "$ssid" = "" ]; then
+	ssid="$ssid"
+    else
+	echo -e "${c}Please provide the name (ESSID) for your hidden AP:"$e
+	read -e ssid;echo
+	sed -i /tmp/wifi$$ -e 's/ESSID:""/ESSID:"'"$ssid"'"/g'
+	echo -e "${c}'scan_ssid=1' mode is enabled by default.  Some drivers doesn't support it, so 'ap_mode=2' mode is required."$e | fmt -w 80
+	echo -e "${c}Do you want to add it to the config file? Answer y/n"$e
+	read -e scan;echo
+	if [ "$scan" != "y" -a "$scan" != "n" ]; then echo -e "${r}Choose y or n"$e; exit 1; fi
+    fi
+    if [ "$ssid" = "?" ]; then
+	iwlist $dev sc;echo
+	echo -e "${c}Please provide the name (ESSID) of your wifi network"$e
+	read -e ssid;echo
+    fi
+    echo -e "${c}Enter custom MAC address for $dev or press enter to stay with the original one:"$e | fmt -w 80
+    read -e mac; echo
+    if [ ! "$mac" = "" ]; then
+	ifconfig $dev hw ether $mac;echo
+	echo "#ifconfig $dev hw ether $mac" >> $file
+    fi
+    echo -e "${c}do you want to enable ad-hoc mode (direct PC-PC connection) on $dev? Some drivers may not support this. Answer y/n"$e | fmt -w 80
+    read -e hoc; echo
+    if [ "$hoc" != "y" -a "$hoc" != "n" ]; then echo -e "${r}choose y or n"$e; exit 1; fi
+
+    # Encryption
+    echo -e "${c}Trying to discover the method of encryption used on "$ssid""$e
+    echo -e "${c}When two or more hidden networks are in range, this script may not be able to detect encryption properly"$e | fmt -w 80
+    ENWPA=`sed -n '/'"$ssid"'/,/Cell/p' /tmp/wifi$$ | egrep 'IE: WPA|802.11i/WPA2'`
+    if [ "$ENWPA" != "" ]; then
+	echo -e "${r}It seems that "$ssid" is using WPA/WPA2, please try option '3' first..." | fmt -w 80
+    else
+	grep -B 4 "$ssid" /tmp/wifi$$ | grep -v "$ssid" >/tmp/wep$$
+	sed -n '/'"$ssid"'/,/Cell/p' /tmp/wifi$$ >>/tmp/wep$$
+	ENWEP=`grep 'Encryption key' /tmp/wep$$ | cut -d ":" -f2`
+	if [ "$ENWEP" = "on" ]; then
+	    echo -e "${r}It seems that "$ssid" is using WEP, please try option '2' first..."
+	else
+	    echo -e "${r}It seems that "$ssid" is an open network, please try option '1' first..."
+	rm /tmp/wep$$
+	fi
+    fi
+    rm /tmp/wifi$$
+    echo
+    echo -e "${c}Select encryption mode for your wireless device: 1,2 or 3"$e
+    echo -e "${c}1 - Open network (no encryption)"$e
+    echo -e "${c}2 - WEP encryption (weak encryption - easy to break)"$e
+    echo -e "${c}3 - WPA/WPA2 (strong encryption)"$e; echo
+    read -e encr;echo
+    OPEN() {
+	echo -e "${c}Your wifi network will stay open"$e
+	echo "# Plaintext (no encryption) network" > $supplicant
+	echo "ctrl_interface=/var/run/wpa_supplicant" >> $supplicant
+	if [ "$scan" = "y" ] > /dev/null 2>&1; then echo "ap_scan=2" >> $supplicant; fi
+	echo "network={" >> $supplicant
+	if [ "$hoc" = "y" ]; then echo "mode=1" >> $supplicant; fi
+	echo "scan_ssid=1" >> $supplicant
+	echo "ssid=$ssid" >> $supplicant
+	echo "key_mgmt=NONE" >> $supplicant
+	echo "}" >> $supplicant
+	sed -i $supplicant -e s/ssid="$ssid"/ssid='"'"$ssid"'"'/g
+	echo "#wpa_supplicant -Dwext -i$dev -c /etc/wpa_supplicant.conf > /dev/null 2>&1 &" >> $file
+	echo -e "${r}Setup is complete, let's go to testing stage..."$e
+    }
+    WEP() {
+	echo -e "${c}Please provide the WEP key in HEX format, ie:751E51F12091ACAA2D9AD3E2F0"$e
+	read -e key
+	echo "# Static WEP key" > $supplicant
+	echo "ctrl_interface=/var/run/wpa_supplicant" >> $supplicant
+	if [ "$scan" = "y" ] > /dev/null 2>&1; then echo "ap_scan=2" >> $supplicant; fi
+	echo "network={" >> $supplicant
+	if [ "$hoc" = "y" ]; then echo "mode=1" >> $supplicant; fi
+	echo "scan_ssid=1" >> $supplicant
+	echo "ssid=$ssid" >> $supplicant
+	echo "key_mgmt=NONE" >> $supplicant
+	echo "wep_key0=$key" >> $supplicant
+	echo "wep_tx_keyidx=0" >> $supplicant
+	echo "}" >> $supplicant
+	sed -i $supplicant -e s/ssid="$ssid"/ssid='"'"$ssid"'"'/g
+	echo "#wpa_supplicant -Dwext -i$dev -c /etc/wpa_supplicant.conf > /dev/null 2>&1 &" >> $file
+	echo -e "${r}Setup is complete, let's go to testing stage..."$e
+    }
+    WPA() {
+	echo -e "${c}Please provide the WPA/WPA2 password:"$e
+	read -e key
+	PSK=`wpa_passphrase "$ssid" "$key" | grep psk=[a-f,0-9] | cut -d '=' -f 2`
+	echo "# WPA/WPA2 both TKIP and CCMP" > $supplicant
+	echo "ctrl_interface=/var/run/wpa_supplicant" >> $supplicant
+	if [ "$scan" = "y" ] > /dev/null 2>&1; then echo "ap_scan=2" >> $supplicant; fi
+	echo "network={" >> $supplicant
+	if [ "$hoc" = "y" ]; then echo "mode=1" >> $supplicant; fi
+	echo "scan_ssid=1" >> $supplicant
+	echo "ssid=$ssid" >> $supplicant
+	echo "key_mgmt=WPA-PSK" >> $supplicant
+	echo "pairwise=CCMP TKIP" >> $supplicant
+	echo "group=CCMP TKIP" >> $supplicant
+	echo "psk=$PSK" >> $supplicant
+	echo "}" >> $supplicant
+	sed -i $supplicant -e s/ssid="$ssid"/ssid='"'"$ssid"'"'/g
+	if [ "$hoc" = "y" ]; then
+	    sed -i $supplicant -e s/key_mgmt=WPA-PSK/key_mgmt=WPA-NONE/g
+	    sed -i $supplicant -e s/"pairwise=CCMP TKIP"/pairwise=NONE/g
+	fi
+	echo "#wpa_supplicant -Dwext -i$dev -c /etc/wpa_supplicant.conf > /dev/null 2>&1 &" >> $file
+	echo -e "${r}Setup is complete, let's go to testing stage..."$e
+    }
+    case "$encr" in
+    1) OPEN ;;
+    2) WEP ;;
+    3) WPA ;;
+    *)
+    echo -e "${r}Choose 1,2 or 3"$e
+    exit 1 ;;
+    esac
+}
+case "$wifi" in
+y) YES ;;
+n) NO ;;
+*)
+echo -e "${r}Choose y or n"$e
+exit 1 ;;
+esac
+echo -e "${c}Please confirm (or edit if a mistake was made) that the configuration file is correct.
+Press "ESC" twice to leave the editor from each configuration file."$e | fmt -w 80
+read
+if [ -e $file ]; then mcedit $file; fi
+if [ -e $supplicant ]; then mcedit $supplicant; fi
+if [ -e $file ]; then
+    chmod +x $file
+    $file & > /dev/null 2>&1
+fi
+if [ "$wifi" = "y" ]; then sed -i $file -e 's/#wpa_supplicant/wpa_supplicant/g'; fi
+if [ ! "$mac" = "" ]; then sed -i $file -e 's/#ifconfig/ifconfig/g'; fi
+clear
+if [ -e $supplicant ]; then
+    wpa_supplicant -D wext -i $dev -c $supplicant &
+fi
+if [ "$dhcp" = "y" ]; then
+    echo
+    sleep 5
+    dhcpcd $dev &
+    echo -e "${r}Wait a few seconds for dhcpcd, which needs to acquire all details for your device."$e
+    echo -e "${c}If you have trouble please paste this debug info on the Porteus forum:"$e
+    GAT=`route -nee | grep $dev | tail -n1 | awk '{print $2}' | cut -d '.' -f1`
+    while [ "$GAT" = "" ]; do
+	sleep 1
+	unset $GAT > /dev/null 2>&1
+	GAT=`route -nee | grep $dev | tail -n1 | awk '{print $2}' | cut -d '.' -f1`
+    done
+    RTE=`route -nee | grep $dev | tail -n1 | awk '{print $2}' | cut -d '.' -f1`
+    while [ $RTE = 0 ]; do
+	sleep 1
+	unset $GAT > /dev/null 2>&1
+	RTE=`route -nee | grep $dev | tail -n1 | awk '{print $2}' | cut -d '.' -f1`
+	echo $RTE
+    done
+echo
+echo -e "${r}All is fine now, proceeding..."$e
+fi
+if [ "$dhcp" = "n" ]; then
+    if [ "$wifi" = "y" ]; then
+	echo -e "${c}Wait a few seconds for association, if you have trouble please paste this debug info on the Porteus forum:"$e | fmt -w 80
+	echo
+	echo -e "${c}Press enter when association is complete."$e
+	read
+    fi
+fi
+if [ "$hoc" = "y" ] > /dev/null 2>&1; then
+    echo
+    echo -e "${c}Type in IP address of a second PC which works in ad-hoc mode"$e
+    read -e pc
+    echo
+    echo -e "${c}Now i will try to ping $pc. When you get an response, close the xterm window and press enter to continue"$e | fmt -w 80
+    echo
+    xterm -T AD-HOC -geometry 70x20+750+80 -fg green -bg black -e "ping $pc" > /dev/null 2>&1
+else
+    echo -e "${c}Lets check if your connection works, press enter when ready"$e
+    read
+    echo -e "${c}First I will try to ping the gateway to check the connection between $dev and the router/AP"$e | fmt -w 80
+    echo -e "${c}When you get an response, close the xterm window and press enter to continue"$e | fmt -w 80
+    if [ "$dhcp" = "n" ]; then
+	xterm -T GATEWAY -geometry 70x20+750+80 -fg green -bg black -e "ping -I $dev $router" > /dev/null 2>&1
+    else
+	AP=`route -nee | grep $dev | tail -n1 | awk '{print $2}'`
+	xterm -T GATEWAY -geometry 70x20+750+80 -fg green -bg black -e "ping -I $dev $AP" > /dev/null 2>&1
+    fi
+    read
+    echo -e "${c}Now i will try to test the connection between $dev and the internet, close the xterm window and press enter if ok"$e | fmt -w 80
+    xterm -T INTERNET -geometry 70x20+750+80 -fg green -bg black -e "ping 8.8.8.8" > /dev/null 2>&1
+    read
+    echo -e "${c}Last test - Domain Name Service, close the xtem window and press enter if ok"$e | fmt -w 80
+    xterm -T DNS -geometry 70x20+750+80 -fg green -bg black -e "ping kernel.org" > /dev/null 2>&1
+    read
+fi
+clear
+echo -e "${c}If all tests went fine, you need to copy the 'ready to go' config files from $dir to the correct places in your system"$e | fmt -w 80
+echo -e "${r}a) $inet should be placed in /etc/rc.d/ and $file in /etc/rc.d/rc.3.d
+b) $supplicant must go to /etc/"$e
+echo -e "${c}If some of the files mentioned above are missing in $dir then you simply don't need them for the specified configuration.
+
+Instead of copying those files manually i can create a porteus module which will be placed in the /$pth directory, do you want me to do this? Answer y/n"$e | fmt -w 80
+read -e module
+if [ "$module" = "y" ]; then
+    dir2xzm $dir /$pth/zzz-pns-tool-configs.xzm
+    echo -e "${c}Module created as /$pth/zzz-pns-tool-configs.xzm - copy it to your /porteus/modules directory and reboot porteus."$e
+    echo -e "${c}Press enter to go directly to the /$pth directory."$e
+    echo -e "${c}Thanks for using my tool,"$e
+    echo
+    echo -e "${c}Regards,"$e
+    echo -e "${c}fanthom"$e
+    read
+    konqueror /$pth &
+else
+    echo -e "${c}Press enter to go directly to the config files."$e
+    echo -e "${c}Thanks for using my tool"$e
+    echo
+    echo -e "${c}Regards,"$e
+    echo -e "${c}fanthom"$e
+    read
+    konqueror /$dir &
+fi

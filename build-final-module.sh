@@ -95,12 +95,12 @@ echo "Installing control panel's SQLite databases and schemas."
 mkdir -p ${FAKE_ROOT}/var/db/controlpanel
 cp -rv $BUILD_HOME/Byzantium/control_panel/var/db/controlpanel/* ${FAKE_ROOT}/var/db/controlpanel
 
-# We need to upgrade the version of Wicd to fix a bug, this is our own fix.
-# Note that when Poteus Linux updates to the latest stable version of wicd
-# this will become obsolete.
-echo "Installing wicd-cli patch."
-mkdir -p ${FAKE_ROOT}/usr/share/wicd/cli
-cp $BUILD_HOME/Byzantium/porteus/wicd/usr/share/wicd/cli/wicd-cli.py ${FAKE_ROOT}/usr/share/wicd/cli/
+# Create the xdg directory tree and populate it with our wicd disabler.
+echo "Creating desktop environment autostart directories."
+mkdir -p ${FAKE_ROOT}/etc/xdg/autostart/
+mkdir -p ${FAKE_ROOT}/usr/share/autostart/
+cp -rv $BUILD_HOME/Byzantium/porteus/etc/xdg/autostart/wicd-tray.desktop ${FAKE_ROOT}/etc/xdg/autostart
+cp -rv $BUILD_HOME/Byzantium/porteus/usr/share/autostart/wicd-tray.desktop ${FAKE_ROOT}/usr/share/autostart
 
 # Install our custom udev automount rules.
 echo "Installing udev media-by-label rule patch."
@@ -110,11 +110,14 @@ cp 11-media-by-label-auto-mount.rules ${FAKE_ROOT}/etc/udev/rules.d
 
 # Could these be placed in a module?
 echo "Installing custom initscripts."
-cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.inet1 ${FAKE_ROOT}/etc/rc.d
+cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.inet1 rc.M ${FAKE_ROOT}/etc/rc.d
 chmod +x ${FAKE_ROOT}/etc/rc.d/rc.*
 
 # Set up mDNS service descriptor repository.
 mkdir -p ${FAKE_ROOT}/etc/avahi/inactive
+
+# Configure libnss to reference mDNS for resolution in addition to DNS.
+cp ${FAKE_ROOT}/etc/nsswitch.conf-mdns ${FAKE_ROOT}/etc/nsswitch.conf
 
 # This stuff probably belongs in the controlpanel package.
 echo "Installing rrdtool shell script."
@@ -123,7 +126,7 @@ cp traffic_stats.sh ${FAKE_ROOT}/usr/local/bin
 echo "Installing the control panel."
 cd ../control_panel
 mkdir -p ${FAKE_ROOT}/usr/local/sbin
-cp *.py ${FAKE_ROOT}/usr/local/sbin
+cp *.py *.sh ${FAKE_ROOT}/usr/local/sbin
 cp etc/rc.d/rc.byzantium ${FAKE_ROOT}/etc/rc.d/
 
 echo "Installing OpenSSL configuration file."
@@ -143,7 +146,6 @@ chmod -R 0755 ${FAKE_ROOT}/opt/byzantium/avahi/
 cp rc.avahiclient ${FAKE_ROOT}/etc/rc.d/
 chmod 0755 ${FAKE_ROOT}/etc/rc.d/rc.avahiclient
 
-
 # Add the custom Firefox configuration.
 echo "Installing Mozilla configs for the guest user."
 cd ../porteus
@@ -161,6 +163,15 @@ cp etherpad-lite/etherpad-lite.service ${FAKE_ROOT}/etc/avahi/inactive
 cp sudo/etc/sudoers ${FAKE_ROOT}/etc
 chown root:root ${FAKE_ROOT}/etc/sudoers
 chmod 0440 ${FAKE_ROOT}/etc/sudoers
+cp avahi/etc/avahi/avahi-daemon.conf ${FAKE_ROOT}/etc/avahi
+
+# Install our custom avahi-dnsconfd.action script.
+cp avahi/etc/avahi/avahi-dnsconfd.action ${FAKE_ROOT}/etc/avahi
+
+# Install our custom dhcpcd event script.
+mkdir -p ${FAKE_ROOT}/lib/dhcpcd/dhcpcd-hooks
+cp dhcpcd/lib/dhcpcd/dhcpcd-hooks/*.conf ${FAKE_ROOT}/lib/dhcpcd/dhcpcd-hooks
+chmod 0444 ${FAKE_ROOT}/lib/dhcpcd/dhcpcd-hooks/*.conf
 
 # Add the custom passwd and group files.
 echo "Installing custom system configuration files."
