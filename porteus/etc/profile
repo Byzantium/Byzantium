@@ -14,7 +14,7 @@ if [ ! -r "$HOME/.inputrc" ]; then
 fi
 
 # Set the default system $PATH:
-PATH="/usr/local/bin:/usr/bin:/bin:/usr/games:/opt/porteus-scripts"
+PATH="/usr/local/bin:/usr/bin:/bin:/usr/games:/opt/porteus-scripts:/sbin"
 
 # For root users, ensure that /usr/local/sbin, /usr/sbin, and /sbin are in
 # the $PATH.  Some means of connection don't add these by default (sshd comes
