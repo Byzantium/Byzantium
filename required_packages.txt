@@ -8,6 +8,7 @@ babeld-1.3.1.xzm
 babelweb-0.2.4.xzm
 bison-2.4.3-i486-2.xzm
 boost-1.45.0-i486-1.xzm
+carl9170-1.9.5-i486-1_SBo.xzm
 cmake-2.8.4-i486-1.xzm
 cryptoki-2.20-noarch-1_SBo.xzm
 curl-7.21.4-i486-1.xzm
