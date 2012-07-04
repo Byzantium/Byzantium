@@ -13,7 +13,6 @@
 # Set up global variables.
 DHCPCD=/sbin/dhcpcd
 IPTABLES=/usr/sbin/iptables
-IP=/sbin/ip
 
 # Make sure that at least one command line argument has been passed to this
 # script.  ABEND if not.
@@ -28,7 +27,8 @@ INTERFACE=$1
 
 # Run dhcpcd on the gateway interface, but don't let it fork() into the
 # background until it gets configuration information.  By default, dhcpcd tries
-# for 30 seconds.
+# for 30 seconds.  dhcpcd will then make the default route static, and thus,
+# exportable by babeld.
 $DHCPCD -w $INTERFACE
 
 # Test to see if dhcpcd was successful.  dhcpcd returns 1 when it times out or
@@ -40,15 +40,6 @@ if [ $? -gt 0 ]; then
 
 # Run the iptables utility to set up NAT on the interface.
 $IPTABLES -t nat -A POSTROUTING -o $INTERFACE -j MASQUERADE
-
-# Make the default route exportable.
-ROUTE=$($IP route show | grep 'default' | grep "$INTERFACE")
-
-if [ "x" != "x$ROUTE" ]
-then
-	sh -c "$IP route del $ROUTE"
-	sh -c "$IP route add $ROUTE proto static"
-fi
 
 # Fin.
 exit 0
