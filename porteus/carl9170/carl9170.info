@@ -1,7 +1,7 @@
 PRGNAM="carl9170"
 VERSION="9170"
 HOMEPAGE="http://linuxwireless.org/en/users/Drivers/carl9170"
-DOWNLOAD="http://linuxwireless.org/en/users/Drivers/carl9170/fw1.9.5?action=AttachFile&do=get&target=carl9170-1.fw"
+DOWNLOAD="http://linuxwireless.org/en/users/Drivers/carl9170/fw1.9.5?action=AttachFile\&do=get\&target=carl9170-1.fw"
 MD5SUM="a7775683a0839c679a7e47622b1caad9"
 DOWNLOAD_x86_64=""
 MD5SUM_x86_64=""

@@ -1,43 +1,13 @@
 #!/bin/sh
 
-# Slackware build script for <appname>
+# Slackware build script for carl9170 GPL firmware.
 
-# Written by (your name) (your contact information)
+# Written by Haxwithaxe (me at haxwithaxe dot net)
 
-# (add license information here if you desire; otherwise,
-# all submissions are considered to be in the public domain)
-# Some licenses may incorporate the "Written by" information
-# above, and if so, that line can be omitted
-# We strongly suggest *not* using GPL for scripts, as it requires
-# a copy of the GPL to be distributed with it.  Since the GPL
-# itself is longer than any build script will be, this just doesn't
-# make good sense...
-
-# |-----------------------------------------------------------------| #
-# REMOVE THIS ENTIRE BLOCK OF TEXT #
-#
-# This template is not meant to be a 'cut and paste' script to
-# enable any random user to make a working package.  While
-# we're certainly not discouraging use of this template, if
-# you haven't manually gone through each step of the process
-# without the build script (typically as a normal user, as this
-# will reveal problems that you won't see as root), then there's
-# a good chance that something important is missing from your
-# submission.
-
-# When using this template script, please remove as many of
-# these unnecessary comments as possible.  Commented code is
-# a good thing, but if it's obvious, there's no need to comment it.
-#
-# AGAIN, REMOVE THE COMMENTS IF THEY ARE NOT NEEDED - DON'T JUST
-# DELETE THIS BLOCK OF TEXT WITHOUT BOTHERING TO READ WHAT'S IN IT.
-#
-# |-----------------------------------------------------------------| #
-
-PRGNAM=carl9170			# replace with name of program
-VERSION=${VERSION:-1.9.5}	# replace with version of program
+PRGNAM=carl9170-1
+VERSION=${VERSION:-1.9.5}
 BUILD=${BUILD:-1}
-TAG=${TAG:-_SBo}		# the "_SBo" is required
+TAG=${TAG:-_SBo}
 FWNAM='fw1.9.5?action=AttachFile&do=get&target=carl9170-1.fw'
 
 # Automatically determine the architecture we're building on:
@@ -51,9 +21,9 @@ if [ -z "$ARCH" ]; then
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp/SBo}	# For consistency's sake, use this
+TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
-OUTPUT=${OUTPUT:-/tmp}	# Drop the package in /tmp
+OUTPUT=${OUTPUT:-/tmp}
 
 if [ "$ARCH" = "i486" ]; then
   SLKCFLAGS="-O2 -march=i486 -mtune=i686"
@@ -69,15 +39,15 @@ else
   LIBDIRSUFFIX=""
 fi
 
-set -e # Exit on most errors
-# If you prefer to do selective error checking with
-#   command || exit 1
-# then that's also acceptable.
+# Exit on most errors.
+set -e
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
-mv $FWNAM $PRGNAM.fw
+echo "Disabled the automatic rename of \$FWNAM to \$PRGNAM.fw."
+echo "This is because the shell keeps freaking out on the original filename."
+#mv $FWNAM $PRGNAM.fw
 chown -R root:root .
 
 find . \
