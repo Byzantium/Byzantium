@@ -43,7 +43,11 @@ else
 
     # Add the IP addresses of the DNSes to /etc/resolv.conf, one per line.
     for n in $AVAHI_DNS_SERVERS ; do 
-        echo "nameserver $n" >> /etc/resolv.conf
-        echo "Added IP address $n to /etc/resolv.conf."
+        if grep -q $n /etc/resolv.conf ; then # if the entry exists
+            echo "IP address $n already in /etc/resolv.conf."
+        else
+            echo "nameserver $n" >> /etc/resolv.conf
+            echo "Added IP address $n to /etc/resolv.conf."
+        fi
     done
 fi
