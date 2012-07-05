@@ -13,7 +13,7 @@ BUILD_HOME=${BUILD_HOME:-/home/guest}
 OUTPUT=${OUTPUT:-/tmp}
 
 # clean $FAKE_ROOT if true
-CLEAN_FAKE_ROOT=false
+CLEAN_FAKE_ROOT=true
 
 # set true to run http_placeholder.sh to add the web service placeholder pages
 HTTP_PLACEHOLDER=true
