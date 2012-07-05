@@ -1,0 +1,12 @@
+[General]
+PassiveResourceKeys=
+ResourceKeys=V0SIVoJzMo
+Standard=V0SIVoJzMo
+
+[Resource_V0SIVoJzMo]
+FileFormat=vcard
+ResourceIdentifier=V0SIVoJzMo
+ResourceIsActive=true
+ResourceIsReadOnly=false
+ResourceName=resource
+ResourceType=file

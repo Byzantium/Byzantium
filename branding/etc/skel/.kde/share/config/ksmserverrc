@@ -1,0 +1,22 @@
+[$Version]
+update_info=ksmserver.upd:kde3
+
+[General]
+confirmLogout=true
+excludeApps=
+loginMode=default
+offerShutdown=true
+screenCount=1
+shutdownType=1
+
+[LegacySession: saved at previous logout]
+count=0
+
+[Session: saved at previous logout]
+clientId1=10736c6178000117871092200000072420000
+count=2
+discardCommand1=rm,$HOME/.kde/share/config/session/kmix_10736c6178000117871092500000072420008_1195208764_398674
+program1=kmix
+restartCommand1=kmix,-session,10736c6178000117871092500000072420008_1195208764_398674
+restartStyleHint1=0
+userId1=guest

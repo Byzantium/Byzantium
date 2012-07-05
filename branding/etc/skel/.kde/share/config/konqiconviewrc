@@ -1,0 +1,6 @@
+[Settings]
+DontPreview=gsthumbnail,cursorthumbnail,ldifvcardthumbnail,djvuthumbnail,fontthumbnail,textthumbnail,picturethumbnail,htmlthumbnail
+IconSize=48
+PreviewsEnabled=true
+SortDirsFirst=true
+SortingCriterion=sort_nci

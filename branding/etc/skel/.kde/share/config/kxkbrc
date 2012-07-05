@@ -1,0 +1,15 @@
+[Layout]
+Additional=br,cz,fr,de,it,pl,sk
+EnableXkbOptions=true
+Includes=
+Layout=us
+Model=pc104
+Options=
+ResetOldOptions=false
+ShowFlag=true
+ShowSingle=false
+StickySwitching=false
+StickySwitchingDepth=1
+SwitchMode=Global
+Use=true
+Variants=cz(basic),fr(basic),de(basic),it(basic),pl(basic),sk(basic)

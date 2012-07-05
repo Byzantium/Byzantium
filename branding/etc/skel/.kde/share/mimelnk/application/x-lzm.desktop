@@ -1,0 +1,7 @@
+[Desktop Entry]
+Comment=Porteus module
+Hidden=false
+Icon=cdr
+MimeType=application/x-lzm
+Patterns=*.lzm
+Type=MimeType

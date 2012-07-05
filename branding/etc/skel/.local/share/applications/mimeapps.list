@@ -1,0 +1,6 @@
+
+[Default Applications]
+x-scheme-handler/http=mozilla-firefox.desktop
+
+[Added Associations]
+x-scheme-handler/http=mozilla-firefox.desktop;

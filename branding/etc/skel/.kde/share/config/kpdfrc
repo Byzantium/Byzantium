@@ -1,0 +1,9 @@
+[Desktop Entry]
+FullScreen=false
+
+[General]
+ShowAlternativeShortcutConfig=true
+
+[MainWindow]
+Height 1024=1025
+Width 1280=1281

@@ -1,0 +1,6 @@
+[DefaultSkin]
+Font=Sans,10,-1,5,75,0,0,0,0,0
+ProgressFont=Sans,8,-1,5,75,0,0,0,0,0
+Size=80,30
+paletteBackgroundColor=100,100,100
+paletteForegroundColor=200,200,200

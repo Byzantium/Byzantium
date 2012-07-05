@@ -1,0 +1,11 @@
+[IncomingConnection]
+commandline[$e]=
+logfile[$e]=
+presentation=4
+soundfile[$e]=
+
+[ProcessFailed]
+commandline[$e]=
+logfile[$e]=
+presentation=4
+soundfile[$e]=

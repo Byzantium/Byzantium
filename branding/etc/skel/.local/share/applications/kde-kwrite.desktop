@@ -1,0 +1,19 @@
+[Desktop Entry]
+Categories=Qt;KDE;TextEditor;Office;
+Comment=
+DocPath=kwrite/index.html
+Exec[$e]=kwrite %U
+GenericName=Text Editor
+Icon=kwrite
+InitialPreference=8
+MimeType=text/plain;text/html;text/xml;text/css;text/x-sh;text/x-csv;text/x-diff;audio/m3u;application/x-php;application/x-desktop;application/x-shellscript;application/xhtml+xml;application/xml;application/xml-dtd;application/x-perl;application/x-perl-module;application/x-cgi;
+Name=KWrite
+Path[$e]=
+StartupNotify=true
+Terminal=0
+TerminalOptions=
+Type=Application
+X-DCOP-ServiceType=Multi
+X-KDE-StartupNotify=true
+X-KDE-SubstituteUID=false
+X-KDE-Username=
