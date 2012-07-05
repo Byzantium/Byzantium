@@ -234,6 +234,9 @@ cp srv/captiveportal/* ${FAKE_ROOT}/srv/captiveportal/
 echo "Confirming ownership of guest user's home directory."
 safe_chown guest:guest 1000:1000 -R ${FAKE_ROOT}/home/guest
 
+# Slap branding into module. This needs to be done more cleanly.
+cp -dr $BUILD_HOME/Byzantium/branding/* ${FAKE_ROOT}/
+
 # Build the Byzantium module.
 echo "Building 000-byzantium.xzm.  Sit back and enjoy the ride."
 dir2xzm ${FAKE_ROOT} ${OUTPUT}/000-byzantium.xzm
