@@ -49,3 +49,4 @@ class config:
 		self.no_services_msg = 'No services found in the network. Please try again in a little while.'
 		self.uri_post_port_string_key = 'appendtourl'
 		self.service_description_key = 'description'
+		self.service_info = {'chat':'/chat/?channels=byzantium'}

@@ -41,7 +41,7 @@ WheelSwitchesWorkspace=false
 [ScreenSaver]
 DPMS-dependent=false
 Enabled=true
-Lock=true
+Lock=false
 LockGrace=60000
 Saver=KBlankscreen.desktop
 Timeout=600

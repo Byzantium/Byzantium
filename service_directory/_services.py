@@ -5,7 +5,7 @@ services.py
 A module that reads the database of services running on the node and those found via avahi (mdns) and spits them out for use elsewhere.
 '''
 
-__author__ = 'Haxwithaxe (me at haxwithaxe dot net)'
+__author__ = 'haxwithaxe (me at haxwithaxe dot net)'
 
 from _utils import *
 import sqlite3
@@ -39,7 +39,11 @@ def get_local_services_list():
 	results = cursor.fetchall()
 	for service in results:
 		debug("DEBUG: Value of service: %s" % str(service))
-		service_list += [{'name':service[0],'path':'/'+service[0]+'/','description':''}]
+		if service[0] in conf.service_info:
+			path = conf.service_info[service[0]]
+		else:
+			path = '/'+service[0]+'/'
+		service_list += [{'name':service[0],'path':path,'description':''}]
 
 		# Clean up after ourselves.
 		debug("DEBUG: Closing service database.",5)
