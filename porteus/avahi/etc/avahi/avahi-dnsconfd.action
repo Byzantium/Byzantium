@@ -5,6 +5,7 @@
 # deleted the netconfig stuff because we don't need it.
 
 set -e
+TRUERESOLV=/etc/resolv.conf.avahi
 test "x$AVAHI_INTERFACE" != "x"
 
 # Command line arguments:
@@ -20,37 +21,31 @@ test "x$AVAHI_INTERFACE" != "x"
 #				  heard on $AVAHI_INTERFACE.
 #   $AVAHI_DNS_SERVERS: The list of all DNS servers found on all interfaces
 
-# Case: A list of DNSes was not passed to this script.
-if [ "x$AVAHI_DNS_SERVERS" = "x" ] ; then
-    if [ -f /etc/resolv.conf.avahi ]; then
-        mv /etc/resolv.conf.avahi /etc/resolv.conf
-        echo "No DNSes passed to this script and /etc/resolv.conf.avahi file was renamed to"
-        echo "/etc/resolv.conf."
-    else
-        echo "No DNSes passed to this script and no /etc/resolv.conf.avahi file was found."
-    fi
-else
-    # Case: A list of DNSes was passed to this script.
-    if [ ! -f /etc/resolv.conf.avahi ]; then
-        mv /etc/resolv.conf /etc/resolv.conf.avahi
-        echo "IP addresses of DNS passed to this script and no /etc/resolv.conf.avahi was found."
-        echo "Renamed /etc/resolv.conf to /etc/resolv.conf.avahi to back it up."
-    else
-        echo "An /etc/resolv.conf.avahi file was found.  I don't think this is a good thing."
-        echo "Doing nothing, proceeding to update /etc/resolv.conf."
-        # MOOF MOOF MOOF - This is probably an bug.
-    fi
-
-    # Add the IP addresses of the DNSes to /etc/resolv.conf, one per line.
-    for n in $AVAHI_DNS_SERVERS ; do 
-        # Test to see if the IP address of that DNS is already in resolv.conf.
-        # If it is, skip to the next one.
-        grep -q $n /etc/resolv.conf
-        if [ "$?" -lt 1 ]; then
-            echo "IP address $n already in /etc/resolv.conf.  Skipping."
-        else
-            echo "IP address $n not found in /etc/resolv.conf.  Adding."
-            echo "nameserver $n" >> /etc/resolv.conf
-        fi
-    done
+# Check for reslov.conf files and link to /etc/resolv.conf.avahi
+if [ ! -e $TRUERESOLV ] && [ ! -h /etc/resolv.conf ] ;then
+	mv /etc/resolv.conf $TRUERESOLV
+	ln -s $TRUERESOLV /etc/resolv.conf
+elif [ -e $TRUERESOLV ] && [ ! -e /etc/resolv.conf ] ;then
+	ln -s $TRUERESOLV /etc/resolv.conf
+elif [ ! -e ${TRUERESLOV} ] && [ ! -e /etc/resolv.conf ] ;then
+	touch $TRUERESOLV
+	ln -s $TRUERESOLV /etc/resolv.conf
+elif [ ! -h /etc/resolv.conf ] ;then
+	cat /etc/reslov.conf $TRUERESOLV > /tmp/resolv.conf
+	rm /etc/reslov.conf $TRUERESOLV
+	mv /tmp/resolv.conf $TRUERESOLV
+	ln -s $TRUERESOLV /etc/resolv.conf
+fi
+# A DNS server and an action were passed to the script (as well as some other junk we current don't care about)
+if [ ! -z $1 ] && [ ! -z $2 ] ;then # for the pedant #|| -z $3 || -z $4 ]; then
+	if [[ $1 == '+' ]] ;then
+		if grep -q $2 ${TRUERESOLV} ;then
+        	    echo "IP address $2 already in ${TRUERESOLV}.  Skipping."
+	        else
+        	    echo "IP address $2 not found in ${TRUERESOLV}.  Adding."
+	            echo "nameserver ${2}" >> ${TRUERESOLV}
+        	fi
+	elif [[ $1 == '-' ]] ;then
+		sed -i "/${2}/d" ${TRUERESOLV}
+	fi
 fi
