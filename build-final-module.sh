@@ -12,6 +12,20 @@ FAKE_ROOT=${FAKE_ROOT:-/tmp/fakeroot}
 BUILD_HOME=${BUILD_HOME:-/home/guest}
 OUTPUT=${OUTPUT:-/tmp}
 
+# clean $FAKE_ROOT if true
+CLEAN_FAKE_ROOT=false
+
+# set true to run http_placeholder.sh to add the web service placeholder pages
+HTTP_PLACEHOLDER=true
+
+if_def(){
+# if $1 is defined include $2 inline (execute it's contents in the
+# current scope)
+if [ -n $1 ] ;then
+	. $2
+fi
+}
+
 is_user(){
 	####### check if user exists: function for build machines
 	## @param $1 user[:group]
@@ -48,37 +62,44 @@ safe_chown(){
 # Create the fakeroot.
 cd $BUILD_HOME/Byzantium
 echo "Deleting and recreating the fakeroot..."
-rm -rf ${FAKE_ROOT}
-mkdir -p ${FAKE_ROOT}
+if $CLEAN_FAKE_ROOT ;then
+    read -p "Rebuilding fakeroot, okay? [press enter to continue]" rebuild
+    rm -rf ${FAKE_ROOT}
+    mkdir -p ${FAKE_ROOT}
 
 # Test to see if the Byzantium SVN repository has been checked out into the
 # home directory of the guest user.  ABEND if it's not.
-if [ ! -d $BUILD_HOME/byzantium ]; then
-    echo "ERROR: Byzantium SVN package repository not found in ~/guest."
-    exit 1
+    if [ ! -d $BUILD_HOME/byzantium ]; then
+        echo "ERROR: Byzantium SVN package repository not found in $BUILD_HOME."
+        exit 1
     fi
 
 # Unpack all of the .xzm packages into the fakeroot to populate it with the
 # libraries and executables under the hood of Byzantium.
-for i in `cat required_packages.txt` ; do
-    echo "Now installing $i to ${FAKE_ROOT}..."
-    xzm2dir $BUILD_HOME/byzantium/$i ${FAKE_ROOT}
-    echo "Done."
+    for i in `cat required_packages.txt` ; do
+        echo "Now installing $i to ${FAKE_ROOT}..."
+        xzm2dir $BUILD_HOME/byzantium/$i ${FAKE_ROOT}
+        echo "Done."
     done
 
 # The thing about symlinks is that they're absolute.  When you're building in
 # a fakeroot this breaks things.  So, we have to set up the web server's
 # content directories manually.
-echo "Deleting bad symlinks to httpd directories."
-rm ${FAKE_ROOT}/srv/httpd
-rm ${FAKE_ROOT}/srv/www
+    echo "Deleting bad symlinks to httpd directories."
+    rm ${FAKE_ROOT}/srv/httpd
+    rm ${FAKE_ROOT}/srv/www
+
+else
+    echo "Skipping fakeroot rebuild."
+fi # end if $CLEAN_FAKE_ROOT
 
 echo "Creating database and web server content directories."
 mkdir -p ${FAKE_ROOT}/srv/httpd/htdocs
+if_def $HTTP_PLACEHOLDER ${BUILD_HOME}/Byzantium/http_placeholder.sh # conditionally run the script at arg 2
 mkdir -p ${FAKE_ROOT}/srv/httpd/cgi-bin
 mkdir -p ${FAKE_ROOT}/srv/httpd/databases
 cd ${FAKE_ROOT}/srv
-ln -s httpd www
+ln -s httpd www || echo -n
 
 # We should build a controlpanel module to obviate these steps.
 echo "Creating directories for the traffic graphs."
@@ -141,7 +162,7 @@ cp index.html ${FAKE_ROOT}/srv/httpd/htdocs
 cp -r services.py _services.py _utils.py tmpl ${FAKE_ROOT}/srv/httpd/cgi-bin
 chmod 0755 ${FAKE_ROOT}/srv/httpd/cgi-bin/services.py
 mkdir -p ${FAKE_ROOT}/opt/byzantium/avahi/
-cp avahiclient.sh avahiclient.py ${FAKE_ROOT}/opt/byzantium/avahi/
+cp avahiclient.sh avahiclient.py _utils.py ${FAKE_ROOT}/opt/byzantium/avahi/
 chmod -R 0755 ${FAKE_ROOT}/opt/byzantium/avahi/
 cp rc.avahiclient ${FAKE_ROOT}/etc/rc.d/
 chmod 0755 ${FAKE_ROOT}/etc/rc.d/rc.avahiclient
@@ -214,7 +235,7 @@ cp byzantium-icon.png ${FAKE_ROOT}/usr/share/pixmaps/porteus
 
 # Create the runtime directory for ngircd because its package doesn't.
 echo "Setting up directories for ngircd."
-mkdir ${FAKE_ROOT}/var/run/ngircd
+mkdir -p ${FAKE_ROOT}/var/run/ngircd
 safe_chown ngircd:root 1002:0 ${FAKE_ROOT}/var/run/ngircd
 chmod 0750 ${FAKE_ROOT}/var/run/ngircd
 
@@ -235,6 +256,7 @@ echo "Confirming ownership of guest user's home directory."
 safe_chown guest:guest 1000:1000 -R ${FAKE_ROOT}/home/guest
 
 # Slap branding into module. This needs to be done more cleanly.
+echo  "Installing branding stuff."
 cp -dr $BUILD_HOME/Byzantium/branding/* ${FAKE_ROOT}/
 
 # Build the Byzantium module.
