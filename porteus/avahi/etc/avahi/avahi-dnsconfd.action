@@ -46,6 +46,7 @@ if [ ! -z $1 ] && [ ! -z $2 ] ;then # for the pedant #|| -z $3 || -z $4 ]; then
 	            echo "nameserver ${2}" >> ${TRUERESOLV}
         	fi
 	elif [[ $1 == '-' ]] ;then
+		echo "Removing IP address $2 from ${TRUERESOLV}."
 		sed -i "/${2}/d" ${TRUERESOLV}
 	fi
 fi
