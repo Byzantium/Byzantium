@@ -7,9 +7,6 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
-# Make rc.sshd executable.
-chmod +x /etc/rc.d/rc.sshd
-
 # Start rrdtool up to gather stats on the network interfaces.
 /usr/local/bin/traffic_stats.sh &
 
