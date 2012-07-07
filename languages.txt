@@ -1,0 +1,4 @@
+erlang-otp-14B02-i486-1_SBo.xzm
+jdk-6u25-i586-1.xzm
+lua-5.1.5-i486-1_SBo.xzm
+
