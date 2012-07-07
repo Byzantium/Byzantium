@@ -63,16 +63,16 @@ safe_chown(){
 	chown ${1} ${*:3}
 }
 
-# Create the fakeroot.
+# Create the fakeroots.
 cd $BUILD_HOME/Byzantium
 echo "Deleting and recreating the fakeroots..."
 if $CLEAN_FAKE_ROOT ;then
     read -p "Rebuilding fakeroot, okay? [press enter to continue]" rebuild
     rm -rf ${FAKE_ROOT}
     mkdir -p ${FAKE_ROOT}
-if $CLEAN_LANGUAGE_ROOT ;then
-    rm -rf ${LANGUAGE_ROOT}
-    mkdir -p ${LANGUAGE_ROOT}
+    if $CLEAN_LANGUAGE_ROOT ;then
+        rm -rf ${LANGUAGE_ROOT}
+        mkdir -p ${LANGUAGE_ROOT}
 
 # Test to see if the Byzantium SVN repository has been checked out into the
 # home directory of the guest user.  ABEND if it's not.
