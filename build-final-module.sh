@@ -11,13 +11,9 @@ set -e
 FAKE_ROOT=${FAKE_ROOT:-/tmp/fakeroot}
 BUILD_HOME=${BUILD_HOME:-/home/guest}
 OUTPUT=${OUTPUT:-/tmp}
-LANGUAGE_ROOT=${LANGUAGE_ROOT:-/tmp/languageroot}
 
 # clean $FAKE_ROOT if true
 CLEAN_FAKE_ROOT=true
-
-# clean $LANGUAGE_ROOT if true
-CLEAN_LANGUAGE_ROOT=true
 
 # set true to run http_placeholder.sh to add the web service placeholder pages
 HTTP_PLACEHOLDER=true
@@ -63,35 +59,26 @@ safe_chown(){
 	chown ${1} ${*:3}
 }
 
-# Create the fakeroots.
+# Create the fakeroot.
 cd $BUILD_HOME/Byzantium
-echo "Deleting and recreating the fakeroots..."
+echo "Deleting and recreating the fakeroot..."
 if $CLEAN_FAKE_ROOT ;then
     read -p "Rebuilding fakeroot, okay? [press enter to continue]" rebuild
     rm -rf ${FAKE_ROOT}
     mkdir -p ${FAKE_ROOT}
-    if $CLEAN_LANGUAGE_ROOT ;then
-        rm -rf ${LANGUAGE_ROOT}
-         mkdir -p ${LANGUAGE_ROOT}
-    fi
 
 # Test to see if the Byzantium SVN repository has been checked out into the
 # home directory of the guest user.  ABEND if it's not.
     if [ ! -d $BUILD_HOME/byzantium ]; then
-        echo "ERROR: Byzantium SVN repository not found in $BUILD_HOME."
+        echo "ERROR: Byzantium SVN package repository not found in $BUILD_HOME."
         exit 1
     fi
 
-# Unpack all of the .xzm packages into the fakeroots to populate it with the
+# Unpack all of the .xzm packages into the fakeroot to populate it with the
 # libraries and executables under the hood of Byzantium.
     for i in `cat required_packages.txt` ; do
         echo "Now installing $i to ${FAKE_ROOT}..."
         xzm2dir $BUILD_HOME/byzantium/$i ${FAKE_ROOT}
-        echo "Done."
-    done
-    for i in `cat languages.txt` ; do
-        echo "Now installing $i to ${LANGUAGE_ROOT}..."
-        xzm2dir $BUILD_HOME/byzantium/$i ${LANGUAGE_ROOT}
         echo "Done."
     done
 
@@ -275,9 +262,5 @@ cp -dr $BUILD_HOME/Byzantium/branding/* ${FAKE_ROOT}/
 # Build the Byzantium module.
 echo "Building 000-byzantium.xzm.  Sit back and enjoy the ride."
 dir2xzm ${FAKE_ROOT} ${OUTPUT}/000-byzantium.xzm
-
-# Build the language module.
-echo "Building 001-languages.xzm."
-dir2xzm ${LANGUAGE_ROOT} ${OUTPUT}/001-language.xzm
 
 # "Hey, Bishop - do the thing with the knife!"
