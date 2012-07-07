@@ -72,7 +72,9 @@ if $CLEAN_FAKE_ROOT ;then
     mkdir -p ${FAKE_ROOT}
     if $CLEAN_LANGUAGE_ROOT ;then
         rm -rf ${LANGUAGE_ROOT}
-        mkdir -p ${LANGUAGE_ROOT}
+         mkdir -p ${LANGUAGE_ROOT}
+    fi
+fi
 
 # Test to see if the Byzantium SVN repository has been checked out into the
 # home directory of the guest user.  ABEND if it's not.
