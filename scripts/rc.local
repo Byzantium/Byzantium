@@ -7,6 +7,10 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
+# As an experiment, let's sleep for 60 seconds to give the desktop a chance
+# to start up
+sleep 60
+
 # Start rrdtool up to gather stats on the network interfaces.
 /usr/local/bin/traffic_stats.sh &
 
