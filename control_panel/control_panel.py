@@ -20,66 +20,50 @@ import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
+import argparse
 import getopt
 import logging
 import os
 import sys
 
-# Global variables.
-cachedir = '/tmp/controlcache'
 
-# Mode control flags.
-debug = False
-test = False
+def ParseArgs():
+    parser = argparse.ArgumentParser(conflict_handler='resolve', description="This daemon implements the control "
+                                     "panel functionality of Byzantium Linux.")
+    parser.add_argument("--cachedir", action="store", default="/tmp/controlcache")
+    parser.add_argument("--configdir", action="store", default="/etc/controlpanel")
+    parser.add_argument("-d", "--debug", action="store_true", default=False, help="Enable debugging mode.")
+    parser.add_argument("--filedir", action="store", default="/srv/controlpanel")
+    parser.add_argument("-t", "--test", action="store_true", default=False,
+                        help="Disables actually doing anything, it just prints what would be done.  Used for testing "
+                        "commands without altering the test system.")
+    return parser.parse_args()
 
-# Core code.
-# Set up the command line flags passed to this application to determine what
-# mode (if any) the control panel should be in.
-# d - debugging mode
-# t - test mode
-shortopts = 'dt'
-longopts = ['debug', 'test']
-try:
-    (opts, args) = getopt.getopt(sys.argv[1:], shortopts, longopts)
-except getopt.GetoptError:
-    print "ERROR: Bad command line argument."
-    print "ARGS: --debug/-d | --test/-t"
-    print "These command line arguments may be combined."
-    exit(1)
 
-# Parse the command line arguments and set global variables as appropriate.
-for opt, arg in opts:
-    if opt in ('-d', '--debug'):
-        debug = True
+def CheckArgs(args):
+    if args.debug:
         print "Control panel debugging mode is on."
-    if opt in ('-t', '--test'):
-        test = True
+    if args.test:
         print "Control panel functional testing mode is on."
-
-# Configure the CLI-dependent global variables used by the rest of the control
-# panel.
-if test:
-    # Configure for running in the current working directory.  This will
-    # always be Byzantium/control_panel/.
-    print "TEST: Referencing files from current working directory for testing."
-    filedir = 'srv/controlpanel'
-    configdir = 'etc/controlpanel'
-else:
-    # Configure for production.
-    filedir = '/srv/controlpanel'
-    configdir = '/etc/controlpanel'
-globalconfig = os.path.join(configdir,'controlpanelGlobal.conf')
-appconfig = os.path.join(configdir,'controlpanel.conf')
-
-# Set up the location the templates will be served out of.
-templatelookup = TemplateLookup(directories=[filedir],
-                 module_directory=cachedir, collection_size=100)
+        # Configure for running in the current working directory.  This will
+        # always be Byzantium/control_panel/.
+        print "TEST: Referencing files from current working directory for testing."
+        args.filedir = '/srv/controlpanel'
+        args.configdir = '/etc/controlpanel'
+    return args
 
 def main():
-    if debug:
+    args = CheckArgs(ParseArgs())
+    if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.ERROR)
+    globalconfig = os.path.join(args.configdir,'controlpanelGlobal.conf')
+    appconfig = os.path.join(args.configdir,'controlpanel.conf')
+
+    # Set up the location the templates will be served out of.
+    # TODO(shanel): Is this even used?
+    templatelookup = TemplateLookup(directories=[args.filedir], module_directory=args.cachedir, collection_size=100)
 
     # Read in the name and location of the appserver's global config file.
     cherrypy.config.update(globalconfig)
@@ -94,8 +78,8 @@ def main():
     cherrypy.tree.mount(root, "/", appconfig)
 
     # Start the web server.
-    if debug:
-    logging.debug("Starting CherryPy.")
+    if args.debug:
+        logging.debug("Starting CherryPy.")
     cherrypy.engine.start()
     cherrypy.engine.block()
 

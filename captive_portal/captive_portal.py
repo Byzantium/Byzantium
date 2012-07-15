@@ -54,23 +54,6 @@ import subprocess
 from subprocess import call
 import sys
 
-## Global variables.
-#filedir = '/srv/captiveportal'
-#configdir = '/etc/captiveportal'
-#appconfig = os.path.join(configdir,'captiveportal.conf')
-#cachedir = '/tmp/portalcache'
-#pidfile = ''
-#ssl_cert = '/etc/httpd/server.crt'
-#ssl_private_key = '/etc/httpd/server.key'
-#
-## Command line arguments to the server.
-#debug = False
-#test = False
-#interface = ''
-#address = ''
-#port = ''
-#ssl_port = ''
-
 # The CaptivePortalDetector class implements a fix for an undocumented bit of
 # fail in Apple iOS.  iProducts attempt to access a particular file hidden in
 # the Apple Computer website.  If it can't find it, iOS forces the user to try
@@ -207,30 +190,6 @@ class CaptivePortal(object):
         return redirect
     cherrypy.config.update({'error_page.404':error_page_404})
 
-## Helper methods used by the core code.
-## usage: Prints online help.  Takes no args, returns nothing.
-#def usage():
-#    print
-#    print "This daemon implements the captive portal functionality of Byzantium Linux."
-#    print "Specifically, it acts as the front end to IP tables and automates the addition"
-#    print "of mesh clients to the whitelist."
-#    print
-#    print "\t-h / --help: Display online help."
-#    print "\t-i / --interface: The name of the interface the daemon listens on."
-#    print "\t-a / --address: The IP address of the interface the daemon listens on."
-#    print "\t-p / --port: Port to listen on.  Defaults to 31337/TCP."
-#    print "\t-s / --sslport: Port to listen for HTTPS connections on.."
-#    print "\t\t\tDefaults to HTTP port +1."
-#    print "\t-c / --certificate: Path to an SSL certificate."
-#    print "\t\t\t    Defaults to %s." % ssl_cert
-#    print "\t-k / --key: Path to an SSL private key file."
-#    print "\t\t    Defaults to %s." % ssl_private_key
-#    print "\t-d / --debug: Enable debugging mode."
-#    print "\t-t / --test: Disables actually doing anything, it just prints what"
-#    print "\t\t     would be done.  Used for testing commands without altering"
-#    print "\t\t     the test system."
-#    print
-
 def ParseArgs():
     parser = argparse.ArgumentParser(conflict_handler='resolve', description="This daemon implements the captive "
                                      "portal functionality of Byzantium Linux. pecifically, it acts as the front end "
@@ -277,98 +236,15 @@ def CheckArgs(args):
 
     if not args.configdir == "/etc/captiveportal" and args.appconfig == "/etc/captiveportal/captiveportal.conf":
         args.appconfig = "%s/captiveportal.conf" % args.configdir
+
+     if args.debug:
+       print "Captive portal debugging mode is on."
+
+     if args.test:
+       print "Captive portal functional testing mode is on."
+
     return args
         
-
-# Core code.
-## Set up the command line arguments.
-## h - Display online help.
-## i: - Interface to listen on.
-## a: - Address to listen on so we can figure out the network info later.
-## p: - Port to listen on.  Defaults to 31337.
-## s: - Port to listen for HTTPS requests on.  Defaults to HTTP port +1.
-## d - Debugging mode.
-## t - Test mode.
-#shortopts = 'hi:a:p:s:c:k:dt'
-#longopts = ['help', 'interface=', 'address=', 'port=', 'sslport=',
-#            'certificate=', 'key=', 'debug', 'test']
-#try:
-#    (opts, args) = getopt.getopt(sys.argv[1:], shortopts, longopts)
-#except getopt.GetoptError:
-#    print "ERROR: Bad command line argument."
-#    usage()
-#    exit(2)
-#
-## Parse the command line args.
-#for opt, arg in opts:
-#    # Is the user asking for help?
-#    if opt in ('-h', '--help'):
-#        usage()
-#        exit(1)
-#
-#    # User specifying the network interface to listen on.  This will be
-#    # more helpful in bookkeeping than anything else.
-#    if opt in ('-i', '--interface'):
-#        interface = arg.rstrip()
-#
-#    # User specifying the IP address to listen on.  This is more useful
-#    # for network math than anything else.
-#    if opt in ('-a', '--address'):
-#        address = arg.rstrip()
-#
-#    # User specifies the port to listen on.  This has a default.
-#    if opt in ('-p', '--port'):
-#        port = int(arg.rstrip())
-#    else:
-#        port = 31337
-#
-#    # User specifies the port to listen for HTTPS requests on.  This has a
-#    # default.
-#    if opt in ('-s', '--sslport'):
-#        if not ssl_port:
-#            ssl_port = int(arg.rstrip())
-#    else:
-#            ssl_port = port + 1
-#    logging.debug("SSL port defaulting to %i/TCP." % ssl_port)
-#
-#    # User specifies a path to a pre-generated SSL certificate.  This has a
-#    # default.
-#    if opt in ('-c', '--certificate'):
-#        temp_cert_path = arg.rstrip()
-#        if os.path.exists(temp_cert_path):
-#            ssl_cert = temp_cert_path
-#            logging.debug("Using SSL cert %s." % temp_cert_path)
-#        else:
-#            print "ERROR: Specified SSL cert not found.  Check the path you supplied."
-#            exit(2)
-#
-#    # User specifies a path to a pre-generated SSL private keyfile.  This has a
-#    # default.
-#    if opt in ('-k', '--key'):
-#        temp_key_path = arg.rstrip()
-#        if os.path.exists(temp_key_path):
-#            ssl_private_key = temp_key_path
-#            logging.debug("Using SSL private key %s." % temp_key_path)
-#        else:
-#            print "ERROR: Specified SSL private key not found.  Check the path you supplied."
-#            exit(2)
-#
-#    # User turns on debugging mode.
-#    if opt in ('-d', '--debug'):
-#        debug = True
-#        print "Debugging mode on."
-#
-#    # User turns on test mode, which prints the commands but doesn't actually
-#    # run them.
-#    if opt in ('-t', '--test'):
-#        test = True
-#        print "Command testing mode on."
-#
-## If some arguments are missing, ABEND.
-#if not interface:
-#    print "ERROR: Missing command line argument 'interface'."
-#    exit(2)
-
 def CreatePidfile(args):
     # Create the filename for this instance's PID file.
     if not args.pidfile:
