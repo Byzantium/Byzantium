@@ -237,11 +237,11 @@ def CheckArgs(args):
     if not args.configdir == "/etc/captiveportal" and args.appconfig == "/etc/captiveportal/captiveportal.conf":
         args.appconfig = "%s/captiveportal.conf" % args.configdir
 
-     if args.debug:
-       print "Captive portal debugging mode is on."
+    if args.debug:
+        print "Captive portal debugging mode is on."
 
-     if args.test:
-       print "Captive portal functional testing mode is on."
+    if args.test:
+        print "Captive portal functional testing mode is on."
 
     return args
         
