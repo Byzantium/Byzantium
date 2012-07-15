@@ -19,11 +19,13 @@ import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
+
+import logging
 import os
 import os.path
+import signal
 import sqlite3
 import subprocess
-import signal
 import time
 
 # Import core control panel modules.
@@ -33,6 +35,13 @@ from control_panel import *
 # This class allows the user to turn a configured network interface on their
 # node into a gateway from the mesh to another network (usually the global Net).
 class Gateways(object):
+    
+    def __init__(self):
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.ERROR)
+
     # Class constants.
     # Path to network configuration database.
     if test:
@@ -111,19 +120,17 @@ class Gateways(object):
     # New ones detected are added to the network.sqlite database.  Takes no
     # arguments; returns nothing (but alters the database).
     def update_network_interfaces(self):
-        if debug:
-            print "DEBUG: Entered Gateways.update_network_interfaces()."
+        logging.debug("Entered Gateways.update_network_interfaces().")
         interfaces = []
 
         # Open the kernel's canonical list of network interfaces.
         procnetdev = open("/proc/net/dev", "r")
-        if debug:
-            if procnetdev:
-                print "DEBUG: Successfully opened /proc/net/dev."
-            else:
+        if procnetdev:
+            logging.debug("Successfully opened /proc/net/dev.")
+        else:
                 # Note: This means that we use the contents of the database.
-                print "DEBUG: Warning: Unable to open /proc/net/dev."
-                return
+            logging.debug("Warning: Unable to open /proc/net/dev.")
+            return
 
         # Smoke test by trying to read the first two lines from the pseudofile
         # (which comprises the column headers.  If this fails, just return
@@ -131,8 +138,7 @@ class Gateways(object):
         headers = procnetdev.readline()
         headers = procnetdev.readline()
         if not headers:
-            if debug:
-                print "DEBUG: Smoke test of /proc/net/dev read failed."
+            logging.debug("Smoke test of /proc/net/dev read failed.")
             procnetdev.close()
             return
 
@@ -160,16 +166,14 @@ class Gateways(object):
 
                 # See if it's in the table of wired interfaces.
                 template = (interface, )
-                if debug:
-                    print "DEBUG: Checking to see if interface %s is a known wired interface..." % interface
+                logging.debug("Checking to see if interface %s is a known wired interface..." % interface)
                 cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
                 result = cursor.fetchall()
                 if not len(result):
-                    if debug:
-                        print "DEBUG: Interface %s isn't a known wired interface.  Checking wireless interfaces..." % interface
+                    logging.debug("Interface %s isn't a known wired interface.  Checking wireless interfaces..." %
+                                  interface)
                 else:
-                    if debug:
-                        print "DEBUG: Interface %s is a known wired interface." % interface
+                    logging.debug("Interface %s is a known wired interface." % interface)
                     found = 'wired'
 
                 # If it's not in the wired table, check the wireless table.
@@ -180,17 +184,15 @@ class Gateways(object):
                     # If it's not in there, either, figure out which table it
                     # has to go in.
                     if not len(result):
-                        if debug:
-                            print "DEBUG: %s isn't a known wireless interface, either.  Figuring out where it has to go..." % interface
+                        logging.debug("%s isn't a known wireless interface, either.  Figuring out where it has to go..." % 
+                                      interface)
                     else:
-                        if debug:
-                            print "DEBUG: %s is a known wireless interface." % interface
+                        logging.debug("%s is a known wireless interface." % interface)
                         found = 'wireless'
 
                 # If it still hasn't been found, figure out where it has to go.
                 if not found:
-                    if debug:
-                        print "DEBUG: Interface %s really is new.  Figuring out where it should go." % interface
+                    logging.debug("Interface %s really is new.  Figuring out where it should go." % interface)
                     table = ''
 
                     # Look in /proc/net/wireless.  If it's in there, it
@@ -201,15 +203,13 @@ class Gateways(object):
                     headers = procnetwireless.readline()
                     for line in procnetwireless:
                         if interface in line:
-                            if debug:
-                                print "DEBUG: Goes in wireless table."
+                            logging.debug("Goes in wireless table.")
                             table = 'wireless'
                     procnetwireless.close()
 
                     # Failing that, it goes in the wired table.
                     if not table:
-                        if debug:
-                            print "DEBUG: Goes in wired table."
+                        logging.debug("Goes in wired table.")
                         table = 'wired'
 
                     # If we've made it this far, we know what to do.
@@ -223,7 +223,7 @@ class Gateways(object):
 
         # Close the network configuration database and return.
         cursor.close()
-        print "DEBUG: Leaving Gateways.enumerate_network_interfaces()."
+        logging.debug("Leaving Gateways.enumerate_network_interfaces().")
 
     # Implements step two of the wired gateway configuration process: turning
     # the gateway on.  This method assumes that whichever Ethernet interface
@@ -319,15 +319,13 @@ class Gateways(object):
 
     # Method that does the deed of turning an interface into a gateway.  This
     def activate(self, interface=None):
-        if debug:
-            print "DEBUG: Entered Gateways.activate()."
+        logging.debug("Entered Gateways.activate().")
 
         # Test to see if wireless configuration attributes are set, and if they
         # are, use iwconfig to set up the interface.
         if self.essid:
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
-            if debug:
-                print "DEBUG: Setting ESSID to %s." % self.essid
+            logging.debug("Setting ESSID to %s." % self.essid)
             if test:
                 print "TEST: Command to set ESSID:"
                 print str(command)
@@ -335,8 +333,7 @@ class Gateways(object):
                 process = subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
-            if debug:
-                print "DEBUG: Setting channel %s." % self.channel
+            logging.debug("Setting channel %s." % self.channel)
             if test:
                 print "TEST: Command to set channel:"
                 print str(command)
@@ -349,8 +346,7 @@ class Gateways(object):
         # time dhcpcd gets IP configuration information (or not) and when
         # avahi-daemon is bounced.
         command = ['/usr/local/sbin/gateway.sh', interface]
-        if debug:
-            print "DEBUG: Preparing to configure interface %s." % interface
+        logging.debug("Preparing to configure interface %s." % interface)
         if test:
             print "TEST: Pretending to run gateway.sh on interface %s." % interface
             print "TEST: Command that would be run:"

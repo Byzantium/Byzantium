@@ -19,9 +19,11 @@
 import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
+
+import getopt
+import logging
 import os
 import sys
-import getopt
 
 # Global variables.
 cachedir = '/tmp/controlcache'
@@ -74,6 +76,11 @@ templatelookup = TemplateLookup(directories=[filedir],
                  module_directory=cachedir, collection_size=100)
 
 def main():
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.ERROR)
+
     # Read in the name and location of the appserver's global config file.
     cherrypy.config.update(globalconfig)
 
@@ -83,13 +90,12 @@ def main():
 
     # Mount the object for the root of the URL tree, which happens to be the
     # system status page.  Use the application config file to set it up.
-    if debug:
-        print "DEBUG: Mounting Status() object as webapp root."
+    logging.debug("Mounting Status() object as webapp root.")
     cherrypy.tree.mount(root, "/", appconfig)
 
     # Start the web server.
     if debug:
-        print "DEBUG: Starting CherryPy."
+    logging.debug("Starting CherryPy.")
     cherrypy.engine.start()
     cherrypy.engine.block()
 

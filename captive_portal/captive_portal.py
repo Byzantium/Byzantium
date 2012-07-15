@@ -80,8 +80,10 @@ class CaptivePortalDetector(object):
     # index(): Pretends to be /library/test and /library/test/index.html.
 
     def __init__(self):
-      if debug:
-        logging.basicConfig(level=logging.DEBUG)
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.ERROR)
 
     def index(self):
         return("You shouldn't be seeing this, either.")
@@ -108,8 +110,10 @@ class CaptivePortalDetector(object):
 class Library(object):
     
     def __init__(self):
-      if debug:
-        logging.basicConfig(level=logging.DEBUG)
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.ERROR)
 
     logging.debug("Instantiating Library() dummy object.")
     test = CaptivePortalDetector()
@@ -124,8 +128,10 @@ class Library(object):
 class CaptivePortal(object):
     
     def __init__(self):
-      if debug:
-        logging.basicConfig(level=logging.DEBUG)
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.ERROR)
 
     logging.debug("Mounting Library() from CaptivePortal().")
     library = Library()
