@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+
+# Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
+# License: GPLv3
+
+# captive_portal_test.py
+
 import unittest
 import captive_portal
 
