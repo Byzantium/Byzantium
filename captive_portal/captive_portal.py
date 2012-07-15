@@ -45,11 +45,13 @@ from cherrypy import _cperror
 from cherrypy.process.plugins import PIDFile
 from mako.template import Template
 from mako.lookup import TemplateLookup
-import os
-import sys
+
 import getopt
+import logging
+import os
 import subprocess
 from subprocess import call
+import sys
 
 # Global variables.
 filedir = '/srv/captiveportal'
@@ -76,14 +78,18 @@ ssl_port = ''
 # the captive portal.
 class CaptivePortalDetector(object):
     # index(): Pretends to be /library/test and /library/test/index.html.
+
+    def __init__(self):
+      if debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     def index(self):
         return("You shouldn't be seeing this, either.")
     index.exposed = True
 
     # success_html(): Pretends to be http://apple.com/library/test/success.html.
     def success_html(self):
-        if debug:
-            print "DEBUG: iOS device detected."
+        logging.debug("iOS device detected.")
         success = '''
                 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
                 <HTML>
@@ -100,8 +106,12 @@ class CaptivePortalDetector(object):
 
 # Dummy class that has to exist to create a durectory URI hierarchy.
 class Library(object):
-    if debug:
-        print "DEBUG: Instantiating Library() dummy object."
+    
+    def __init__(self):
+      if debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    logging.debug("Instantiating Library() dummy object.")
     test = CaptivePortalDetector()
 
     # index(): Pretends to be /library and /library/index.html.
@@ -112,8 +122,12 @@ class Library(object):
 # The CaptivePortal class implements the actual captive portal stuff - the
 # HTML front-end and the IP tables interface.
 class CaptivePortal(object):
-    if debug:
-        print "DEBUG: Mounting Library() from CaptivePortal()."
+    
+    def __init__(self):
+      if debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    logging.debug("Mounting Library() from CaptivePortal().")
     library = Library()
 
     # index(): Pretends to be / and /index.html.
@@ -123,11 +137,9 @@ class CaptivePortal(object):
             clientlang = cherrypy.request.headers['Accept-Language']
             clientlang = clientlang.split(',')[0].lower()
         except:
-            if debug:
-                print "DEBUG: Client language not found.  Defaulting to en-us."
+            logging.debug("Client language not found.  Defaulting to en-us.")
             clientlang = 'en-us'
-        if debug:
-            print "DEBUG: Current browser language: %s" % clientlang
+        logging.debug("Current browser language: %s" % clientlang)
 
         # Piece together the filename of the /index.html file to return based
         # on the primary language.
@@ -136,9 +148,8 @@ class CaptivePortal(object):
             page = templatelookup.get_template(indexhtml)
         except:
             page = templatelookup.get_template('index.html.en-us')
-            if debug:
-                print "DEBUG: Unable to find HTML template for language %s!" % clientlang
-                print "\tDefaulting to /srv/captiveportal/index.html.en-us."
+            logging.debug("Unable to find HTML template for language %s!" % clientlang)
+            logging.debug("\tDefaulting to /srv/captiveportal/index.html.en-us.")
         return page.render()
     index.exposed = True
 
@@ -150,8 +161,7 @@ class CaptivePortal(object):
     def whitelist(self, accepted=None):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
-        if debug:
-            print "DEBUG: Client's IP address: %s" % clientip
+        logging.debug("Client's IP address: %s" % clientip)
 
         # Set up the command string to add the client to the IP tables ruleset.
         addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip]
@@ -171,9 +181,8 @@ class CaptivePortal(object):
                    </body>
                    </html>"""
 
-        if debug:
-            print "DEBUG: Generated HTML refresh is:"
-            print redirect
+         logging.debug("Generated HTML refresh is:")
+         logging.debug(redirect)
 
         # Fire the redirect at the client.
         return redirect
@@ -190,19 +199,17 @@ class CaptivePortal(object):
     def error_page_404(status, message, traceback, version):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
-        if debug:
-            print "DEBUG: Client's IP address: %s" % clientip
-            print "DEBUG: Value of status is: %s" % status
-            print "DEBUG: Value of message is: %s" % message
+        logging.debug("Client's IP address: %s" % clientip)
+        logging.debug("Value of status is: %s" % status)
+        logging.debug("Value of message is: %s" % message)
 
         # Assemble some HTML to redirect the client to the captive portal's
         # /index.html-* page.
         redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + address + """/" /></head> <body></body> </html>"""
 
-        if debug:
-            print "DEBUG: Generated HTML refresh is:"
-            print redirect
-            print "DEBUG: Redirecting client to /."
+        logging.debug("Generated HTML refresh is:")
+        logging.debug(redirect)
+        logging.debug("Redirecting client to /.")
 
         # Fire the redirect at the client.
         return redirect
@@ -281,8 +288,7 @@ for opt, arg in opts:
             ssl_port = int(arg.rstrip())
     else:
             ssl_port = port + 1
-    if debug:
-        print "DEBUG: SSL port defaulting to %i/TCP." % ssl_port
+    logging.debug("SSL port defaulting to %i/TCP." % ssl_port)
 
     # User specifies a path to a pre-generated SSL certificate.  This has a
     # default.
@@ -290,8 +296,7 @@ for opt, arg in opts:
         temp_cert_path = arg.rstrip()
         if os.path.exists(temp_cert_path):
             ssl_cert = temp_cert_path
-            if debug:
-                print "DEBUG: Using SSL cert %s." % temp_cert_path
+            logging.debug("Using SSL cert %s." % temp_cert_path)
         else:
             print "ERROR: Specified SSL cert not found.  Check the path you supplied."
             exit(2)
@@ -302,8 +307,7 @@ for opt, arg in opts:
         temp_key_path = arg.rstrip()
         if os.path.exists(temp_key_path):
             ssl_private_key = temp_key_path
-            if debug:
-                print "DEBUG: Using SSL private key %s." % temp_key_path
+            logging.debug("Using SSL private key %s." % temp_key_path)
         else:
             print "ERROR: Specified SSL private key not found.  Check the path you supplied."
             exit(2)
@@ -330,8 +334,7 @@ if test:
 else:
     pidfile = '/var/run/captive_portal.'
 pidfile = pidfile + interface
-if debug:
-    print "DEBUG: Name of PID file is: %s" % pidfile
+logging.debug("Name of PID file is: %s" % pidfile)
 
 # If a PID file already exists for this network interface, ABEND.
 if os.path.exists(pidfile):
@@ -340,9 +343,8 @@ if os.path.exists(pidfile):
     exit(5)
 
 # Write the PID file of this instance to the PID file.
-if debug:
-    print "DEBUG: Creating pidfile for network interface %s." % str(interface)
-    print "DEBUG: PID of process is %s." % str(os.getpid())
+logging.debug("Creating pidfile for network interface %s." % str(interface))
+logging.debug("PID of process is %s." % str(os.getpid()))
 pid = PIDFile(cherrypy.engine, pidfile)
 pid.subscribe()
 
@@ -368,8 +370,7 @@ root = CaptivePortal()
 
 # Mount the object for the root of the URL tree, which happens to be the
 # system status page.  Use the application config file to set it up.
-if debug:
-    print "DEBUG: Mounting web app in %s to /." % appconfig
+logging.debug("Mounting web app in %s to /." % appconfig)
 cherrypy.tree.mount(root, "/", appconfig)
 
 # Initialize the IP tables ruleset for the node.
@@ -390,8 +391,7 @@ if test:
     print "Idle client monitor command that would be executed:"
     print str(idle_client_reaper)
 else:
-    if debug:
-        print "DEBUG: Starting mop_up_dead_clients.py."
+    logging.debug("Starting mop_up_dead_clients.py.")
     reaper = subprocess.Popen(idle_client_reaper)
 if not reaper:
     print "ERROR: mop_up_dead_clients.py did not start."
@@ -404,8 +404,7 @@ if test:
     print "Command that would start the fake DNS server:"
     print str(dns_hijacker)
 else:
-    if debug:
-        print "DEBUG: Starting fake_dns.py."
+    logging.debug("Starting fake_dns.py.")
     hijacker = subprocess.Popen(dns_hijacker)
 if not hijacker:
     print "ERROR: fake_dns.py did not start."
@@ -425,8 +424,7 @@ if iptables == 2:
     exit(4)
 
 # Start the web server.
-if debug:
-    print "DEBUG: Starting web server."
+logging.debug("Starting web server.")
 cherrypy.engine.start()
 cherrypy.engine.block()
 
