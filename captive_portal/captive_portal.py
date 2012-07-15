@@ -46,6 +46,7 @@ from cherrypy.process.plugins import PIDFile
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
+import argparse
 import getopt
 import logging
 import os
@@ -244,6 +245,20 @@ def usage():
     print "\t\t     would be done.  Used for testing commands without altering"
     print "\t\t     the test system."
     print
+
+def ParseArgs():
+    parser = argparse.ArgumentParser(conflict_handler='resolve')
+    parser.add_argument("-a", "--address", action="store", dest="address",
+                        help="The IP address of the interface the daemon listens on.")
+    parser.add_argument("-c", "--certificate", action="store", dest="certificate",  help="Path to an SSL certificate.")
+    parser.add_argument("-d", "--debug", action="store_true", default=False, dest="debug",  help="Enable debugging mode.")
+    parser.add_argument("-i", "--interface", action="store", dest="interface", 
+                        help="The name of the interface the daemon listens on.")
+    parser.add_argument("-k", "--key", action="store", dest="key", default="/etc/httpd/server.key",
+                        help="Path to an SSL private key file. (Defaults to /etc/httpd/server.key)")
+    parser.add_argument("-p", "--port", action="store", dest="port", default="31337",
+                        help="Port to listen on.  Defaults to 31337/TCP.")
+    # TODO(shanel): continue adding args
 
 # Core code.
 # Set up the command line arguments.
