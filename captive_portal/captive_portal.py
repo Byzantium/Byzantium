@@ -187,8 +187,8 @@ class CaptivePortal(object):
                    </body>
                    </html>"""
 
-         logging.debug("Generated HTML refresh is:")
-         logging.debug(redirect)
+        logging.debug("Generated HTML refresh is:")
+        logging.debug(redirect)
 
         # Fire the redirect at the client.
         return redirect
