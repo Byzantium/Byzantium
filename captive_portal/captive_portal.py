@@ -54,22 +54,22 @@ import subprocess
 from subprocess import call
 import sys
 
-# Global variables.
-filedir = '/srv/captiveportal'
-configdir = '/etc/captiveportal'
-appconfig = os.path.join(configdir,'captiveportal.conf')
-cachedir = '/tmp/portalcache'
-pidfile = ''
-ssl_cert = '/etc/httpd/server.crt'
-ssl_private_key = '/etc/httpd/server.key'
-
-# Command line arguments to the server.
-debug = False
-test = False
-interface = ''
-address = ''
-port = ''
-ssl_port = ''
+## Global variables.
+#filedir = '/srv/captiveportal'
+#configdir = '/etc/captiveportal'
+#appconfig = os.path.join(configdir,'captiveportal.conf')
+#cachedir = '/tmp/portalcache'
+#pidfile = ''
+#ssl_cert = '/etc/httpd/server.crt'
+#ssl_private_key = '/etc/httpd/server.key'
+#
+## Command line arguments to the server.
+#debug = False
+#test = False
+#interface = ''
+#address = ''
+#port = ''
+#ssl_port = ''
 
 # The CaptivePortalDetector class implements a fix for an undocumented bit of
 # fail in Apple iOS.  iProducts attempt to access a particular file hidden in
@@ -79,13 +79,6 @@ ssl_port = ''
 # the captive portal.
 class CaptivePortalDetector(object):
     # index(): Pretends to be /library/test and /library/test/index.html.
-
-    def __init__(self):
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.ERROR)
-
     def index(self):
         return("You shouldn't be seeing this, either.")
     index.exposed = True
@@ -110,12 +103,6 @@ class CaptivePortalDetector(object):
 # Dummy class that has to exist to create a durectory URI hierarchy.
 class Library(object):
     
-    def __init__(self):
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.ERROR)
-
     logging.debug("Instantiating Library() dummy object.")
     test = CaptivePortalDetector()
 
@@ -128,11 +115,8 @@ class Library(object):
 # HTML front-end and the IP tables interface.
 class CaptivePortal(object):
     
-    def __init__(self):
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.ERROR)
+    def __init__(self, args):
+        self.args = args
 
     logging.debug("Mounting Library() from CaptivePortal().")
     library = Library()
@@ -151,6 +135,7 @@ class CaptivePortal(object):
         # Piece together the filename of the /index.html file to return based
         # on the primary language.
         indexhtml = "index.html." + clientlang
+        templatelookup = BuildTemplateLookup(self.args)
         try:
             page = templatelookup.get_template(indexhtml)
         except:
@@ -247,7 +232,7 @@ class CaptivePortal(object):
 #    print
 
 def ParseArgs():
-    parser = argparse.ArgumentParser(conflict_handler='resolve', description="his daemon implements the captive "
+    parser = argparse.ArgumentParser(conflict_handler='resolve', description="This daemon implements the captive "
                                      "portal functionality of Byzantium Linux. pecifically, it acts as the front end "
                                      "to IP tables and automates the addition of mesh clients to the whitelist.")
     parser.add_argument("-a", "--address", action="store",
@@ -256,7 +241,7 @@ def ParseArgs():
     parser.add_argument("--cachedir", action="store", default="/tmp/portalcache")
     parser.add_argument("-c", "--certificate", action="store", default="/etc/httpd/server.crt",
                         help="Path to an SSL certificate. (Defaults to /etc/httpd/server.crt)")
-    parser.add_argument("--configdir", action=store, default="/etc/captiveportal")
+    parser.add_argument("--configdir", action="store", default="/etc/captiveportal")
     parser.add_argument("-d", "--debug", action="store_true", default=False, help="Enable debugging mode.")
     parser.add_argument("--filedir", action="store", default="/srv/captiveportal")
     parser.add_argument("-i", "--interface", action="store", required=True,
@@ -274,7 +259,7 @@ def ParseArgs():
     return parser.parse_args()
 
 def CheckArgs(args):
-    if not args.port eq 31337 and args.sslport eq 31338:
+    if not args.port == 31337 and args.sslport == 31338:
         args.sslport = args.port + 1
         logging.debug("Setting ssl port to %d/TCP" % args.sslport)
 
@@ -290,7 +275,7 @@ def CheckArgs(args):
     else:
         logging.debug("Using SSL private key at: %s" % args.key)
 
-    if not args.configdir eq "/etc/captiveportal" and args.appconfig eq "/etc/captiveportal/captiveportal.conf":
+    if not args.configdir == "/etc/captiveportal" and args.appconfig == "/etc/captiveportal/captiveportal.conf":
         args.appconfig = "%s/captiveportal.conf" % args.configdir
     return args
         
@@ -384,105 +369,135 @@ def CheckArgs(args):
 #    print "ERROR: Missing command line argument 'interface'."
 #    exit(2)
 
-# Create the filename for this instance's PID file.
-if test:
-    pidfile = '/tmp/captive_portal.'
-else:
-    pidfile = '/var/run/captive_portal.'
-pidfile = pidfile + interface
-logging.debug("Name of PID file is: %s" % pidfile)
+def CreatePidfile(args):
+    # Create the filename for this instance's PID file.
+    if not args.pidfile:
+        if args.test:
+            args.pidfile = '/tmp/captive_portal.'
+        else:
+            args.pidfile or '/var/run/captive_portal.'
+    full_pidfile = args.pidfile + args.interface
+    logging.debug("Name of PID file is: %s" % full_pidfile)
+    
+    # If a PID file already exists for this network interface, ABEND.
+    if os.path.exists(full_pidfile):
+        logging.error("A pidfile already exists for network interface %s." % full_pidfile)
+        logging.error("Is a daemon already running on this interface?")
+        exit(5)
+    
+    # Write the PID file of this instance to the PID file.
+    logging.debug("Creating pidfile for network interface %s." % str(args.interface))
+    logging.debug("PID of process is %s." % str(os.getpid()))
+    pid = PIDFile(cherrypy.engine, pidfile)
+    pid.subscribe()
 
-# If a PID file already exists for this network interface, ABEND.
-if os.path.exists(pidfile):
-    print "ERROR: A pidfile already exists for network interface %s." % pidfile
-    print "ERROR: Is a daemon already running on this interface?"
-    exit(5)
+def UpdateCherryPyConfig(port):
+    # Configure a few things about the web server so we don't have to fuss
+    # with an extra config file, namely, the port and IP address to listen on.
+    cherrypy.config.update({'server.socket_host':'0.0.0.0', })
+    cherrypy.config.update({'server.socket_port':port, })
 
-# Write the PID file of this instance to the PID file.
-logging.debug("Creating pidfile for network interface %s." % str(interface))
-logging.debug("PID of process is %s." % str(os.getpid()))
-pid = PIDFile(cherrypy.engine, pidfile)
-pid.subscribe()
+def StartSSLListener(args):
+    # Set up an SSL listener running in parallel.
+    ssl_listener = cherrypy._cpserver.Server()
+    ssl_listener.socket_host = '0.0.0.0'
+    ssl_listener.socket_port = args.sslport
+    ssl_listener.ssl_certificate = args.certificate
+    ssl_listener.ssl_private_key = args.key
+    ssl_listener.subscribe()
 
-# Configure a few things about the web server so we don't have to fuss
-# with an extra config file, namely, the port and IP address to listen on.
-cherrypy.config.update({'server.socket_host':'0.0.0.0', })
-cherrypy.config.update({'server.socket_port':port, })
+def BuildTemplateLookup(args):
+    # Set up the location the templates will be served out of.
+    return TemplateLookup(directories=[args.filedir], module_directory=args.cachedir, collection_size=100)
 
-# Set up an SSL listener running in parallel.
-ssl_listener = cherrypy._cpserver.Server()
-ssl_listener.socket_host = '0.0.0.0'
-ssl_listener.socket_port = ssl_port
-ssl_listener.ssl_certificate = ssl_cert
-ssl_listener.ssl_private_key = ssl_private_key
-ssl_listener.subscribe()
+def SetUpURLTree(appconfig):
+    # Attach the captive portal object to the URL tree.
+    root = CaptivePortal()
+    
+    # Mount the object for the root of the URL tree, which happens to be the
+    # system status page.  Use the application config file to set it up.
+    logging.debug("Mounting web app in %s to /." % appconfig)
+    cherrypy.tree.mount(root, "/", appconfig)
 
-# Set up the location the templates will be served out of.
-templatelookup = TemplateLookup(directories=[filedir],
-                 module_directory=cachedir, collection_size=100)
+def SetUpIPTables(args):
+    # Initialize the IP tables ruleset for the node.
+    initialize_iptables = ['/usr/local/sbin/captive-portal.sh', 'initialize',
+                           args.address, args.interface]
+    iptables = 0
+    if args.test:
+        print "Command that would be executed:"
+        print str(initialize_iptables)
+    else:
+        iptables = subprocess.call(initialize_iptables)
+    return iptables
 
-# Attach the captive portal object to the URL tree.
-root = CaptivePortal()
+def SetUpReaper(test):
+    # Start up the idle client reaper daemon.
+    idle_client_reaper = ['/usr/local/sbin/mop_up_dead_clients.py', '-m', '600',
+                          '-i', '60']
+    reaper = 0
+    if test:
+        print "Idle client monitor command that would be executed:"
+        print str(idle_client_reaper)
+    else:
+        logging.debug("Starting mop_up_dead_clients.py.")
+        reaper = subprocess.Popen(idle_client_reaper)
+    if not reaper:
+        logging.error("mop_up_dead_clients.py did not start.")
 
-# Mount the object for the root of the URL tree, which happens to be the
-# system status page.  Use the application config file to set it up.
-logging.debug("Mounting web app in %s to /." % appconfig)
-cherrypy.tree.mount(root, "/", appconfig)
+def SetUpHijacker(args):
+    # Start the fake DNS server that hijacks every resolution request with the
+    # IP address of the client interface.
+    dns_hijacker = ['/usr/local/sbin/fake_dns.py', args.address]
+    hijacker = 0
+    if args.test:
+        print "Command that would start the fake DNS server:"
+        print str(dns_hijacker)
+    else:
+        logging.debug("Starting fake_dns.py.")
+        hijacker = subprocess.Popen(dns_hijacker)
+    if not hijacker:
+        logging.error("fake_dns.py did not start.")
 
-# Initialize the IP tables ruleset for the node.
-initialize_iptables = ['/usr/local/sbin/captive-portal.sh', 'initialize',
-                       address, interface]
-iptables = 0
-if test:
-    print "Command that would be executed:"
-    print str(initialize_iptables)
-else:
-    iptables = subprocess.call(initialize_iptables)
+def CheckIPTables(iptables, args):
+    # Now do some error checking in case IP tables went pear-shaped.  This appears
+    # oddly specific, but /usr/sbin/iptables treats these two kinds of errors
+    # differently and that makes a difference during troubleshooting.
+    if iptables == 1:
+        logging.error("Unknown IP tables error during firewall initialization.")
+        logging.error("Packet filters NOT configured.  Examine the rules in captive-portal.sh.")
+        exit(3)
+    
+    if iptables == 2:
+        logging.error("Invalid or incorrect options passed to iptables in captive-portal.sh")
+        logging.error("Packet filters NOT configured.  Examine the rules in captive-portal.sh.")
+        logging.error("Parameters passed to captive-portal.sh: initialize, %s, %s" % args.address, args.interface)
+        exit(4)
 
-# Start up the idle client reaper daemon.
-idle_client_reaper = ['/usr/local/sbin/mop_up_dead_clients.py', '-m', '600',
-                      '-i', '60']
-reaper = 0
-if test:
-    print "Idle client monitor command that would be executed:"
-    print str(idle_client_reaper)
-else:
-    logging.debug("Starting mop_up_dead_clients.py.")
-    reaper = subprocess.Popen(idle_client_reaper)
-if not reaper:
-    print "ERROR: mop_up_dead_clients.py did not start."
+def StartWebServer():
+    # Start the web server.
+    logging.debug("Starting web server.")
+    cherrypy.engine.start()
+    cherrypy.engine.block()
+    # [Insert opening anthem from Blaster Master here.]
+    # Fin.
 
-# Start the fake DNS server that hijacks every resolution request with the
-# IP address of the client interface.
-dns_hijacker = ['/usr/local/sbin/fake_dns.py', address]
-hijacker = 0
-if test:
-    print "Command that would start the fake DNS server:"
-    print str(dns_hijacker)
-else:
-    logging.debug("Starting fake_dns.py.")
-    hijacker = subprocess.Popen(dns_hijacker)
-if not hijacker:
-    print "ERROR: fake_dns.py did not start."
+def main():
+    args = CheckArgs(ParseArgs())
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.ERROR)
+    CreatePidfile(args)
+    UpdateCherryPyConfig(args.port)
+    StartSSLListener(args)
+    SetUpURLTree(args.appconfig)
+    iptables = SetUpIPTables(args)
+    SetUpReaper(args.test)
+    SetUpHijacker(args)
+    CheckIPTables(iptables, args)
+    StartWebServer()
+ 
 
-# Now do some error checking in case IP tables went pear-shaped.  This appears
-# oddly specific, but /usr/sbin/iptables treats these two kinds of errors
-# differently and that makes a difference during troubleshooting.
-if iptables == 1:
-    print "ERROR: Unknown IP tables error during firewall initialization."
-    print "Packet filters NOT configured.  Examine the rules in captive-portal.sh."
-    exit(3)
-
-if iptables == 2:
-    print "ERROR: Invalid or incorrect options passed to iptables in captive-portal.sh"
-    print "Packet filters NOT configured.  Examine the rules in captive-portal.sh."
-    print "Parameters passed to captive-portal.sh: initialize, %s, %s" % address, interface
-    exit(4)
-
-# Start the web server.
-logging.debug("Starting web server.")
-cherrypy.engine.start()
-cherrypy.engine.block()
-
-# [Insert opening anthem from Blaster Master here.]
-# Fin.
+if __name__ == "__main__":
+    main()
