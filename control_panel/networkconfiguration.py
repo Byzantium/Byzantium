@@ -30,6 +30,14 @@ import time
 # Import core control panel modules.
 from control_panel import *
 
+def output_error_data():
+	traceback = RichTraceback()
+    for (filename, lineno, function, line) in traceback.traceback:
+        print "\n"
+        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+        print "Execution died on line %s\n" % line
+        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+
 # Constants.
 # Ugly, I know, but we need a list of wi-fi channels to frequencies for the
 # sanity checking code.
@@ -40,12 +48,6 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 # This class allows the user to configure the network interfaces of their node.
 # Note that this does not configure mesh functionality.
 class NetworkConfiguration(object):
-
-    def __init__(self):
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.ERROR)
 
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
@@ -176,13 +178,7 @@ class NetworkConfiguration(object):
                                wireless_buttons = wireless_buttons,
                                ethernet_buttons = ethernet_buttons)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     index.exposed = True
 
     # Used to reset this class' attributes to a known state.
@@ -285,13 +281,7 @@ class NetworkConfiguration(object):
                            warning = warning, interface = self.mesh_interface,
                            channel = channel, essid = essid)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     wireless.exposed = True
 
     # Implements step two of the interface configuration process: selecting
@@ -437,13 +427,7 @@ class NetworkConfiguration(object):
                                client_ip = self.client_ip,
                                client_netmask = self.client_netmask)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     tcpip.exposed = True
 
     # Configure the network interface.
@@ -686,13 +670,7 @@ class NetworkConfiguration(object):
                                client_ip = self.client_ip,
                                client_netmask = self.client_netmask)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     set_ip.exposed = True
 
     # Method that generates an /etc/hosts.mesh file for the node for dnsmasq.
