@@ -26,6 +26,7 @@ import logging
 import os
 import sys
 
+from status import Status
 
 def ParseArgs():
     parser = argparse.ArgumentParser(conflict_handler='resolve', description="This daemon implements the control "
@@ -68,7 +69,6 @@ def main():
     cherrypy.config.update(globalconfig)
 
     # Allocate the objects representing the URL tree.
-    from status import Status
     root = Status(templatelookup, args.test)
 
     # Mount the object for the root of the URL tree, which happens to be the
