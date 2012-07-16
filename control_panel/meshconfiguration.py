@@ -36,15 +36,27 @@ import time
 # Import core control panel modules.
 from control_panel import *
 
+def output_error_data():
+	traceback = RichTraceback()
+    for (filename, lineno, function, line) in traceback.traceback:
+        print "\n"
+        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+        print "Execution died on line %s\n" % line
+        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+
+def pid_check():
+	pid = ''
+	if os.path.exists(self.babeld_pid):
+        logging.debug("Reading PID of babeld.")
+        pidfile = open(self.babeld_pid, 'r')
+        pid = pidfile.readline()
+        pidfile.close()
+        logging.debug("PID of babeld: %s" % str(pid))
+     return pid
+
 # Classes.
 # Allows the user to configure mesh networking on wireless network interfaces.
 class MeshConfiguration(object):
-
-    def __init__(self):
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.ERROR)
 
     # Class constants.
     babeld = '/usr/local/bin/babeld'
@@ -143,13 +155,7 @@ class MeshConfiguration(object):
                                error = error, interfaces = interfaces,
                                active_interfaces = active_interfaces)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     index.exposed = True
 
     # Reinitialize the attributes of an instance of this class to a known
@@ -181,13 +187,7 @@ class MeshConfiguration(object):
                                interface = self.interface,
                                protocol = self.protocol)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     addtomesh.exposed = True
 
     # Runs babeld to turn self.interface into a mesh interface.
@@ -233,13 +233,7 @@ class MeshConfiguration(object):
         # least one interface, in which case we add the one the user just
         # picked to the list because we'll have to restart babeld.  Otherwise,
         # we just start babeld.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            logging.debug("Reading PID of babeld.")
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-            logging.debug("PID of babeld: %s" % str(pid))
+        pid = pid_check()
         if pid:
             if test:
                 print "TEST: Pretending to kill babeld."
@@ -257,13 +251,7 @@ class MeshConfiguration(object):
         # Get the PID of babeld, then test to see if that pid exists and
         # corresponds to a running babeld process.  If there is no match,
         # babeld isn't running.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            logging.debug("Reading new PID of babeld.")
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-            logging.debug("New PID of babeld: %s" % str(pid))
+        pid = pid_check()
         if pid:
             logging.debug("babeld PID found!")
             procdir = '/proc/' + pid
@@ -288,13 +276,7 @@ class MeshConfiguration(object):
                                interface = self.interface,
                                error = error, output = output)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     enable.exposed = True
 
     # Allows the user to remove a configured interface from the mesh.  Takes
@@ -315,13 +297,7 @@ class MeshConfiguration(object):
                                purpose_of_page = "Disable Mesh Interface",
                                interface = interface)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     removefrommesh.exposed = True
 
     # Re-runs babeld without self.interface to drop it out of the mesh.
@@ -368,13 +344,7 @@ class MeshConfiguration(object):
 
         # Test to see if babeld is running.  If it is, we restart it without
         # the network interface that the user wants to drop out of the mesh.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            logging.debug("Reading PID of babeld.")
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-            logging.debug("PID of babeld: %s" % str(pid))
+        pid = pid_check()
         if pid:
             if test:
                 print "TEST: Pretending to kill babeld."
@@ -396,13 +366,7 @@ class MeshConfiguration(object):
         # Get the PID of babeld, then test to see if that pid exists and
         # corresponds to a running babeld process.  If there is no match,
         # babeld isn't running, in which case something went wrong.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            logging.debug("Reading new PID of babeld.")
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-            logging.debug("PID of babeld: %s" % str(pid))
+        pid = pid_check()
         if pid:
             procdir = '/proc/' + pid
             if not os.path.isdir(procdir):
@@ -429,12 +393,6 @@ class MeshConfiguration(object):
                                purpose_of_page = "Disable Mesh Interface",
                                error = error, output = output)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     removefrommesh.exposed = True
     disable.exposed = True
