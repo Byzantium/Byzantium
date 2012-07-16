@@ -28,7 +28,7 @@ import sys
 
 from status import Status
 
-def ParseArgs():
+def parse_args():
     parser = argparse.ArgumentParser(conflict_handler='resolve', description="This daemon implements the control "
                                      "panel functionality of Byzantium Linux.")
     parser.add_argument("--cachedir", action="store", default="/tmp/controlcache")
@@ -41,7 +41,7 @@ def ParseArgs():
     return parser.parse_args()
 
 
-def CheckArgs(args):
+def check_args(args):
     if args.debug:
         print "Control panel debugging mode is on."
     if args.test:
@@ -54,7 +54,7 @@ def CheckArgs(args):
     return args
 
 def main():
-    args = CheckArgs(ParseArgs())
+    args = check_args(parse_args())
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
