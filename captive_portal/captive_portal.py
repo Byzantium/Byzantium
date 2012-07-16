@@ -118,7 +118,7 @@ class CaptivePortal(object):
         # Piece together the filename of the /index.html file to return based
         # on the primary language.
         indexhtml = "index.html." + clientlang
-        templatelookup = BuildTemplateLookup(self.args)
+        templatelookup = build_templatelookup(self.args)
         try:
             page = templatelookup.get_template(indexhtml)
         except:
@@ -190,7 +190,7 @@ class CaptivePortal(object):
         return redirect
     cherrypy.config.update({'error_page.404':error_page_404})
 
-def ParseArgs():
+def parse_args():
     parser = argparse.ArgumentParser(conflict_handler='resolve', description="This daemon implements the captive "
                                      "portal functionality of Byzantium Linux. pecifically, it acts as the front end "
                                      "to IP tables and automates the addition of mesh clients to the whitelist.")
@@ -217,7 +217,7 @@ def ParseArgs():
                         "commands without altering the test system.")
     return parser.parse_args()
 
-def CheckArgs(args):
+def check_args(args):
     if not args.port == 31337 and args.sslport == 31338:
         args.sslport = args.port + 1
         logging.debug("Setting ssl port to %d/TCP" % args.sslport)
@@ -245,7 +245,7 @@ def CheckArgs(args):
 
     return args
         
-def CreatePidfile(args):
+def create_pidfile(args):
     # Create the filename for this instance's PID file.
     if not args.pidfile:
         if args.test:
@@ -267,13 +267,13 @@ def CreatePidfile(args):
     pid = PIDFile(cherrypy.engine, pidfile)
     pid.subscribe()
 
-def UpdateCherryPyConfig(port):
+def update_cherrypy_config(port):
     # Configure a few things about the web server so we don't have to fuss
     # with an extra config file, namely, the port and IP address to listen on.
     cherrypy.config.update({'server.socket_host':'0.0.0.0', })
     cherrypy.config.update({'server.socket_port':port, })
 
-def StartSSLListener(args):
+def start_ssl_listener(args):
     # Set up an SSL listener running in parallel.
     ssl_listener = cherrypy._cpserver.Server()
     ssl_listener.socket_host = '0.0.0.0'
@@ -282,11 +282,11 @@ def StartSSLListener(args):
     ssl_listener.ssl_private_key = args.key
     ssl_listener.subscribe()
 
-def BuildTemplateLookup(args):
+def build_templatelookup(args):
     # Set up the location the templates will be served out of.
     return TemplateLookup(directories=[args.filedir], module_directory=args.cachedir, collection_size=100)
 
-def SetUpURLTree(appconfig):
+def setup_url_tree(appconfig):
     # Attach the captive portal object to the URL tree.
     root = CaptivePortal()
     
@@ -295,7 +295,7 @@ def SetUpURLTree(appconfig):
     logging.debug("Mounting web app in %s to /." % appconfig)
     cherrypy.tree.mount(root, "/", appconfig)
 
-def SetUpIPTables(args):
+def setup_iptables(args):
     # Initialize the IP tables ruleset for the node.
     initialize_iptables = ['/usr/local/sbin/captive-portal.sh', 'initialize',
                            args.address, args.interface]
@@ -307,7 +307,7 @@ def SetUpIPTables(args):
         iptables = subprocess.call(initialize_iptables)
     return iptables
 
-def SetUpReaper(test):
+def setup_reaper(test):
     # Start up the idle client reaper daemon.
     idle_client_reaper = ['/usr/local/sbin/mop_up_dead_clients.py', '-m', '600',
                           '-i', '60']
@@ -321,7 +321,7 @@ def SetUpReaper(test):
     if not reaper:
         logging.error("mop_up_dead_clients.py did not start.")
 
-def SetUpHijacker(args):
+def setup_hijacker(args):
     # Start the fake DNS server that hijacks every resolution request with the
     # IP address of the client interface.
     dns_hijacker = ['/usr/local/sbin/fake_dns.py', args.address]
@@ -335,7 +335,7 @@ def SetUpHijacker(args):
     if not hijacker:
         logging.error("fake_dns.py did not start.")
 
-def CheckIPTables(iptables, args):
+def check_ip_tables(iptables, args):
     # Now do some error checking in case IP tables went pear-shaped.  This appears
     # oddly specific, but /usr/sbin/iptables treats these two kinds of errors
     # differently and that makes a difference during troubleshooting.
@@ -350,7 +350,7 @@ def CheckIPTables(iptables, args):
         logging.error("Parameters passed to captive-portal.sh: initialize, %s, %s" % args.address, args.interface)
         exit(4)
 
-def StartWebServer():
+def start_web_server():
     # Start the web server.
     logging.debug("Starting web server.")
     cherrypy.engine.start()
@@ -359,20 +359,20 @@ def StartWebServer():
     # Fin.
 
 def main():
-    args = CheckArgs(ParseArgs())
+    args = check_args(parse_args())
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.ERROR)
-    CreatePidfile(args)
-    UpdateCherryPyConfig(args.port)
-    StartSSLListener(args)
-    SetUpURLTree(args.appconfig)
-    iptables = SetUpIPTables(args)
-    SetUpReaper(args.test)
-    SetUpHijacker(args)
-    CheckIPTables(iptables, args)
-    StartWebServer()
+    create_pidfile(args)
+    update_cherrypy_config(args.port)
+    start_ssl_listener(args)
+    setup_url_tree(args.appconfig)
+    iptables = setup_iptables(args)
+    setup_reaper(args.test)
+    setup_hijacker(args)
+    check_ip_tables(iptables, args)
+    start_web_server()
  
 
 if __name__ == "__main__":
