@@ -62,7 +62,6 @@ def main():
     appconfig = os.path.join(args.configdir,'controlpanel.conf')
 
     # Set up the location the templates will be served out of.
-    # TODO(shanel): Is this even used?
     templatelookup = TemplateLookup(directories=[args.filedir], module_directory=args.cachedir, collection_size=100)
 
     # Read in the name and location of the appserver's global config file.
@@ -70,7 +69,7 @@ def main():
 
     # Allocate the objects representing the URL tree.
     from status import Status
-    root = Status()
+    root = Status(templatelookup, args.test)
 
     # Mount the object for the root of the URL tree, which happens to be the
     # system status page.  Use the application config file to set it up.
