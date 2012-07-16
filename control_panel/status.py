@@ -24,19 +24,13 @@ from meshconfiguration import MeshConfiguration
 from services import Services
 from gateways import Gateways
 
-# Configure the location templates will be served from.
-templatelookup = TemplateLookup(directories=[filedir],
-                 module_directory=cachedir, collection_size=100)
-
 # The Status class implements the system status report page that makes up
 # /index.html.
 class Status(object):
-
-    def __init__(self):
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.ERROR)
+	
+	def __init__(self, templatelookup, test):
+		self.templatelookup = templatelookup
+		self.test = test
 
     # Allocate objects for all of the control panel's main features.
     traffic = NetworkTraffic()
@@ -47,7 +41,7 @@ class Status(object):
 
     # Location of the network.sqlite database, which holds the configuration
     # of every network interface in the node.
-    if test:
+    if self.test:
         netconfdb = '/home/drwho/network.sqlite'
         logging.debug("Location of NetworkConfiguration.netconfdb: %s" % netconfdb)
     else:
@@ -123,7 +117,7 @@ class Status(object):
                 # For every mesh interface found in the database, get its
                 # current IP address with ifconfig.
                 command = '/sbin/ifconfig ' + mesh_interface
-                if test:
+                if self.test:
                     print "TEST: Status.index() command to pull the configuration of a mesh interface:"
                     print command
                 else:
@@ -164,7 +158,7 @@ class Status(object):
                 # For every client interface found, run ifconfig and pull
                 # its configuration information.
                 command = '/sbin/ifconfig ' + client_interface[0]
-                if test:
+                if self.test:
                     print "TEST: Status.index() command to pull the configuration of a client interface:"
                     print command
                 else:
@@ -187,7 +181,7 @@ class Status(object):
                 # associated.  Note that one has to be subtracted from the
                 # count of rows to account for the line of column headers.
                 command = '/sbin/arp -n -i ' + client_interface[0]
-                if test:
+                if self.test:
                     print "TEST: Status.index() command to dump the ARP table of interface %s: " % client_interface
                     print command
                 else:
@@ -208,7 +202,7 @@ class Status(object):
 
         # Render the HTML page and return to the client.
         cursor.close()
-        page = templatelookup.get_template("index.html")
+        page = self.templatelookup.get_template("index.html")
         return page.render(ram_used = ram_used, ram = ram, uptime = uptime,
                            mesh_interfaces = mesh_interfaces,
                            client_interfaces = client_interfaces,
