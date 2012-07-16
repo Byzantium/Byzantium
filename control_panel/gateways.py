@@ -31,16 +31,18 @@ import time
 # Import core control panel modules.
 from control_panel import *
 
+def output_error_data():
+	traceback = RichTraceback()
+    for (filename, lineno, function, line) in traceback.traceback:
+        print "\n"
+        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+        print "Execution died on line %s\n" % line
+        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+
 # Classes.
 # This class allows the user to turn a configured network interface on their
 # node into a gateway from the mesh to another network (usually the global Net).
 class Gateways(object):
-    
-    def __init__(self):
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
-            logging.basicConfig(level=logging.ERROR)
 
     # Class constants.
     # Path to network configuration database.
@@ -107,13 +109,7 @@ class Gateways(object):
                                ethernet_buttons = ethernet_buttons,
                                wireless_buttons = wireless_buttons)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     index.exposed = True
 
     # Utility method to update the list of all network interfaces on a node.
@@ -259,13 +255,7 @@ class Gateways(object):
                                purpose_of_page = "Confirm gateway mode.",
                                interface = interface, iwconfigs = iwconfigs)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     tcpip.exposed = True
 
     # Allows the user to enter the ESSID and wireless channel of the wireless
@@ -308,13 +298,7 @@ class Gateways(object):
                            warning = warning, interface = interface,
                            channel = channel, essid = essid)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     wireless.exposed = True
 
     # Method that does the deed of turning an interface into a gateway.  This
@@ -395,13 +379,7 @@ class Gateways(object):
                                purpose_of_page = "Confirm gateway mode.",
                                interface = interface)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     activate.exposed = True
 
     # Configure the network interface.
@@ -498,12 +476,6 @@ class Gateways(object):
                                client_ip = self.client_ip,
                                client_netmask = self.client_netmask)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     set_ip.exposed = True
 
