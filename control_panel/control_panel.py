@@ -55,8 +55,8 @@ def check_args(args):
         # always be Byzantium/control_panel/.
         print("TEST: Referencing files from current working directory for "
               "testing.")
-        args.filedir = '/srv/controlpanel'
-        args.configdir = '/etc/controlpanel'
+        args.filedir = 'srv/controlpanel'
+        args.configdir = 'etc/controlpanel'
     return args
 
 
