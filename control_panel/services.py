@@ -11,33 +11,37 @@
 #   that do, not all of them put PID files in /var/run/<nameofapp>.pid.
 
 # Import external modules.
-import cherrypy
-from mako.template import Template
-from mako.lookup import TemplateLookup
 from mako import exceptions
+
 import sqlite3
-import os
 import subprocess
 
-# Import core control panel modules.
-from control_panel import *
 
 # Classes.
 # Allows the user to configure to configure mesh networking on wireless network
 # interfaces.
 class Services(object):
-    # Database used to store states of services and webapps.
-    servicedb = '/var/db/controlpanel/services.sqlite'
-    #servicedb = '/home/drwho/services.sqlite'
+    
+    def __init__(self, templatelookup, test):
+        self.templatelookup = templatelookup
+        self.test = test
+    
+        # Database used to store states of services and webapps.
+        
+        if test:
+            self.servicedb = 'var/db/controlpanel/services.sqlite'
+        else:
+            self.servicedb = '/var/db/controlpanel/services.sqlite'
+            # self.servicedb = '/home/drwho/services.sqlite'
 
-    # Static class attributes.
-    pid = '/var/run/httpd/httpd.pid'
+        # Static class attributes.
+        self.pid = '/var/run/httpd/httpd.pid'
 
-    # These attributes will be used as scratch variables to keep from running
-    # the same SQL queries over and over again.
-    app = ''
-    status = ''
-    initscript = ''
+        # These attributes will be used as scratch variables to keep from running
+        # the same SQL queries over and over again.
+        self.app = ''
+        self.status = ''
+        self.initscript = ''
 
     # Pretends to be index.html.
     def index(self):
@@ -94,7 +98,7 @@ class Services(object):
         results = cursor.fetchall()
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database " + this.servicedb + ", table daemons.  SELECT query failed.</p>"
+            error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table daemons.  SELECT query failed.</p>"
         else:
             # Set up the opening tag of the table.
             services_row = '<tr>'
@@ -129,7 +133,7 @@ class Services(object):
 
         # Render the HTML page.
         try:
-            page = templatelookup.get_template("/services/index.html")
+            page = self.templatelookup.get_template("/services/index.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = "Manipulate services",
                                error = error, webapps = webapps,
@@ -180,7 +184,7 @@ class Services(object):
         # Display to the user the page that asks them if they really want to
         # shut down that app.
         try:
-            page = templatelookup.get_template("/services/webapp.html")
+            page = self.templatelookup.get_template("/services/webapp.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = (action + " service"),
                                app = app, action = action, warning = warning)
@@ -214,7 +218,7 @@ class Services(object):
 
         # Render the HTML page and send it to the browser.
         try:
-            page = templatelookup.get_template("/services/toggled.html")
+            page = self.templatelookup.get_template("/services/toggled.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = "Service toggled.",
                                error = error, app = self.app,
@@ -264,7 +268,7 @@ class Services(object):
         # Display to the user the page that asks them if they really want to
         # shut down that app.
         try:
-            page = templatelookup.get_template("/services/services.html")
+            page = self.templatelookup.get_template("/services/services.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = (action + " service"),
                                action = action, app = service, warning = warning)
@@ -300,9 +304,9 @@ class Services(object):
         # simpler in the long run.
         initscript = '/etc/rc.d/' + self.initscript
         if self.status == 'active':
-            output = subprocess.Popen([initscript, 'stop'])
+            subprocess.Popen([initscript, 'stop'])
         else:
-            output = subprocess.Popen([initscript, 'start'])
+            subprocess.Popen([initscript, 'start'])
 
         # Update the status of the service in the database.
         template = (status, self.app, )
@@ -312,7 +316,7 @@ class Services(object):
 
         # Render the HTML page and send it to the browser.
         try:
-            page = templatelookup.get_template("/services/toggled.html")
+            page = self.templatelookup.get_template("/services/toggled.html")
             return page.render(title = "Byzantium Node Services",
                                purpose_of_page = "Service toggled.",
                                app = self.app, action = action, error = error)

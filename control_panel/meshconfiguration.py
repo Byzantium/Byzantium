@@ -14,53 +14,72 @@
 # - Detect when an interface is already routing and instead offer the ability
 #   to remove it from the mesh.  Do that in the MeshConfiguration.index()
 #   method.
-# - Refactor code to split PID getting into a helper method.
 # - Add support for other mesh routing protocols for interoperability.  This
 #   will involve the user picking the routing protocol after picking the
 #   network interface.  This will also likely involve selecting multiple mesh
 #   routing protocols (i.e., babel+others).
 
 # Import external modules.
-import cherrypy
-from mako.template import Template
-from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
-import sqlite3
-import os
-import time
-import subprocess
-import signal
 
-# Import core control panel modules.
-from control_panel import *
+import logging
+import os
+import signal
+import sqlite3
+import subprocess
+import time
+
+
+def output_error_data():
+    traceback = RichTraceback()
+    for (filename, lineno, function, line) in traceback.traceback:
+        print "\n"
+        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+        print "Execution died on line %s\n" % line
+        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+
 
 # Classes.
 # Allows the user to configure mesh networking on wireless network interfaces.
 class MeshConfiguration(object):
-    # Class constants.
-    babeld = '/usr/local/bin/babeld'
-    babeld_pid = '/var/run/babeld.pid'
-    babeld_timeout = 3
 
-    if test:
-        netconfdb = '/home/drwho/network.sqlite'
-        print "TEST: Location of netconfdb: %s" % netconfdb
-    else:
-        netconfdb = '/var/db/controlpanel/network.sqlite'
+    def __init__(self, templatelookup, test):
+        self.templatelookup = templatelookup
+        self.test = test
 
-    if test:
-        meshconfdb = '/home/drwho/mesh.sqlite'
-        print "TEST: Location of meshconfdb: %s" % meshconfdb
-    else:
-        meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+        # Class constants.
+        self.babeld = '/usr/local/bin/babeld'
+        self.babeld_pid = '/var/run/babeld.pid'
+        self.babeld_timeout = 3
 
-    # Class attributes which apply to a network interface.  By default they
-    # are blank but will be populated from the mesh.sqlite database if the
-    # user picks an interface that's already been set up.
-    interface = ''
-    protocol = ''
-    enabled = ''
-    pid = ''
+        if self.test:
+            # self.netconfdb = '/home/drwho/network.sqlite'
+            self.netconfdb = 'var/db/controlpanel/network.sqlite'
+            print "TEST: Location of netconfdb: %s" % self.netconfdb
+            # self.meshconfdb = '/home/drwho/mesh.sqlite'
+            self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
+            print "TEST: Location of meshconfdb: %s" % self.meshconfdb
+        else:
+            self.netconfdb = '/var/db/controlpanel/network.sqlite'
+            self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+
+        # Class attributes which apply to a network interface.  By default they
+        # are blank but will be populated from the mesh.sqlite database if the
+        # user picks an interface that's already been set up.
+        self.interface = ''
+        self.protocol = ''
+        self.enabled = ''
+        self.pid = ''
+
+    def pid_check(self):
+        pid = ''
+        if os.path.exists(self.babeld_pid):
+            logging.debug("Reading PID of babeld.")
+            pidfile = open(self.babeld_pid, 'r')
+            pid = pidfile.readline()
+            pidfile.close()
+            logging.debug("PID of babeld: %s", str(pid))
+        return pid
 
     # Pretends to be index.html.
     def index(self):
@@ -128,26 +147,19 @@ class MeshConfiguration(object):
 
         # Render the HTML page.
         try:
-            page = templatelookup.get_template("/mesh/index.html")
+            page = self.templatelookup.get_template("/mesh/index.html")
             return page.render(title = "Byzantium Node Mesh Configuration",
                                purpose_of_page = "Configure Mesh Interfaces",
                                error = error, interfaces = interfaces,
                                active_interfaces = active_interfaces)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     index.exposed = True
 
     # Reinitialize the attributes of an instance of this class to a known
     # state.
     def reinitialize_attributes(self):
-        if debug:
-            print "DEBUG: Reinitializing class attributes of MeshConfiguration()."
+        logging.debug("Reinitializing class attributes of MeshConfiguration().")
         self.interface = ''
         self.protocol = ''
         self.enabled = ''
@@ -167,19 +179,13 @@ class MeshConfiguration(object):
 
         # Render the HTML page.
         try:
-            page = templatelookup.get_template("/mesh/addtomesh.html")
+            page = self.templatelookup.get_template("/mesh/addtomesh.html")
             return page.render(title = "Byzantium Node Mesh Configuration",
                                purpose_of_page = "Enable Mesh Interfaces",
                                interface = self.interface,
                                protocol = self.protocol)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     addtomesh.exposed = True
 
     # Runs babeld to turn self.interface into a mesh interface.
@@ -207,8 +213,7 @@ class MeshConfiguration(object):
         cursor.execute("SELECT interface, enabled, protocol FROM meshes WHERE enabled='yes' AND protocol='babel';")
         results = cursor.fetchall()
         for i in results:
-            if debug:
-                print "DEBUG: Adding interface: %s" % i[0]
+            logging.debug("Adding interface: %s", i[0])
             interfaces.append(i[0])
 
         # By definition, if we're in this method the new interface hasn't been
@@ -220,53 +225,33 @@ class MeshConfiguration(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
-        if debug:
-            print "DEBUG: babeld command to be executed: %s" % babeld_command
+        logging.debug("babeld command to be executed: %s", babeld_command)
 
         # Test to see if babeld is running.  If it is, it's routing for at
         # least one interface, in which case we add the one the user just
         # picked to the list because we'll have to restart babeld.  Otherwise,
         # we just start babeld.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            if debug:
-                print "DEBUG: Reading PID of babeld."
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-            if debug:
-                print "DEBUG: PID of babeld: %s" % str(pid)
+        pid = self.pid_check()
         if pid:
-            if test:
+            if self.test:
                 print "TEST: Pretending to kill babeld."
             else:
-                if debug:
-                    print "DEBUG: Killing current instance of babeld..."
+                logging.debug("Killing current instance of babeld...")
                 os.kill(int(pid), signal.SIGTERM)
             time.sleep(self.babeld_timeout)
-        if test:
+        if self.test:
             print "TEST: Pretending to restart babeld."
         else:
-            if debug:
-                print "DEBUG: Restarting babeld."
-            process = subprocess.Popen(babeld_command)
+            logging.debug("Restarting babeld.")
+            subprocess.Popen(babeld_command)
         time.sleep(self.babeld_timeout)
 
         # Get the PID of babeld, then test to see if that pid exists and
         # corresponds to a running babeld process.  If there is no match,
         # babeld isn't running.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            if debug:
-                print "DEBUG: Reading new PID of babeld."
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-            if debug:
-                print "DEBUG: New PID of babeld: %s" % str(pid)
+        pid = self.pid_check()
         if pid:
-            if debug:
-                print "DEBUG: babeld PID found!"
+            logging.debug("babeld PID found!")
             procdir = '/proc/' + pid
             if not os.path.isdir(procdir):
                 error = "ERROR: babeld is not running!  Did it crash after startup?"
@@ -282,27 +267,20 @@ class MeshConfiguration(object):
 
         # Render the HTML page.
         try:
-            page = templatelookup.get_template("/mesh/enabled.html")
+            page = self.templatelookup.get_template("/mesh/enabled.html")
             return page.render(title = "Byzantium Node Mesh Configuration",
                                purpose_of_page = "Mesh Interface Enabled",
                                protocol = self.protocol,
                                interface = self.interface,
                                error = error, output = output)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     enable.exposed = True
 
     # Allows the user to remove a configured interface from the mesh.  Takes
     # one argument from self.index(), the name of the interface.
     def removefrommesh(self, interface=None):
-        if debug:
-            print "DEBUG: Entered MeshConfiguration.removefrommesh()."
+        logging.debug("Entered MeshConfiguration.removefrommesh().")
 
         # Configure this instance of the object for the interface the user
         # wants to remove from the mesh.
@@ -312,24 +290,17 @@ class MeshConfiguration(object):
 
         # Render the HTML page.
         try:
-            page = templatelookup.get_template("/mesh/removefrommesh.html")
+            page = self.templatelookup.get_template("/mesh/removefrommesh.html")
             return page.render(title = "Byzantium Node Mesh Configuration",
                                purpose_of_page = "Disable Mesh Interface",
                                interface = interface)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     removefrommesh.exposed = True
 
     # Re-runs babeld without self.interface to drop it out of the mesh.
     def disable(self):
-        if debug:
-            print "DEBUG: Entered MeshConfiguration.disable()."
+        logging.debug("Entered MeshConfiguration.disable().")
 
         # Set up the error and successful output messages.
         error = ''
@@ -367,52 +338,33 @@ class MeshConfiguration(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
-        if debug:
-            print "DEBUG: New invocation of babeld: %s" % babeld_command
+        logging.debug("New invocation of babeld: %s", babeld_command)
 
         # Test to see if babeld is running.  If it is, we restart it without
         # the network interface that the user wants to drop out of the mesh.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            if debug:
-                print "DEBUG: Reading PID of babeld."
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-            if debug:
-                print "DEBUG: PID of babeld: %s" % str(pid)
+        pid = self.pid_check()
         if pid:
-            if test:
+            if self.test:
                 print "TEST: Pretending to kill babeld."
             else:
-                if debug:
-                    print "DEBUG: Killing babeld."
+                logging.debug("Killing babeld.")
                 os.kill(int(pid), signal.SIGTERM)
             time.sleep(self.babeld_timeout)
 
         # If there is at least one wireless network interface still configured,
         # then re-run babeld.
         if len(interfaces):
-            if debug:
-                print "DEBUG: value of babeld_command is %s" % babeld_command
-            if test:
+            logging.debug("value of babeld_command is %s", babeld_command)
+            if self.test:
                 print "TEST: Pretending to restart babeld."
             else:
-                process = subprocess.Popen(babeld_command)
+                subprocess.Popen(babeld_command)
             time.sleep(self.babeld_timeout)
 
         # Get the PID of babeld, then test to see if that pid exists and
         # corresponds to a running babeld process.  If there is no match,
         # babeld isn't running, in which case something went wrong.
-        pid = ''
-        if os.path.exists(self.babeld_pid):
-            if debug:
-                print "DEBUG: Reading new PID of babeld."
-            pidfile = open(self.babeld_pid, 'r')
-            pid = pidfile.readline()
-            pidfile.close()
-            if debug:
-                print "DEBUG: PID of babeld: %s" % str(pid)
+        pid = self.pid_check()
         if pid:
             procdir = '/proc/' + pid
             if not os.path.isdir(procdir):
@@ -434,17 +386,11 @@ class MeshConfiguration(object):
 
         # Render the HTML page.
         try:
-            page = templatelookup.get_template("/mesh/disabled.html")
+            page = self.templatelookup.get_template("/mesh/disabled.html")
             return page.render(title = "Byzantium Node Mesh Configuration",
                                purpose_of_page = "Disable Mesh Interface",
                                error = error, output = output)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     removefrommesh.exposed = True
     disable.exposed = True
