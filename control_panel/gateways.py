@@ -159,14 +159,14 @@ class Gateways(object):
 
                 # See if it's in the table of wired interfaces.
                 template = (interface, )
-                logging.debug("Checking to see if interface %s is a known wired interface..." % interface)
+                logging.debug("Checking to see if interface %s is a known wired interface...", interface)
                 cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
                 result = cursor.fetchall()
                 if not len(result):
-                    logging.debug("Interface %s isn't a known wired interface.  Checking wireless interfaces..." %
+                    logging.debug("Interface %s isn't a known wired interface.  Checking wireless interfaces...",
                                   interface)
                 else:
-                    logging.debug("Interface %s is a known wired interface." % interface)
+                    logging.debug("Interface %s is a known wired interface.", interface)
                     found = 'wired'
 
                 # If it's not in the wired table, check the wireless table.
@@ -177,15 +177,15 @@ class Gateways(object):
                     # If it's not in there, either, figure out which table it
                     # has to go in.
                     if not len(result):
-                        logging.debug("%s isn't a known wireless interface, either.  Figuring out where it has to go..." % 
+                        logging.debug("%s isn't a known wireless interface, either.  Figuring out where it has to go...", 
                                       interface)
                     else:
-                        logging.debug("%s is a known wireless interface." % interface)
+                        logging.debug("%s is a known wireless interface.", interface)
                         found = 'wireless'
 
                 # If it still hasn't been found, figure out where it has to go.
                 if not found:
-                    logging.debug("Interface %s really is new.  Figuring out where it should go." % interface)
+                    logging.debug("Interface %s really is new.  Figuring out where it should go.", interface)
                     table = ''
 
                     # Look in /proc/net/wireless.  If it's in there, it
@@ -305,7 +305,7 @@ class Gateways(object):
         # are, use iwconfig to set up the interface.
         if self.essid:
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
-            logging.debug("Setting ESSID to %s." % self.essid)
+            logging.debug("Setting ESSID to %s.", self.essid)
             if self.test:
                 print "TEST: Command to set ESSID:"
                 print str(command)
@@ -313,7 +313,7 @@ class Gateways(object):
                 subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
-            logging.debug("Setting channel %s." % self.channel)
+            logging.debug("Setting channel %s.", self.channel)
             if self.test:
                 print "TEST: Command to set channel:"
                 print str(command)
@@ -326,7 +326,7 @@ class Gateways(object):
         # time dhcpcd gets IP configuration information (or not) and when
         # avahi-daemon is bounced.
         command = ['/usr/local/sbin/gateway.sh', interface]
-        logging.debug("Preparing to configure interface %s." % interface)
+        logging.debug("Preparing to configure interface %s.", interface)
         if self.test:
             print "TEST: Pretending to run gateway.sh on interface %s." % interface
             print "TEST: Command that would be run:"

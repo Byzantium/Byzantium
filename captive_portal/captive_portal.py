@@ -111,7 +111,7 @@ class CaptivePortal(object):
         except:
             logging.debug("Client language not found.  Defaulting to en-us.")
             clientlang = 'en-us'
-        logging.debug("Current browser language: %s" % clientlang)
+        logging.debug("Current browser language: %s", clientlang)
 
         # Piece together the filename of the /index.html file to return based
         # on the primary language.
@@ -121,7 +121,7 @@ class CaptivePortal(object):
             page = templatelookup.get_template(indexhtml)
         except:
             page = templatelookup.get_template('index.html.en-us')
-            logging.debug("Unable to find HTML template for language %s!" % clientlang)
+            logging.debug("Unable to find HTML template for language %s!", clientlang)
             logging.debug("\tDefaulting to /srv/captiveportal/index.html.en-us.")
         return page.render()
     index.exposed = True
@@ -134,7 +134,7 @@ class CaptivePortal(object):
     def whitelist(self, accepted=None):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
-        logging.debug("Client's IP address: %s" % clientip)
+        logging.debug("Client's IP address: %s", clientip)
 
         # Set up the command string to add the client to the IP tables ruleset.
         addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip]
@@ -172,9 +172,9 @@ class CaptivePortal(object):
     def error_page_404(status, message, traceback, version):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
-        logging.debug("Client's IP address: %s" % clientip)
-        logging.debug("Value of status is: %s" % status)
-        logging.debug("Value of message is: %s" % message)
+        logging.debug("Client's IP address: %s", clientip)
+        logging.debug("Value of status is: %s", status)
+        logging.debug("Value of message is: %s", message)
 
         # Assemble some HTML to redirect the client to the captive portal's
         # /index.html-* page.
@@ -220,19 +220,19 @@ def parse_args():
 def check_args(args):
     if not args.port == 31337 and args.sslport == 31338:
         args.sslport = args.port + 1
-        logging.debug("Setting ssl port to %d/TCP" % args.sslport)
+        logging.debug("Setting ssl port to %d/TCP", args.sslport)
 
     if not os.path.exists(args.certificate):
-        logging.error("Specified SSL cert not found: %s" % args.certificate)
+        logging.error("Specified SSL cert not found: %s", args.certificate)
         exit(2)
     else:
-        logging.debug("Using SSL cert at: %s" % args.certificate)
+        logging.debug("Using SSL cert at: %s", args.certificate)
 
     if not os.path.exists(args.key):
-        logging.error("Specified SSL private key not found: %s" % args.key)
+        logging.error("Specified SSL private key not found: %s", args.key)
         exit(2)
     else:
-        logging.debug("Using SSL private key at: %s" % args.key)
+        logging.debug("Using SSL private key at: %s", args.key)
 
     if not args.configdir == "/etc/captiveportal" and args.appconfig == "/etc/captiveportal/captiveportal.conf":
         args.appconfig = "%s/captiveportal.conf" % args.configdir
@@ -254,17 +254,17 @@ def create_pidfile(args):
         else:
             args.pidfile = '/var/run/captive_portal.'
     full_pidfile = args.pidfile + args.interface
-    logging.debug("Name of PID file is: %s" % full_pidfile)
+    logging.debug("Name of PID file is: %s", full_pidfile)
     
     # If a PID file already exists for this network interface, ABEND.
     if os.path.exists(full_pidfile):
-        logging.error("A pidfile already exists for network interface %s." % full_pidfile)
+        logging.error("A pidfile already exists for network interface %s.", full_pidfile)
         logging.error("Is a daemon already running on this interface?")
         exit(5)
     
     # Write the PID file of this instance to the PID file.
-    logging.debug("Creating pidfile for network interface %s." % str(args.interface))
-    logging.debug("PID of process is %s." % str(os.getpid()))
+    logging.debug("Creating pidfile for network interface %s.", str(args.interface))
+    logging.debug("PID of process is %s.", str(os.getpid()))
     pid = PIDFile(cherrypy.engine, full_pidfile)
     pid.subscribe()
 
@@ -297,7 +297,7 @@ def setup_url_tree(appconfig):
     
     # Mount the object for the root of the URL tree, which happens to be the
     # system status page.  Use the application config file to set it up.
-    logging.debug("Mounting web app in %s to /." % appconfig)
+    logging.debug("Mounting web app in %s to /.", appconfig)
     cherrypy.tree.mount(root, "/", appconfig)
 
 

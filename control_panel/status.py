@@ -113,7 +113,7 @@ class Status(object):
         if test:
             # self.netconfdb = '/home/drwho/network.sqlite'
             self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            logging.debug("Location of NetworkConfiguration.netconfdb: %s" % self.netconfdb)
+            logging.debug("Location of NetworkConfiguration.netconfdb: %s", self.netconfdb)
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
 
@@ -137,22 +137,22 @@ class Status(object):
         (minutes, seconds) = divmod(float(uptime), 60)
         (hours, minutes) = divmod(minutes, 60)
         uptime = "%i hours, %i minutes, %i seconds" % (hours, minutes, seconds)
-        logging.debug("System uptime: %s" % str(uptime))
+        logging.debug("System uptime: %s", str(uptime))
 
         # Get the amount of RAM in and in use by the system.
         sysmem = get_memory()
         if sysmem:
             (ram, ram_used) = sysmem
-        logging.debug("Total RAM: %s" % ram)
-        logging.debug("RAM in use: %s" % ram_used)
+        logging.debug("Total RAM: %s", ram)
+        logging.debug("RAM in use: %s", ram_used)
 
         # For the purposes of debugging, test to see if the network
         # configuration database file exists and print a tell to the console.
         logging.debug("Checking for existence of network configuration database.")
         if os.path.exists(self.netconfdb):
-            logging.debug("Network configuration database %s found." % self.netconfdb)
+            logging.debug("Network configuration database %s found.", self.netconfdb)
         else:
-            logging.debug("DEBUG: Network configuration database %s NOT found!" % self.netconfdb)
+            logging.debug("DEBUG: Network configuration database %s NOT found!", self.netconfdb)
 
         # Pull a list of the mesh interfaces on this system out of the network
         # configuration database.  If none are found, report none.
@@ -191,7 +191,7 @@ class Status(object):
                     print "TEST: Status.index() command to pull the configuration of a mesh interface:"
                     print command
                 else:
-                    logging.debug("Running ifconfig to collect configuration of interface %s." % mesh_interface)
+                    logging.debug("Running ifconfig to collect configuration of interface %s.", mesh_interface)
 
                     output = os.popen(command)
                     configuration = output.readlines()
@@ -203,7 +203,7 @@ class Status(object):
                         if 'inet addr' in line:
                             line = line.strip()
                             ip_address = line.split(' ')[1].split(':')[1]
-                            logging.debug("IP address is %s" % ip_address)
+                            logging.debug("IP address is %s", ip_address)
 
                 # Assemble the HTML for the status page using the mesh
                 # interface configuration data.
@@ -232,7 +232,7 @@ class Status(object):
                     print "TEST: Status.index() command to pull the configuration of a client interface:"
                     print command
                 else:
-                    logging.debug("Running ifconfig to collect configuration of interface %s." % client_interface)
+                    logging.debug("Running ifconfig to collect configuration of interface %s.", client_interface)
 
                     output = os.popen(command)
                     configuration = output.readlines()
@@ -244,7 +244,7 @@ class Status(object):
                         if 'inet addr' in line:
                             line = line.strip()
                             ip_address = line.split(' ')[1].split(':')[1]
-                            logging.debug("IP address is %s" % ip_address)
+                            logging.debug("IP address is %s", ip_address)
 
                 # For each client interface, count the number of rows in its
                 # associated arp table to count the number of clients currently
@@ -255,7 +255,7 @@ class Status(object):
                     print "TEST: Status.index() command to dump the ARP table of interface %s: " % client_interface
                     print command
                 else:
-                    logging.debug("Running arp to dump the ARP table of client interface %s." % client_interface)
+                    logging.debug("Running arp to dump the ARP table of client interface %s.", client_interface)
                     output = os.popen(command)
                     arp_table = output.readlines()
                     logging.debug("Contents of ARP table:")
@@ -264,7 +264,7 @@ class Status(object):
                     # Count the number of clients associated with the client
                     # interface by analyzing the ARP table.
                     number_of_clients = len(arp_table) - 1
-                    logging.debug("Number of associated clients: %i" % number_of_clients)
+                    logging.debug("Number of associated clients: %i", number_of_clients)
 
                 # Assemble the HTML for the status page using the mesh
                 # interface configuration data.

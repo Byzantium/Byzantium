@@ -78,7 +78,7 @@ class MeshConfiguration(object):
             pidfile = open(self.babeld_pid, 'r')
             pid = pidfile.readline()
             pidfile.close()
-            logging.debug("PID of babeld: %s" % str(pid))
+            logging.debug("PID of babeld: %s", str(pid))
         return pid
 
     # Pretends to be index.html.
@@ -213,7 +213,7 @@ class MeshConfiguration(object):
         cursor.execute("SELECT interface, enabled, protocol FROM meshes WHERE enabled='yes' AND protocol='babel';")
         results = cursor.fetchall()
         for i in results:
-            logging.debug("Adding interface: %s" % i[0])
+            logging.debug("Adding interface: %s", i[0])
             interfaces.append(i[0])
 
         # By definition, if we're in this method the new interface hasn't been
@@ -225,7 +225,7 @@ class MeshConfiguration(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
-        logging.debug("babeld command to be executed: %s" % babeld_command)
+        logging.debug("babeld command to be executed: %s", babeld_command)
 
         # Test to see if babeld is running.  If it is, it's routing for at
         # least one interface, in which case we add the one the user just
@@ -338,7 +338,7 @@ class MeshConfiguration(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
-        logging.debug("New invocation of babeld: %s" % babeld_command)
+        logging.debug("New invocation of babeld: %s", babeld_command)
 
         # Test to see if babeld is running.  If it is, we restart it without
         # the network interface that the user wants to drop out of the mesh.
@@ -354,7 +354,7 @@ class MeshConfiguration(object):
         # If there is at least one wireless network interface still configured,
         # then re-run babeld.
         if len(interfaces):
-            logging.debug("value of babeld_command is %s" % babeld_command)
+            logging.debug("value of babeld_command is %s", babeld_command)
             if self.test:
                 print "TEST: Pretending to restart babeld."
             else:

@@ -59,7 +59,7 @@ def enumerate_network_interfaces():
     # subdirectory 'wireless/' exists.  Use this to sort the list of
     # interfaces into wired and wireless.
     for i in interfaces:
-        logging.debug("Adding network interface %s." % i)
+        logging.debug("Adding network interface %s.", i)
         if os.path.isdir('/sys/class/net/' + i + '/wireless'):
             wireless.append(i)
         else:
@@ -128,8 +128,8 @@ class NetworkConfiguration(object):
         wired = []
         wireless = []
         (wired, wireless) = enumerate_network_interfaces()
-        logging.debug("Contents of wired[]: %s" % str(wired))
-        logging.debug("Contents of wireless[]: %s" % str(wireless))
+        logging.debug("Contents of wired[]: %s", str(wired))
+        logging.debug("Contents of wireless[]: %s", str(wireless))
 
         # MOOF MOOF MOOF - call to stub implementation.  We can use the list
         # immediately above (interfaces) as the list to compare the database
@@ -149,13 +149,13 @@ class NetworkConfiguration(object):
 
         # Start with wireless interfaces.
         for i in wireless:
-            logging.debug("Checking to see if %s is in the database." % i)
+            logging.debug("Checking to see if %s is in the database.", i)
             cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
             if not len(result):
-                logging.debug("Adding %s to table 'wired'." % i)
+                logging.debug("Adding %s to table 'wired'.", i)
 
                 # gateway, client_interface, enabled, channel, essid,
                 # mesh_interface
@@ -178,13 +178,13 @@ class NetworkConfiguration(object):
 
         # Wired interfaces.
         for i in wired:
-            logging.debug("Checking to see if %s is in the database." % i)
+            logging.debug("Checking to see if %s is in the database.", i)
             cursor.execute("SELECT interface, enabled FROM wired WHERE interface=?", (i, ))
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
             if not len(result):
-                logging.debug("Adding %s to table 'wired'." % i)
+                logging.debug("Adding %s to table 'wired'.", i)
 
                 # enabled, gateway, interface
                 template = ('no', 'no', i, )
@@ -354,7 +354,7 @@ class NetworkConfiguration(object):
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
                 self.mesh_ip = addr
-                logging.debug("IP address of mesh interface is %s." % addr)
+                logging.debug("IP address of mesh interface is %s.", addr)
                 break
 
             # In test mode, don't let this turn into an endless loop.
@@ -391,7 +391,7 @@ class NetworkConfiguration(object):
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
                 self.client_ip = addr
-                logging.debug("IP address of client interface is %s." % addr)
+                logging.debug("IP address of client interface is %s.", addr)
                 break
 
             # In test mode, don't let this turn into an endless loop.
@@ -628,10 +628,10 @@ class NetworkConfiguration(object):
                 captive_portal_pidfile = '/tmp/' + captive_portal_pidfile
             else:
                 error = error + "<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n"
-                logging.debug("Unable to find PID file %s of captive portal daemon." % captive_portal_pidfile)
+                logging.debug("Unable to find PID file %s of captive portal daemon.", captive_portal_pidfile)
 
             # Try to open the PID file.
-            logging.debug("Trying to open %s." % captive_portal_pidfile)
+            logging.debug("Trying to open %s.", captive_portal_pidfile)
             portal_pid = 0
             try:
                 pidfile = open(str(captive_portal_pidfile), 'r')
@@ -640,14 +640,14 @@ class NetworkConfiguration(object):
             except:
                 error = error + "<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n"
 
-            logging.debug("value of portal_pid is %s." % portal_pid)
+            logging.debug("value of portal_pid is %s.", portal_pid)
             if self.test:
                 print "Faking PID of captive_portal.py."
                 portal_pid = "Insert clever PID for captive_portal.py here."
 
             if not portal_pid:
                 portal_pid = "ERROR: captive_portal.py failed, returned code " + str(captive_portal_return) + "."
-                logging.debug("Captive portal daemon failed to start.  Exited with code %s." % str(captive_portal_return))
+                logging.debug("Captive portal daemon failed to start.  Exited with code %s.", str(captive_portal_return))
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
