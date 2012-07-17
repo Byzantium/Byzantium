@@ -42,7 +42,8 @@ class Status(object):
         # Location of the network.sqlite database, which holds the configuration
         # of every network interface in the node.
         if test:
-            self.netconfdb = '/home/drwho/network.sqlite'
+            # self.netconfdb = '/home/drwho/network.sqlite'
+            self.netconfdb = 'var/db/controlpanel/network.sqlite'
             logging.debug("Location of NetworkConfiguration.netconfdb: %s" % self.netconfdb)
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
