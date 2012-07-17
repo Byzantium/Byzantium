@@ -41,18 +41,13 @@
 
 # Modules.
 import cherrypy
-from cherrypy import _cperror
 from cherrypy.process.plugins import PIDFile
-from mako.template import Template
 from mako.lookup import TemplateLookup
 
 import argparse
-import getopt
 import logging
 import os
 import subprocess
-from subprocess import call
-import sys
 
 
 # The CaptivePortalDetector class implements a fix for an undocumented bit of
@@ -104,8 +99,8 @@ class CaptivePortal(object):
     def __init__(self, args):
         self.args = args
 
-    logging.debug("Mounting Library() from CaptivePortal().")
-    library = Library()
+        logging.debug("Mounting Library() from CaptivePortal().")
+        self.library = Library()
 
     # index(): Pretends to be / and /index.html.
     def index(self):
@@ -143,17 +138,17 @@ class CaptivePortal(object):
 
         # Set up the command string to add the client to the IP tables ruleset.
         addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip]
-        if test:
+        if self.args.test:
             print "Command that would be executed:"
             print str(addclient)
         else:
-            iptables = subprocess.call(addclient)
+            subprocess.call(addclient)
 
         # Assemble some HTML to redirect the client to the node's frontpage.
         redirect = """
                    <html>
                    <head>
-                   <meta http-equiv="refresh" content="0; url=http://""" + address + """/" />
+                   <meta http-equiv="refresh" content="0; url=http://""" + self.args.address + """/" />
                    </head>
                    <body>
                    </body>
@@ -183,7 +178,7 @@ class CaptivePortal(object):
 
         # Assemble some HTML to redirect the client to the captive portal's
         # /index.html-* page.
-        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + address + """/" /></head> <body></body> </html>"""
+        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + self.args.address + """/" /></head> <body></body> </html>"""
 
         logging.debug("Generated HTML refresh is:")
         logging.debug(redirect)
@@ -212,7 +207,7 @@ def parse_args():
     parser.add_argument("-k", "--key", action="store", default="/etc/httpd/server.key",
                         help="Path to an SSL private key file. (Defaults to /etc/httpd/server.key)")
     parser.add_argument("--pidfile", action="store")
-    parser.add_argument("-p", "--port", action="store",default=31337, type=int,
+    parser.add_argument("-p", "--port", action="store", default=31337, type=int,
                         help="Port to listen on.  Defaults to 31337/TCP.")
     parser.add_argument("-s", "--sslport", action="store", default=31338, type=int,
                         help="Port to listen for HTTPS connections on. (Defaults to HTTP port +1.")
@@ -257,7 +252,7 @@ def create_pidfile(args):
         if args.test:
             args.pidfile = '/tmp/captive_portal.'
         else:
-            args.pidfile or '/var/run/captive_portal.'
+            args.pidfile = '/var/run/captive_portal.'
     full_pidfile = args.pidfile + args.interface
     logging.debug("Name of PID file is: %s" % full_pidfile)
     
@@ -270,7 +265,7 @@ def create_pidfile(args):
     # Write the PID file of this instance to the PID file.
     logging.debug("Creating pidfile for network interface %s." % str(args.interface))
     logging.debug("PID of process is %s." % str(os.getpid()))
-    pid = PIDFile(cherrypy.engine, pidfile)
+    pid = PIDFile(cherrypy.engine, full_pidfile)
     pid.subscribe()
 
 
