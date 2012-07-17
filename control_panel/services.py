@@ -15,12 +15,11 @@ import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import exceptions
+
 import sqlite3
 import os
 import subprocess
 
-# Import core control panel modules.
-from control_panel import *
 
 # Classes.
 # Allows the user to configure to configure mesh networking on wireless network

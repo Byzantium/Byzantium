@@ -32,55 +32,55 @@ import sqlite3
 import subprocess
 import time
 
-# Import core control panel modules.
-from control_panel import *
 
 def output_error_data():
-	traceback = RichTraceback()
+    traceback = RichTraceback()
     for (filename, lineno, function, line) in traceback.traceback:
         print "\n"
         print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
         print "Execution died on line %s\n" % line
         print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
 
+
 def pid_check():
-	pid = ''
-	if os.path.exists(self.babeld_pid):
+    pid = ''
+    if os.path.exists(self.babeld_pid):
         logging.debug("Reading PID of babeld.")
         pidfile = open(self.babeld_pid, 'r')
         pid = pidfile.readline()
         pidfile.close()
         logging.debug("PID of babeld: %s" % str(pid))
-     return pid
+    return pid
+
 
 # Classes.
 # Allows the user to configure mesh networking on wireless network interfaces.
 class MeshConfiguration(object):
 
-    # Class constants.
-    babeld = '/usr/local/bin/babeld'
-    babeld_pid = '/var/run/babeld.pid'
-    babeld_timeout = 3
+    def __init__(self, test):
+        self.test = test
 
-    if test:
-        netconfdb = '/home/drwho/network.sqlite'
-        print "TEST: Location of netconfdb: %s" % netconfdb
-    else:
-        netconfdb = '/var/db/controlpanel/network.sqlite'
+        # Class constants.
+        self.babeld = '/usr/local/bin/babeld'
+        self.babeld_pid = '/var/run/babeld.pid'
+        self.babeld_timeout = 3
 
-    if test:
-        meshconfdb = '/home/drwho/mesh.sqlite'
-        print "TEST: Location of meshconfdb: %s" % meshconfdb
-    else:
-        meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+        if self.test:
+            self.netconfdb = '/home/drwho/network.sqlite'
+            print "TEST: Location of netconfdb: %s" % self.netconfdb
+            self.meshconfdb = '/home/drwho/mesh.sqlite'
+            print "TEST: Location of meshconfdb: %s" % self.meshconfdb
+        else:
+            self.netconfdb = '/var/db/controlpanel/network.sqlite'
+            self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
 
-    # Class attributes which apply to a network interface.  By default they
-    # are blank but will be populated from the mesh.sqlite database if the
-    # user picks an interface that's already been set up.
-    interface = ''
-    protocol = ''
-    enabled = ''
-    pid = ''
+        # Class attributes which apply to a network interface.  By default they
+        # are blank but will be populated from the mesh.sqlite database if the
+        # user picks an interface that's already been set up.
+        self.interface = ''
+        self.protocol = ''
+        self.enabled = ''
+        self.pid = ''
 
     # Pretends to be index.html.
     def index(self):

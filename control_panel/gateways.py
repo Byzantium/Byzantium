@@ -15,58 +15,53 @@
 #   database if they don't exist anymore.
 
 # Import external modules.
-import cherrypy
-from mako.template import Template
-from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
 
 import logging
 import os
 import os.path
-import signal
 import sqlite3
 import subprocess
 import time
 
-# Import core control panel modules.
-from control_panel import *
 
 def output_error_data():
-	traceback = RichTraceback()
+    traceback = RichTraceback()
     for (filename, lineno, function, line) in traceback.traceback:
         print "\n"
         print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
         print "Execution died on line %s\n" % line
         print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
 
+
 # Classes.
 # This class allows the user to turn a configured network interface on their
 # node into a gateway from the mesh to another network (usually the global Net).
 class Gateways(object):
 
-    # Class constants.
-    # Path to network configuration database.
-    if test:
-        netconfdb = '/home/drwho/network.sqlite'
-        print "TEST: Location of Gateways.netconfdb: %s" % netconfdb
-    else:
-        netconfdb = '/var/db/controlpanel/network.sqlite'
+    def __init__(self, templatelookup, test):
+        self.templatelookup = templatelookup
+        self.test = test
 
-    # Path to mesh configuration database.
-    if test:
-        meshconfdb = '/home/drwho/mesh.sqlite'
-        print "TEST: Location of Gateways.meshconfdb: %s" % meshconfdb
-    else:
-        meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+        # Class constants.
+        # Path to network configuration database.
+        if self.test:
+            self.netconfdb = '/home/drwho/network.sqlite'
+            print "TEST: Location of Gateways.netconfdb: %s" % self.netconfdb
+            self.meshconfdb = '/home/drwho/mesh.sqlite'
+            print "TEST: Location of Gateways.meshconfdb: %s" % self.meshconfdb
+        else:
+            self.netconfdb = '/var/db/controlpanel/network.sqlite'
+            self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
 
-    # Configuration information for the network device chosen by the user to
-    # act as the uplink.
-    interface = ''
-    channel = 0
-    essid = ''
+        # Configuration information for the network device chosen by the user to
+        # act as the uplink.
+        self.interface = ''
+        self.channel = 0
+        self.essid = ''
 
-    # Used for sanity checking user input.
-    frequency = 0
+        # Used for sanity checking user input.
+        self.frequency = 0
 
     # Pretends to be index.html.
     def index(self):
@@ -103,7 +98,7 @@ class Gateways(object):
 
         # Render the HTML page.
         try:
-            page = templatelookup.get_template("/gateways/index.html")
+            page = self.templatelookup.get_template("/gateways/index.html")
             return page.render(title = "Network Gateway",
                                purpose_of_page = "Configure Network Gateway",
                                ethernet_buttons = ethernet_buttons,
@@ -145,7 +140,7 @@ class Gateways(object):
         # Begin parsing the contents of /proc/net/dev to extract the names of
         # the interfaces.
         interfaces = []
-        if test:
+        if self.test:
             print "TEST: Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
             return
         else:
@@ -225,8 +220,7 @@ class Gateways(object):
     # the gateway on.  This method assumes that whichever Ethernet interface
     # chosen is already configured via DHCP through ifplugd.
     def tcpip(self, interface=None, essid=None, channel=None):
-        if debug:
-            print "Entered Gateways.tcpip()."
+        logging.debug("Entered Gateways.tcpip().")
 
         # Define this variable in case wireless configuration information is
         # passed into this method.
@@ -250,7 +244,7 @@ class Gateways(object):
 
         # Run the "Are you sure?" page through the template interpeter.
         try:
-            page = templatelookup.get_template("/gateways/confirm.html")
+            page = self.templatelookup.get_template("/gateways/confirm.html")
             return page.render(title = "Enable gateway?",
                                purpose_of_page = "Confirm gateway mode.",
                                interface = interface, iwconfigs = iwconfigs)
@@ -292,7 +286,7 @@ class Gateways(object):
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
         try:
-            page = templatelookup.get_template("/gateways/wireless.html")
+            page = self.templatelookup.get_template("/gateways/wireless.html")
             return page.render(title = "Configure wireless uplink.",
                            purpose_of_page = "Set wireless uplink parameters.",
                            warning = warning, interface = interface,
@@ -310,7 +304,7 @@ class Gateways(object):
         if self.essid:
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
             logging.debug("Setting ESSID to %s." % self.essid)
-            if test:
+            if self.test:
                 print "TEST: Command to set ESSID:"
                 print str(command)
             else:
@@ -318,7 +312,7 @@ class Gateways(object):
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
             logging.debug("Setting channel %s." % self.channel)
-            if test:
+            if self.test:
                 print "TEST: Command to set channel:"
                 print str(command)
             else:
@@ -331,7 +325,7 @@ class Gateways(object):
         # avahi-daemon is bounced.
         command = ['/usr/local/sbin/gateway.sh', interface]
         logging.debug("Preparing to configure interface %s." % interface)
-        if test:
+        if self.test:
             print "TEST: Pretending to run gateway.sh on interface %s." % interface
             print "TEST: Command that would be run:"
             print str(command)
@@ -374,7 +368,7 @@ class Gateways(object):
 
         # Display the confirmation of the operation to the user.
         try:
-            page = templatelookup.get_template("/gateways/done.html")
+            page = self.templatelookup.get_template("/gateways/done.html")
             return page.render(title = "Enable gateway?",
                                purpose_of_page = "Confirm gateway mode.",
                                interface = interface)
@@ -382,6 +376,7 @@ class Gateways(object):
             output_error_data()
     activate.exposed = True
 
+    # TODO(shanel): Where is self.mesh_* set? I only see ref to them in networkconfiguration.py?
     # Configure the network interface.
     def set_ip(self):
         # If we've made it this far, the user's decided to (re)configure a
@@ -467,7 +462,7 @@ class Gateways(object):
 
         # Render and display the page.
         try:
-            page = templatelookup.get_template("/network/done.html")
+            page = self.templatelookup.get_template("/network/done.html")
             return page.render(title = "Network interface configured.",
                                purpose_of_page = "Configured!",
                                interface = self.mesh_interface,

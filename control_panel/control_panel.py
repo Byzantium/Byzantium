@@ -17,27 +17,32 @@
 
 # Import modules.
 import cherrypy
-from mako.template import Template
 from mako.lookup import TemplateLookup
 
 import argparse
-import getopt
 import logging
 import os
-import sys
 
 from status import Status
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(conflict_handler='resolve', description="This daemon implements the control "
-                                     "panel functionality of Byzantium Linux.")
-    parser.add_argument("--cachedir", action="store", default="/tmp/controlcache")
-    parser.add_argument("--configdir", action="store", default="/etc/controlpanel")
-    parser.add_argument("-d", "--debug", action="store_true", default=False, help="Enable debugging mode.")
-    parser.add_argument("--filedir", action="store", default="/srv/controlpanel")
+    parser = argparse.ArgumentParser(conflict_handler='resolve',
+                                     description="This daemon implements the "
+                                     "control panel functionality of Byzantium "
+                                     "Linux.")
+    parser.add_argument("--cachedir", action="store",
+                        default="/tmp/controlcache")
+    parser.add_argument("--configdir", action="store",
+                        default="/etc/controlpanel")
+    parser.add_argument("-d", "--debug", action="store_true", default=False,
+                        help="Enable debugging mode.")
+    parser.add_argument("--filedir", action="store",
+                        default="/srv/controlpanel")
     parser.add_argument("-t", "--test", action="store_true", default=False,
-                        help="Disables actually doing anything, it just prints what would be done.  Used for testing "
-                        "commands without altering the test system.")
+                        help="Disables actually doing anything, it just prints "
+                        "what would be done.  Used for testing commands "
+                        "without altering the test system.")
     return parser.parse_args()
 
 
@@ -48,10 +53,12 @@ def check_args(args):
         print "Control panel functional testing mode is on."
         # Configure for running in the current working directory.  This will
         # always be Byzantium/control_panel/.
-        print "TEST: Referencing files from current working directory for testing."
+        print("TEST: Referencing files from current working directory for "
+              "testing.")
         args.filedir = '/srv/controlpanel'
         args.configdir = '/etc/controlpanel'
     return args
+
 
 def main():
     args = check_args(parse_args())
@@ -63,7 +70,9 @@ def main():
     appconfig = os.path.join(args.configdir,'controlpanel.conf')
 
     # Set up the location the templates will be served out of.
-    templatelookup = TemplateLookup(directories=[args.filedir], module_directory=args.cachedir, collection_size=100)
+    templatelookup = TemplateLookup(directories=[args.filedir],
+                                    module_directory=args.cachedir,
+                                    collection_size=100)
 
     # Read in the name and location of the appserver's global config file.
     cherrypy.config.update(globalconfig)
@@ -82,6 +91,6 @@ def main():
     cherrypy.engine.start()
     cherrypy.engine.block()
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
 

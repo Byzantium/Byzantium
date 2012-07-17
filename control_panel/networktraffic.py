@@ -8,9 +8,9 @@
 import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
+
 import os
 
-from control_panel import *
 
 # Classes.
 # This class implements the network traffic status report page.

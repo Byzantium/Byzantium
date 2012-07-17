@@ -17,35 +17,35 @@ import os.path
 import sqlite3
 
 # Import control panel modules.
-from control_panel import *
+# from control_panel import *
 from networktraffic import NetworkTraffic
 from networkconfiguration import NetworkConfiguration
 from meshconfiguration import MeshConfiguration
 from services import Services
 from gateways import Gateways
 
+
 # The Status class implements the system status report page that makes up
 # /index.html.
 class Status(object):
-	
-	def __init__(self, templatelookup, test):
-		self.templatelookup = templatelookup
-		self.test = test
 
-    # Allocate objects for all of the control panel's main features.
-    traffic = NetworkTraffic()
-    network = NetworkConfiguration()
-    mesh = MeshConfiguration()
-    services = Services()
-    gateways = Gateways()
+    def __init__(self, templatelookup, test):
+        self.templatelookup = templatelookup
+        self.test = test
+        # Allocate objects for all of the control panel's main features.
+        self.traffic = NetworkTraffic()
+        self.network = NetworkConfiguration(test)
+        self.mesh = MeshConfiguration()
+        self.services = Services()
+        self.gateways = Gateways(templatelookup, test)
 
-    # Location of the network.sqlite database, which holds the configuration
-    # of every network interface in the node.
-    if self.test:
-        netconfdb = '/home/drwho/network.sqlite'
-        logging.debug("Location of NetworkConfiguration.netconfdb: %s" % netconfdb)
-    else:
-        netconfdb = '/var/db/controlpanel/network.sqlite'
+        # Location of the network.sqlite database, which holds the configuration
+        # of every network interface in the node.
+        if test:
+            self.netconfdb = '/home/drwho/network.sqlite'
+            self.logging.debug("Location of NetworkConfiguration.netconfdb: %s" % self.netconfdb)
+        else:
+            self.netconfdb = '/var/db/controlpanel/network.sqlite'
 
     # Pretends to be index.html.
     def index(self):

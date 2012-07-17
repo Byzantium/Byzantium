@@ -54,6 +54,7 @@ import subprocess
 from subprocess import call
 import sys
 
+
 # The CaptivePortalDetector class implements a fix for an undocumented bit of
 # fail in Apple iOS.  iProducts attempt to access a particular file hidden in
 # the Apple Computer website.  If it can't find it, iOS forces the user to try
@@ -83,6 +84,7 @@ class CaptivePortalDetector(object):
         return success
     success_html.exposed = True
 
+
 # Dummy class that has to exist to create a durectory URI hierarchy.
 class Library(object):
     
@@ -93,6 +95,7 @@ class Library(object):
     def index(self):
         return("You shouldn't be seeing this.")
     index.exposed = True
+
 
 # The CaptivePortal class implements the actual captive portal stuff - the
 # HTML front-end and the IP tables interface.
@@ -190,6 +193,7 @@ class CaptivePortal(object):
         return redirect
     cherrypy.config.update({'error_page.404':error_page_404})
 
+
 def parse_args():
     parser = argparse.ArgumentParser(conflict_handler='resolve', description="This daemon implements the captive "
                                      "portal functionality of Byzantium Linux. pecifically, it acts as the front end "
@@ -216,6 +220,7 @@ def parse_args():
                         help="Disables actually doing anything, it just prints what would be done.  Used for testing "
                         "commands without altering the test system.")
     return parser.parse_args()
+
 
 def check_args(args):
     if not args.port == 31337 and args.sslport == 31338:
@@ -245,6 +250,7 @@ def check_args(args):
 
     return args
         
+        
 def create_pidfile(args):
     # Create the filename for this instance's PID file.
     if not args.pidfile:
@@ -267,11 +273,13 @@ def create_pidfile(args):
     pid = PIDFile(cherrypy.engine, pidfile)
     pid.subscribe()
 
+
 def update_cherrypy_config(port):
     # Configure a few things about the web server so we don't have to fuss
     # with an extra config file, namely, the port and IP address to listen on.
     cherrypy.config.update({'server.socket_host':'0.0.0.0', })
     cherrypy.config.update({'server.socket_port':port, })
+
 
 def start_ssl_listener(args):
     # Set up an SSL listener running in parallel.
@@ -282,9 +290,11 @@ def start_ssl_listener(args):
     ssl_listener.ssl_private_key = args.key
     ssl_listener.subscribe()
 
+
 def build_templatelookup(args):
     # Set up the location the templates will be served out of.
     return TemplateLookup(directories=[args.filedir], module_directory=args.cachedir, collection_size=100)
+
 
 def setup_url_tree(appconfig):
     # Attach the captive portal object to the URL tree.
@@ -294,6 +304,7 @@ def setup_url_tree(appconfig):
     # system status page.  Use the application config file to set it up.
     logging.debug("Mounting web app in %s to /." % appconfig)
     cherrypy.tree.mount(root, "/", appconfig)
+
 
 def setup_iptables(args):
     # Initialize the IP tables ruleset for the node.
@@ -306,6 +317,7 @@ def setup_iptables(args):
     else:
         iptables = subprocess.call(initialize_iptables)
     return iptables
+
 
 def setup_reaper(test):
     # Start up the idle client reaper daemon.
@@ -321,6 +333,7 @@ def setup_reaper(test):
     if not reaper:
         logging.error("mop_up_dead_clients.py did not start.")
 
+
 def setup_hijacker(args):
     # Start the fake DNS server that hijacks every resolution request with the
     # IP address of the client interface.
@@ -334,6 +347,7 @@ def setup_hijacker(args):
         hijacker = subprocess.Popen(dns_hijacker)
     if not hijacker:
         logging.error("fake_dns.py did not start.")
+
 
 def check_ip_tables(iptables, args):
     # Now do some error checking in case IP tables went pear-shaped.  This appears
@@ -350,6 +364,7 @@ def check_ip_tables(iptables, args):
         logging.error("Parameters passed to captive-portal.sh: initialize, %s, %s" % args.address, args.interface)
         exit(4)
 
+
 def start_web_server():
     # Start the web server.
     logging.debug("Starting web server.")
@@ -357,6 +372,7 @@ def start_web_server():
     cherrypy.engine.block()
     # [Insert opening anthem from Blaster Master here.]
     # Fin.
+
 
 def main():
     args = check_args(parse_args())
@@ -373,7 +389,7 @@ def main():
     setup_hijacker(args)
     check_ip_tables(iptables, args)
     start_web_server()
- 
+
 
 if __name__ == "__main__":
     main()

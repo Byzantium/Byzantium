@@ -8,6 +8,7 @@
 import unittest
 import captive_portal
 
+
 class CaptivePortalDetectorTest(unittest.TestCase):
     
     def setUp(self):

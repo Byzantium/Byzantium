@@ -27,16 +27,15 @@ import subprocess
 from subprocess import call
 import time
 
-# Import core control panel modules.
-from control_panel import *
 
 def output_error_data():
-	traceback = RichTraceback()
+    traceback = RichTraceback()
     for (filename, lineno, function, line) in traceback.traceback:
         print "\n"
         print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
         print "Execution died on line %s\n" % line
         print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+
 
 # Constants.
 # Ugly, I know, but we need a list of wi-fi channels to frequencies for the
@@ -49,37 +48,40 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 # Note that this does not configure mesh functionality.
 class NetworkConfiguration(object):
 
-    # Location of the network.sqlite database, which holds the configuration
-    # of every network interface in the node.
-    if test:
-        netconfdb = '/home/drwho/network.sqlite'
-        print "TEST: Location of NetworkConfiguration.netconfdb: %s" % netconfdb
-    else:
-        netconfdb = '/var/db/controlpanel/network.sqlite'
+    def __init__(self, test):
+        self.test = test
 
-    # Class attributes which make up a network interface.  By default they are
-    # blank, but will be populated from the network.sqlite database if the
-    # user picks an already-configured interface.
-    mesh_interface = ''
-    mesh_ip = ''
-    client_interface = ''
-    client_ip = ''
-    channel = ''
-    essid = ''
-    bssid = '02:CA:FF:EE:BA:BE'
-    ethernet_interface = ''
-    ethernet_ip = ''
-    frequency = 0.0
-    gateway = 'no'
+        # Location of the network.sqlite database, which holds the configuration
+        # of every network interface in the node.
+        if test:
+            self.netconfdb = '/home/drwho/network.sqlite'
+            print "TEST: Location of NetworkConfiguration.netconfdb: %s" % self.netconfdb
+        else:
+            self.netconfdb = '/var/db/controlpanel/network.sqlite'
 
-    # Set the netmasks aside so everything doesn't run together.
-    mesh_netmask = '255.255.0.0'
-    client_netmask = '255.255.255.0'
+        # Class attributes which make up a network interface.  By default they are
+        # blank, but will be populated from the network.sqlite database if the
+        # user picks an already-configured interface.
+        self.mesh_interface = ''
+        self.mesh_ip = ''
+        self.client_interface = ''
+        self.client_ip = ''
+        self.channel = ''
+        self.essid = ''
+        self.bssid = '02:CA:FF:EE:BA:BE'
+        self.ethernet_interface = ''
+        self.ethernet_ip = ''
+        self.frequency = 0.0
+        self.gateway = 'no'
 
-    # Attributes for flat files that this object maintains for the client side
-    # of the network subsystem.
-    hosts_file = '/etc/hosts.mesh'
-    dnsmasq_include_file = '/etc/dnsmasq.conf.include'
+        # Set the netmasks aside so everything doesn't run together.
+        self.mesh_netmask = '255.255.0.0'
+        self.client_netmask = '255.255.255.0'
+
+        # Attributes for flat files that this object maintains for the client side
+        # of the network subsystem.
+        self.hosts_file = '/etc/hosts.mesh'
+        self.dnsmasq_include_file = '/etc/dnsmasq.conf.include'
 
     # Pretends to be index.html.
     def index(self):
@@ -315,7 +317,7 @@ class NetworkConfiguration(object):
 
             # Note that arping returns '2' if the interface isn't online!
             command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
-            if test:
+            if self.test:
                 print "NetworkConfiguration.tcpip() command to activate network interface is %s." % command
             else:
                 output = os.popen(command)
@@ -344,7 +346,7 @@ class NetworkConfiguration(object):
             # -I Network interface to use.  Mandatory.
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       self.mesh_interface, addr]
-            if test:
+            if self.test:
                 print "NetworkConfiguration.tcpip() command to probe for a mesh interface IP address is %s" % arping
                 time.sleep(5)
             else:
@@ -357,7 +359,7 @@ class NetworkConfiguration(object):
                 break
 
             # In test mode, don't let this turn into an endless loop.
-            if test:
+            if self.test:
                 print "Breaking out of this loop to exercise the rest of the code."
                 break
 
@@ -381,7 +383,7 @@ class NetworkConfiguration(object):
             # -I Network interface to use.  Mandatory.
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       str(self.mesh_interface), addr]
-            if test:
+            if self.test:
                 print "NetworkConfiguration.tcpip() command to probe for a client interface IP address is %s" % arping
                 time.sleep(5)
             else:
@@ -394,13 +396,13 @@ class NetworkConfiguration(object):
                 break
 
             # In test mode, don't let this turn into an endless loop.
-            if test:
+            if self.test:
                 print "Breaking out of this loop to exercise the rest of the code."
                 break
 
         # For testing, hardcode some IP addresses so the rest of the code has
         # something to work with.
-        if test:
+        if self.test:
             self.mesh_ip = '192.168.1.1'
             self.client_ip = '10.0.0.1'
 
