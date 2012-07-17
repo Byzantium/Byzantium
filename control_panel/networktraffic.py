@@ -33,4 +33,3 @@ class NetworkTraffic(object):
                            title = "Byzantium Network Traffic Report",
                            purpose_of_page = "Traffic Graphs")
     index.exposed = True
-
