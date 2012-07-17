@@ -43,7 +43,7 @@ class Status(object):
         # of every network interface in the node.
         if test:
             self.netconfdb = '/home/drwho/network.sqlite'
-            self.logging.debug("Location of NetworkConfiguration.netconfdb: %s" % self.netconfdb)
+            logging.debug("Location of NetworkConfiguration.netconfdb: %s" % self.netconfdb)
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
 
