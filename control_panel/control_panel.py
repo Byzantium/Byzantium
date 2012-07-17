@@ -78,7 +78,7 @@ def main():
     cherrypy.config.update(globalconfig)
 
     # Allocate the objects representing the URL tree.
-    root = Status(templatelookup, args.test)
+    root = Status(templatelookup, args.test, args.filedir)
 
     # Mount the object for the root of the URL tree, which happens to be the
     # system status page.  Use the application config file to set it up.

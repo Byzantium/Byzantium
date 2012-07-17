@@ -13,9 +13,6 @@
 #   MOOF MOOF MOOF - Stubbed in.
 
 # Import external modules.
-import cherrypy
-from mako.template import Template
-from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
 
 import logging
@@ -24,7 +21,6 @@ import os.path
 import random
 import sqlite3
 import subprocess
-from subprocess import call
 import time
 
 
@@ -35,6 +31,40 @@ def output_error_data():
         print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
         print "Execution died on line %s\n" % line
         print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+        
+
+# Utility method to enumerate all of the network interfaces on a node.
+# Returns two lists, one of wired interfaces and one of wireless
+# interfaces.
+def enumerate_network_interfaces():
+    logging.debug("Entered NetworkConfiguration.enumerate_network_interfaces().")
+    logging.debug("Reading contents of /sys/class/net/.")
+    wired = []
+    wireless = []
+
+    # Enumerate network interfaces.
+    interfaces = os.listdir('/sys/class/net')
+
+    # Remove the loopback interface because that's our failure case.
+    if 'lo' in interfaces:
+        interfaces.remove('lo')
+
+    # Failure case: If the list of interfaces is empty, return lists
+    # containing only the loopback.
+    if not interfaces:
+        logging.debug("No interfaces found.  Defaulting.")
+        return(['lo'], ['lo'])
+
+    # For each network interface's pseudofile in /sys, test to see if a
+    # subdirectory 'wireless/' exists.  Use this to sort the list of
+    # interfaces into wired and wireless.
+    for i in interfaces:
+        logging.debug("Adding network interface %s." % i)
+        if os.path.isdir('/sys/class/net/' + i + '/wireless'):
+            wireless.append(i)
+        else:
+            wired.append(i)
+    return (wired, wireless)
 
 
 # Constants.
@@ -48,13 +78,15 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 # Note that this does not configure mesh functionality.
 class NetworkConfiguration(object):
 
-    def __init__(self, test):
+    def __init__(self, templatelookup, test):
+        self.templatelookup = templatelookup
         self.test = test
 
         # Location of the network.sqlite database, which holds the configuration
         # of every network interface in the node.
-        if test:
-            self.netconfdb = '/home/drwho/network.sqlite'
+        if self.test:
+            # self.netconfdb = '/home/drwho/network.sqlite'
+            self.netconfdb = 'var/db/controlpanel/network.sqlite'
             print "TEST: Location of NetworkConfiguration.netconfdb: %s" % self.netconfdb
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
@@ -95,7 +127,7 @@ class NetworkConfiguration(object):
         # Get a list of all network interfaces on the node (sans loopback).
         wired = []
         wireless = []
-        (wired, wireless) = self.enumerate_network_interfaces()
+        (wired, wireless) = enumerate_network_interfaces()
         logging.debug("Contents of wired[]: %s" % str(wired))
         logging.debug("Contents of wireless[]: %s" % str(wireless))
 
@@ -174,7 +206,7 @@ class NetworkConfiguration(object):
         # Render the HTML page.
         cursor.close()
         try:
-            page = templatelookup.get_template("/network/index.html")
+            page = self.templatelookup.get_template("/network/index.html")
             return page.render(title = "Byzantium Node Network Interfaces",
                                purpose_of_page = "Configure Network Interfaces",
                                wireless_buttons = wireless_buttons,
@@ -203,39 +235,6 @@ class NetworkConfiguration(object):
     # kernel believes are present.
     # def prune(self, interfaces=None):
     #    logging.debug("Entered NetworkConfiguration.prune()")
-
-    # Utility method to enumerate all of the network interfaces on a node.
-    # Returns two lists, one of wired interfaces and one of wireless
-    # interfaces.
-    def enumerate_network_interfaces(self):
-        logging.debug("Entered NetworkConfiguration.enumerate_network_interfaces().")
-        logging.debug("Reading contents of /sys/class/net/.")
-        wired = []
-        wireless = []
-
-        # Enumerate network interfaces.
-        interfaces = os.listdir('/sys/class/net')
-
-        # Remove the loopback interface because that's our failure case.
-        if 'lo' in interfaces:
-            interfaces.remove('lo')
-
-        # Failure case: If the list of interfaces is empty, return lists
-        # containing only the loopback.
-        if not interfaces:
-            logging.debug("No interfaces found.  Defaulting.")
-            return(['lo'], ['lo'])
-
-        # For each network interface's pseudofile in /sys, test to see if a
-        # subdirectory 'wireless/' exists.  Use this to sort the list of
-        # interfaces into wired and wireless.
-        for i in interfaces:
-            logging.debug("Adding network interface %s." % i)
-            if os.path.isdir('/sys/class/net/' + i + '/wireless'):
-                wireless.append(i)
-            else:
-                wired.append(i)
-        return (wired, wireless)
 
     # Allows the user to enter the ESSID and wireless channel of their node.
     # Takes as an argument the value of the 'interface' variable defined in
@@ -277,7 +276,7 @@ class NetworkConfiguration(object):
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
         try:
-            page = templatelookup.get_template("/network/wireless.html")
+            page = self.templatelookup.get_template("/network/wireless.html")
             return page.render(title = "Configure wireless for Byzantium node.",
                            purpose_of_page = "Set wireless network parameters.",
                            warning = warning, interface = self.mesh_interface,
@@ -320,7 +319,7 @@ class NetworkConfiguration(object):
             if self.test:
                 print "NetworkConfiguration.tcpip() command to activate network interface is %s." % command
             else:
-                output = os.popen(command)
+                os.popen(command)
 
             # Sleep five seconds to give the hardware a chance to catch up.
             time.sleep(5)
@@ -410,17 +409,17 @@ class NetworkConfiguration(object):
         if not len(result):
             logging.debug("Deactivating wireless interface.")
             command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
-            if test:
+            if self.test:
                 print "NetworkConfiguration.tcpip() command to deactivate a mesh interface: %s" % command
             else:
-                output = os.popen(command)
+                os.popen(command)
 
         # Close the database connection.
         connection.close()
 
         # Run the "Are you sure?" page through the template interpeter.
         try:
-            page = templatelookup.get_template("/network/confirm.html")
+            page = self.templatelookup.get_template("/network/confirm.html")
             return page.render(title = "Confirm network address for interface.",
                                purpose_of_page = "Confirm IP configuration.",
                                interface = self.mesh_interface,
@@ -448,10 +447,10 @@ class NetworkConfiguration(object):
         # First, take the wireless NIC offline so its mode can be changed.
         logging.debug("Deactivating wireless interface.")
         command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
-        if test:
+        if self.test:
             print "NetworkConfiguration.set_ip() command to deactivate a wireless interface: %s" % command
         else:
-            output = os.popen(command)
+            os.popen(command)
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless
@@ -464,43 +463,43 @@ class NetworkConfiguration(object):
             # Set wireless interface mode.
             logging.debug("Configuring wireless interface for ad-hoc mode.")
             command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
-            if test:
+            if self.test:
                 print "NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s" % command
             else:
-                output = os.popen(command)
+                os.popen(command)
                 time.sleep(1)
 
             # Set ESSID.
             logging.debug("Configuring ESSID of wireless interface.")
             command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
-            if test:
+            if self.test:
                 print "NetworkConfiguration.set_ip() command to set the ESSID: %s" % command
             else:
-                output = os.popen(command)
+                os.popen(command)
                 time.sleep(1)
 
             # Set BSSID.
             logging.debug("Configuring BSSID of wireless interface.")
             command = '/sbin/iwconfig ' + self.mesh_interface + ' ap ' + self.bssid
-            if test:
+            if self.test:
                 print "NetworkConfiguration.set_ip() command to set the BSSID: %s" % command
             else:
-                output = os.popen(command)
+                os.popen(command)
                 time.sleep(1)
 
             # Set wireless channel.
             logging.debug("Configuring channel of wireless interface.")
             command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
-            if test:
+            if self.test:
                 print "NetworkConfiguration.set_ip() command to set the channel: %s" % command
             else:
-                output = os.popen(command)
+                os.popen(command)
                 time.sleep(1)
 
             # Run iwconfig again and capture the current wireless configuration.
             command = '/sbin/iwconfig ' + self.mesh_interface
             configuration = ''
-            if test:
+            if self.test:
                 print "NetworkConfiguration.set_ip()command to capture the current state of a network interface: %s" % command
             else:
                 output = os.popen(command)
@@ -550,7 +549,7 @@ class NetworkConfiguration(object):
 
             # For the purpose of testing, exit after one iteration so we don't
             # get stuck in an infinite loop.
-            if test:
+            if self.test:
                 break
 
             # "Victory is mine!"
@@ -564,19 +563,19 @@ class NetworkConfiguration(object):
         logging.debug("Setting IP configuration information on wireless interface.")
         command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
         command = command + ' netmask ' + self.mesh_netmask + ' up'
-        if test:
+        if self.test:
             print "NetworkConfiguration.set_ip()command to set the IP configuration of the mesh interface: %s" % command
         else:
-            output = os.popen(command)
+            os.popen(command)
         time.sleep(5)
 
         # Add the client interface.
         logging.debug("Adding client interface.")
         command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
-        if test:
+        if self.test:
             print "NetworkConfiguration.set_ip()command to set the IP configuration of the client interface: %s" % command
         else:
-            output = os.popen(command)
+            os.popen(command)
 
         # Commit the interface's configuration to the database.
         connection = sqlite3.connect(self.netconfdb)
@@ -595,7 +594,7 @@ class NetworkConfiguration(object):
                                  str(self.mesh_interface), '-a', self.client_ip,
                                  '-d' ]
         captive_portal_return = 0
-        if test:
+        if self.test:
             print "NetworkConfiguration.set_ip() command to start the captive portal daemon: %s" % captive_portal_daemon
             captive_portal_return = 6
         else:
@@ -642,7 +641,7 @@ class NetworkConfiguration(object):
                 error = error + "<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n"
 
             logging.debug("value of portal_pid is %s." % portal_pid)
-            if test:
+            if self.test:
                 print "Faking PID of captive_portal.py."
                 portal_pid = "Insert clever PID for captive_portal.py here."
 
@@ -662,7 +661,7 @@ class NetworkConfiguration(object):
 
         # Render and display the page.
         try:
-            page = templatelookup.get_template("/network/done.html")
+            page = self.templatelookup.get_template("/network/done.html")
             return page.render(title = "Network interface configured.",
                                purpose_of_page = "Configured!",
                                error = error, interface = self.mesh_interface,
@@ -683,14 +682,14 @@ class NetworkConfiguration(object):
 
         # See if the /etc/hosts.mesh backup file exists.  If it does, delete it.
         old_hosts_file = self.hosts_file + '.bak'
-        if test:
+        if self.test:
             print "Deleted old /etc/hosts.mesh.bak."
         else:
             if os.path.exists(old_hosts_file):
                 os.remove(old_hosts_file)
 
         # Back up the old hosts.mesh file.
-        if test:
+        if self.test:
             print "Renamed /etc/hosts.mesh file to /etc/hosts.mesh.bak."
         else:
             if os.path.exists(self.hosts_file):
@@ -704,7 +703,7 @@ class NetworkConfiguration(object):
         prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 
         # Generate the contents of the new hosts.mesh file.
-        if test:
+        if self.test:
             print "Pretended to generate new /etc/hosts.mesh file."
             return
         else:
@@ -741,14 +740,14 @@ class NetworkConfiguration(object):
 
         # If an include file already exists, move it out of the way.
         oldfile = self.dnsmasq_include_file + '.bak'
-        if test:
+        if self.test:
             print "Deleting old /etc/dnsmasq.conf.include.bak file."
         else:
             if os.path.exists(oldfile):
                 os.remove(oldfile)
 
         # Back up the old dnsmasq.conf.include file.
-        if test:
+        if self.test:
             print "Backing up /etc/dnsmasq.conf.include file."
             print "Now returning to save time."
             return
@@ -757,15 +756,15 @@ class NetworkConfiguration(object):
                 os.rename(self.dnsmasq_include_file, oldfile)
 
         # Open the include file so it can be written to.
-        file = open(self.dnsmasq_include_file, 'w')
+        include_file = open(self.dnsmasq_include_file, 'w')
 
         # Write the DHCP range for this node's clients.
-        file.write(dhcp_range)
+        include_file.write(dhcp_range)
 
         # Close the include file.
-        file.close()
+        include_file.close()
 
         # Restart dnsmasq.
-        output = subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
+        subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
         return
 

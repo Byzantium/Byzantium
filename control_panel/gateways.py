@@ -46,9 +46,11 @@ class Gateways(object):
         # Class constants.
         # Path to network configuration database.
         if self.test:
-            self.netconfdb = '/home/drwho/network.sqlite'
+            # self.netconfdb = '/home/drwho/network.sqlite'
+            self.netconfdb = 'var/db/controlpanel/network.sqlite'
             print "TEST: Location of Gateways.netconfdb: %s" % self.netconfdb
-            self.meshconfdb = '/home/drwho/mesh.sqlite'
+            # self.meshconfdb = '/home/drwho/mesh.sqlite'
+            self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
             print "TEST: Location of Gateways.meshconfdb: %s" % self.meshconfdb
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
@@ -308,7 +310,7 @@ class Gateways(object):
                 print "TEST: Command to set ESSID:"
                 print str(command)
             else:
-                process = subprocess.Popen(command)
+                subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
             logging.debug("Setting channel %s." % self.channel)
@@ -316,7 +318,7 @@ class Gateways(object):
                 print "TEST: Command to set channel:"
                 print str(command)
             else:
-                process = subprocess.Popen(command)
+                subprocess.Popen(command)
 
         # If we have to configure layers 1 and 2, then it's a safe bet that we
         # should use DHCP to set up layer 3.  This is wrapped in a shell script

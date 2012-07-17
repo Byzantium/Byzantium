@@ -7,10 +7,6 @@
 # License: GPLv3
 
 # Import modules.
-import cherrypy
-from mako.template import Template
-from mako.lookup import TemplateLookup
-
 import logging
 import os
 import os.path
@@ -25,17 +21,90 @@ from services import Services
 from gateways import Gateways
 
 
+# Query the node's uptime (in seconds) from the OS.
+def get_uptime():
+    # Open /proc/uptime.
+    uptime = open("/proc/uptime", "r")
+
+    # Read the first vlaue from the file.  If it can't be opened, return
+    # nothing and let the default values take care of it.
+    system_uptime = uptime.readline()
+    if not system_uptime:
+        uptime.close()
+        return False
+
+    # Separate the uptime from the idle time.
+    node_uptime = system_uptime.split()[0]
+
+    # Cleanup.
+    uptime.close()
+
+    # Return the system uptime (in seconds).
+    return node_uptime
+    
+    
+# Queries the OS to get the system load stats.
+def get_load():
+    # Open /proc/loadavg.
+    loadavg = open("/proc/loadavg", "r")
+
+    # Read first three values from /proc/loadavg.  If it can't be opened,
+    # return nothing and let the default values take care of it.
+    loadstring = loadavg.readline()
+    if not loadstring:
+        loadavg.close()
+        return False
+
+    # Extract the load averages from the string.
+    averages = loadstring.split()
+    loadavg.close()
+    # check to avoid errors
+    if len(averages) < 3:
+        print('WARNING: /proc/loadavg is not formatted as expected')
+        return False
+
+    # Return the load average values.
+    return (averages[:3])
+    
+    
+# Queries the OS to get the system memory usage stats.
+def get_memory():
+    # Open /proc/meminfo.
+    meminfo = open("/proc/meminfo", "r")
+
+    # Read in the contents of that virtual file.  Put them into a dictionary
+    # to make it easy to pick out what we want.  If this can't be done,
+    # return nothing and let the default values handle it.
+    for line in meminfo:
+        # Homoginize the data.
+        line = line.strip().lower()
+        # Figure out how much RAM and swap are in use right now
+        try:
+            if line.startswith('memtotal'):
+                memtotal = line.split()[1]
+            elif line.startswith('memfree'):
+                memfree = line.split()[1]
+        except KeyError as e:
+            print(e)
+            print('WARNING: /proc/meminfo is not formatted as expected')
+            return False
+    memused = int(memtotal) - int(memfree)
+
+    # Return total RAM, RAM used, total swap space, swap space used.
+    return (memtotal, memused)
+
+
 # The Status class implements the system status report page that makes up
 # /index.html.
 class Status(object):
 
-    def __init__(self, templatelookup, test):
+    def __init__(self, templatelookup, test, filedir):
         self.templatelookup = templatelookup
         self.test = test
         # Allocate objects for all of the control panel's main features.
-        self.traffic = NetworkTraffic()
-        self.network = NetworkConfiguration(test)
-        self.mesh = MeshConfiguration(test)
+        self.traffic = NetworkTraffic(filedir, templatelookup)
+        self.network = NetworkConfiguration(templatelookup, test)
+        self.mesh = MeshConfiguration(templatelookup, test)
         self.services = Services()
         self.gateways = Gateways(templatelookup, test)
 
@@ -60,7 +129,7 @@ class Status(object):
         ram_used = 0
 
         # Get the node's uptime from the OS.
-        sysuptime = self.get_uptime()
+        sysuptime = get_uptime()
         if sysuptime:
             uptime = sysuptime
 
@@ -71,7 +140,7 @@ class Status(object):
         logging.debug("System uptime: %s" % str(uptime))
 
         # Get the amount of RAM in and in use by the system.
-        sysmem = self.get_memory()
+        sysmem = get_memory()
         if sysmem:
             (ram, ram_used) = sysmem
         logging.debug("Total RAM: %s" % ram)
@@ -211,73 +280,7 @@ class Status(object):
                            purpose_of_page = "System Status")
     index.exposed = True
 
-    # Query the node's uptime (in seconds) from the OS.
-    def get_uptime(self):
-        # Open /proc/uptime.
-        uptime = open("/proc/uptime", "r")
 
-        # Read the first vlaue from the file.  If it can't be opened, return
-        # nothing and let the default values take care of it.
-        system_uptime = uptime.readline()
-        if not system_uptime:
-            uptime.close()
-            return False
 
-        # Separate the uptime from the idle time.
-        node_uptime = system_uptime.split()[0]
 
-        # Cleanup.
-        uptime.close()
-
-        # Return the system uptime (in seconds).
-        return node_uptime
-
-    # Queries the OS to get the system load stats.
-    def get_load(self):
-        # Open /proc/loadavg.
-        loadavg = open("/proc/loadavg", "r")
-
-        # Read first three values from /proc/loadavg.  If it can't be opened,
-        # return nothing and let the default values take care of it.
-        loadstring = loadavg.readline()
-        if not loadstring:
-            loadavg.close()
-            return False
-
-        # Extract the load averages from the string.
-        averages = loadstring.split()
-        loadavg.close()
-        # check to avoid errors
-        if len(averages) < 3:
-           print('WARNING: /proc/loadavg is not formatted as expected')
-           return False
-
-        # Return the load average values.
-        return (averages[:3])
-
-    # Queries the OS to get the system memory usage stats.
-    def get_memory(self):
-        # Open /proc/meminfo.
-        meminfo = open("/proc/meminfo", "r")
-
-        # Read in the contents of that virtual file.  Put them into a dictionary
-        # to make it easy to pick out what we want.  If this can't be done,
-        # return nothing and let the default values handle it.
-        for line in meminfo:
-           # Homoginize the data.
-           line = line.strip().lower()
-           # Figure out how much RAM and swap are in use right now
-           try:
-              if line.startswith('memtotal'):
-                 memtotal = line.split()[1]
-              elif line.startswith('memfree'):
-                 memfree = line.split()[1]
-           except KeyError as e:
-              print(e)
-              print('WARNING: /proc/meminfo is not formatted as expected')
-              return False
-        memused = int(memtotal) - int(memfree)
-
-        # Return total RAM, RAM used, total swap space, swap space used.
-        return (memtotal, memused)
 
