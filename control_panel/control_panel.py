@@ -67,7 +67,10 @@ def main():
     else:
         logging.basicConfig(level=logging.ERROR)
     globalconfig = os.path.join(args.configdir,'controlpanelGlobal.conf')
-    appconfig = os.path.join(args.configdir,'controlpanel.conf')
+    if args.test:
+        appconfig = os.path.join(args.configdir,'controlpanel_test.conf')
+    else:
+        appconfig = os.path.join(args.configdir,'controlpanel.conf')
 
     # Set up the location the templates will be served out of.
     templatelookup = TemplateLookup(directories=[args.filedir],
