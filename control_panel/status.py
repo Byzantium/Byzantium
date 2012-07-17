@@ -105,7 +105,7 @@ class Status(object):
         self.traffic = NetworkTraffic(filedir, templatelookup)
         self.network = NetworkConfiguration(templatelookup, test)
         self.mesh = MeshConfiguration(templatelookup, test)
-        self.services = Services()
+        self.services = Services(templatelookup, test)
         self.gateways = Gateways(templatelookup, test)
 
         # Location of the network.sqlite database, which holds the configuration
