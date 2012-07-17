@@ -15,47 +15,55 @@
 #   database if they don't exist anymore.
 
 # Import external modules.
-import cherrypy
-from mako.template import Template
-from mako.lookup import TemplateLookup
 from mako.exceptions import RichTraceback
+
+import logging
 import os
 import os.path
 import sqlite3
 import subprocess
-import signal
 import time
 
-# Import core control panel modules.
-from control_panel import *
+
+def output_error_data():
+    traceback = RichTraceback()
+    for (filename, lineno, function, line) in traceback.traceback:
+        print "\n"
+        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
+        print "Execution died on line %s\n" % line
+        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+
 
 # Classes.
 # This class allows the user to turn a configured network interface on their
 # node into a gateway from the mesh to another network (usually the global Net).
 class Gateways(object):
-    # Class constants.
-    # Path to network configuration database.
-    if test:
-        netconfdb = '/home/drwho/network.sqlite'
-        print "TEST: Location of Gateways.netconfdb: %s" % netconfdb
-    else:
-        netconfdb = '/var/db/controlpanel/network.sqlite'
 
-    # Path to mesh configuration database.
-    if test:
-        meshconfdb = '/home/drwho/mesh.sqlite'
-        print "TEST: Location of Gateways.meshconfdb: %s" % meshconfdb
-    else:
-        meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+    def __init__(self, templatelookup, test):
+        self.templatelookup = templatelookup
+        self.test = test
 
-    # Configuration information for the network device chosen by the user to
-    # act as the uplink.
-    interface = ''
-    channel = 0
-    essid = ''
+        # Class constants.
+        # Path to network configuration database.
+        if self.test:
+            # self.netconfdb = '/home/drwho/network.sqlite'
+            self.netconfdb = 'var/db/controlpanel/network.sqlite'
+            print "TEST: Location of Gateways.netconfdb: %s" % self.netconfdb
+            # self.meshconfdb = '/home/drwho/mesh.sqlite'
+            self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
+            print "TEST: Location of Gateways.meshconfdb: %s" % self.meshconfdb
+        else:
+            self.netconfdb = '/var/db/controlpanel/network.sqlite'
+            self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
 
-    # Used for sanity checking user input.
-    frequency = 0
+        # Configuration information for the network device chosen by the user to
+        # act as the uplink.
+        self.interface = ''
+        self.channel = 0
+        self.essid = ''
+
+        # Used for sanity checking user input.
+        self.frequency = 0
 
     # Pretends to be index.html.
     def index(self):
@@ -92,38 +100,30 @@ class Gateways(object):
 
         # Render the HTML page.
         try:
-            page = templatelookup.get_template("/gateways/index.html")
+            page = self.templatelookup.get_template("/gateways/index.html")
             return page.render(title = "Network Gateway",
                                purpose_of_page = "Configure Network Gateway",
                                ethernet_buttons = ethernet_buttons,
                                wireless_buttons = wireless_buttons)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     index.exposed = True
 
     # Utility method to update the list of all network interfaces on a node.
     # New ones detected are added to the network.sqlite database.  Takes no
     # arguments; returns nothing (but alters the database).
     def update_network_interfaces(self):
-        if debug:
-            print "DEBUG: Entered Gateways.update_network_interfaces()."
+        logging.debug("Entered Gateways.update_network_interfaces().")
         interfaces = []
 
         # Open the kernel's canonical list of network interfaces.
         procnetdev = open("/proc/net/dev", "r")
-        if debug:
-            if procnetdev:
-                print "DEBUG: Successfully opened /proc/net/dev."
-            else:
+        if procnetdev:
+            logging.debug("Successfully opened /proc/net/dev.")
+        else:
                 # Note: This means that we use the contents of the database.
-                print "DEBUG: Warning: Unable to open /proc/net/dev."
-                return
+            logging.debug("Warning: Unable to open /proc/net/dev.")
+            return
 
         # Smoke test by trying to read the first two lines from the pseudofile
         # (which comprises the column headers.  If this fails, just return
@@ -131,8 +131,7 @@ class Gateways(object):
         headers = procnetdev.readline()
         headers = procnetdev.readline()
         if not headers:
-            if debug:
-                print "DEBUG: Smoke test of /proc/net/dev read failed."
+            logging.debug("Smoke test of /proc/net/dev read failed.")
             procnetdev.close()
             return
 
@@ -143,7 +142,7 @@ class Gateways(object):
         # Begin parsing the contents of /proc/net/dev to extract the names of
         # the interfaces.
         interfaces = []
-        if test:
+        if self.test:
             print "TEST: Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
             return
         else:
@@ -160,16 +159,14 @@ class Gateways(object):
 
                 # See if it's in the table of wired interfaces.
                 template = (interface, )
-                if debug:
-                    print "DEBUG: Checking to see if interface %s is a known wired interface..." % interface
+                logging.debug("Checking to see if interface %s is a known wired interface...", interface)
                 cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
                 result = cursor.fetchall()
                 if not len(result):
-                    if debug:
-                        print "DEBUG: Interface %s isn't a known wired interface.  Checking wireless interfaces..." % interface
+                    logging.debug("Interface %s isn't a known wired interface.  Checking wireless interfaces...",
+                                  interface)
                 else:
-                    if debug:
-                        print "DEBUG: Interface %s is a known wired interface." % interface
+                    logging.debug("Interface %s is a known wired interface.", interface)
                     found = 'wired'
 
                 # If it's not in the wired table, check the wireless table.
@@ -180,17 +177,15 @@ class Gateways(object):
                     # If it's not in there, either, figure out which table it
                     # has to go in.
                     if not len(result):
-                        if debug:
-                            print "DEBUG: %s isn't a known wireless interface, either.  Figuring out where it has to go..." % interface
+                        logging.debug("%s isn't a known wireless interface, either.  Figuring out where it has to go...", 
+                                      interface)
                     else:
-                        if debug:
-                            print "DEBUG: %s is a known wireless interface." % interface
+                        logging.debug("%s is a known wireless interface.", interface)
                         found = 'wireless'
 
                 # If it still hasn't been found, figure out where it has to go.
                 if not found:
-                    if debug:
-                        print "DEBUG: Interface %s really is new.  Figuring out where it should go." % interface
+                    logging.debug("Interface %s really is new.  Figuring out where it should go.", interface)
                     table = ''
 
                     # Look in /proc/net/wireless.  If it's in there, it
@@ -201,15 +196,13 @@ class Gateways(object):
                     headers = procnetwireless.readline()
                     for line in procnetwireless:
                         if interface in line:
-                            if debug:
-                                print "DEBUG: Goes in wireless table."
+                            logging.debug("Goes in wireless table.")
                             table = 'wireless'
                     procnetwireless.close()
 
                     # Failing that, it goes in the wired table.
                     if not table:
-                        if debug:
-                            print "DEBUG: Goes in wired table."
+                        logging.debug("Goes in wired table.")
                         table = 'wired'
 
                     # If we've made it this far, we know what to do.
@@ -223,14 +216,13 @@ class Gateways(object):
 
         # Close the network configuration database and return.
         cursor.close()
-        print "DEBUG: Leaving Gateways.enumerate_network_interfaces()."
+        logging.debug("Leaving Gateways.enumerate_network_interfaces().")
 
     # Implements step two of the wired gateway configuration process: turning
     # the gateway on.  This method assumes that whichever Ethernet interface
     # chosen is already configured via DHCP through ifplugd.
     def tcpip(self, interface=None, essid=None, channel=None):
-        if debug:
-            print "Entered Gateways.tcpip()."
+        logging.debug("Entered Gateways.tcpip().")
 
         # Define this variable in case wireless configuration information is
         # passed into this method.
@@ -254,18 +246,12 @@ class Gateways(object):
 
         # Run the "Are you sure?" page through the template interpeter.
         try:
-            page = templatelookup.get_template("/gateways/confirm.html")
+            page = self.templatelookup.get_template("/gateways/confirm.html")
             return page.render(title = "Enable gateway?",
                                purpose_of_page = "Confirm gateway mode.",
                                interface = interface, iwconfigs = iwconfigs)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     tcpip.exposed = True
 
     # Allows the user to enter the ESSID and wireless channel of the wireless
@@ -302,46 +288,37 @@ class Gateways(object):
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
         try:
-            page = templatelookup.get_template("/gateways/wireless.html")
+            page = self.templatelookup.get_template("/gateways/wireless.html")
             return page.render(title = "Configure wireless uplink.",
                            purpose_of_page = "Set wireless uplink parameters.",
                            warning = warning, interface = interface,
                            channel = channel, essid = essid)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     wireless.exposed = True
 
     # Method that does the deed of turning an interface into a gateway.  This
     def activate(self, interface=None):
-        if debug:
-            print "DEBUG: Entered Gateways.activate()."
+        logging.debug("Entered Gateways.activate().")
 
         # Test to see if wireless configuration attributes are set, and if they
         # are, use iwconfig to set up the interface.
         if self.essid:
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
-            if debug:
-                print "DEBUG: Setting ESSID to %s." % self.essid
-            if test:
+            logging.debug("Setting ESSID to %s.", self.essid)
+            if self.test:
                 print "TEST: Command to set ESSID:"
                 print str(command)
             else:
-                process = subprocess.Popen(command)
+                subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
-            if debug:
-                print "DEBUG: Setting channel %s." % self.channel
-            if test:
+            logging.debug("Setting channel %s.", self.channel)
+            if self.test:
                 print "TEST: Command to set channel:"
                 print str(command)
             else:
-                process = subprocess.Popen(command)
+                subprocess.Popen(command)
 
         # If we have to configure layers 1 and 2, then it's a safe bet that we
         # should use DHCP to set up layer 3.  This is wrapped in a shell script
@@ -349,9 +326,8 @@ class Gateways(object):
         # time dhcpcd gets IP configuration information (or not) and when
         # avahi-daemon is bounced.
         command = ['/usr/local/sbin/gateway.sh', interface]
-        if debug:
-            print "DEBUG: Preparing to configure interface %s." % interface
-        if test:
+        logging.debug("Preparing to configure interface %s.", interface)
+        if self.test:
             print "TEST: Pretending to run gateway.sh on interface %s." % interface
             print "TEST: Command that would be run:"
             print str(command)
@@ -394,20 +370,15 @@ class Gateways(object):
 
         # Display the confirmation of the operation to the user.
         try:
-            page = templatelookup.get_template("/gateways/done.html")
+            page = self.templatelookup.get_template("/gateways/done.html")
             return page.render(title = "Enable gateway?",
                                purpose_of_page = "Confirm gateway mode.",
                                interface = interface)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     activate.exposed = True
 
+    # TODO(shanel): Where is self.mesh_* set? I only see ref to them in networkconfiguration.py?
     # Configure the network interface.
     def set_ip(self):
         # If we've made it this far, the user's decided to (re)configure a
@@ -493,7 +464,7 @@ class Gateways(object):
 
         # Render and display the page.
         try:
-            page = templatelookup.get_template("/network/done.html")
+            page = self.templatelookup.get_template("/network/done.html")
             return page.render(title = "Network interface configured.",
                                purpose_of_page = "Configured!",
                                interface = self.mesh_interface,
@@ -502,12 +473,6 @@ class Gateways(object):
                                client_ip = self.client_ip,
                                client_netmask = self.client_netmask)
         except:
-            traceback = RichTraceback()
-            for (filename, lineno, function, line) in traceback.traceback:
-                print "\n"
-                print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-                print "Execution died on line %s\n" % line
-                print "%s: %s" % (str(traceback.error.__class__.__name__),
-                    traceback.error)
+            output_error_data()
     set_ip.exposed = True
 
