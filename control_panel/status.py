@@ -35,7 +35,7 @@ class Status(object):
         # Allocate objects for all of the control panel's main features.
         self.traffic = NetworkTraffic()
         self.network = NetworkConfiguration(test)
-        self.mesh = MeshConfiguration()
+        self.mesh = MeshConfiguration(test)
         self.services = Services()
         self.gateways = Gateways(templatelookup, test)
 
