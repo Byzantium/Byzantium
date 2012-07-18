@@ -188,9 +188,10 @@ class CaptivePortal(object):
         # Assemble some HTML to redirect the client to the captive portal's
         # /index.html-* page.
         #
-        # We are using eth0 here for the address - this may or may not be
-        # right, but since
-        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + get_ip_address("eth0") + """/" /></head> <body></body> </html>"""
+        # We are using wlan0:1 here for the address - this may or may not be
+        # right, but since we can't get at self.args.address it's the best we
+        # can do.
+        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + get_ip_address("wlan0:1") + """/" /></head> <body></body> </html>"""
 
         logging.debug("Generated HTML refresh is:")
         logging.debug(redirect)
