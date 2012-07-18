@@ -3,9 +3,9 @@ import json
 import sys
 import os
 import pybonjour
-from _utils import *
+import _utils
 
-conf = config()
+conf = Config()
 
 SERVICE_TYPE = '__byz__._tcp'
 
@@ -16,17 +16,17 @@ def update_services_cache(service,action = 'add'):
 	print(service)
 	print('updating cache')
 	if os.path.exists(conf.services_cache):
-		services = json.loads(file2str(conf.services_cache))
+		services = json.loads(_utils.file2str(conf.services_cache))
 	else:
 		services = {}
 
 	if action.lower() == 'add':
 		services.update(service)
-		debug('Service added')
+		_utils.debug('Service added')
 	elif action.lower() == 'del' and service in services:
 		del services[service]
-		debug('Service removed')
-	str2file(json.dumps(services),conf.services_cache)
+		_utils.debug('Service removed')
+	_utils.str2file(json.dumps(services),conf.services_cache)
 
 def resolve_callback(sdRef, flags, interfaceIndex, errorCode, fullname, hosttarget, port, txtRecord):
 	if errorCode == pybonjour.kDNSServiceErr_NoError:
@@ -50,7 +50,7 @@ def browse_callback(sdRef, flags, interfaceIndex, errorCode, serviceName, regtyp
 		while not resolved:
 			ready = select.select([resolve_sdRef], [], [], timeout)
 			if resolve_sdRef not in ready[0]:
-				debug('Resolve timed out',1)
+				_utils.debug('Resolve timed out',1)
 				break
 			pybonjour.DNSServiceProcessResult(resolve_sdRef)
 		else:

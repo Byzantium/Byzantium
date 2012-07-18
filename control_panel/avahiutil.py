@@ -1,8 +1,8 @@
 import os.path
-from _utils import *
+import _utils
 
-services_store_dir = config().services_store_dir
-services_live_dir = config().services_live_dir
+services_store_dir = _utils.Config().services_store_dir
+services_live_dir = _utils.Config().services_live_dir
 
 
 def _mksname(name):
@@ -38,7 +38,7 @@ def add(name,port,host = '',domain = '',stype = '_http._tcp',subtype = None,prot
 	for i in text:
 		stext += '<text-record>'+i.strip()+'</text-record>'
 	service_conf = service_tmpl % {'name':name,'port':port,'host':host,'domain':domain,'stype':stype,'subtype':subtype or '','protocol':protocol or 'any','text':stext}
-	str2file(service_conf, service_path)
+	_utils.str2file(service_conf, service_path)
 	# activate here?
 
 def activate(name):

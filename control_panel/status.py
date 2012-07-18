@@ -11,6 +11,7 @@ import logging
 import os
 import os.path
 import sqlite3
+import subprocess
 
 # Import control panel modules.
 # from control_panel import *
@@ -186,14 +187,14 @@ class Status(object):
 
                 # For every mesh interface found in the database, get its
                 # current IP address with ifconfig.
-                command = '/sbin/ifconfig ' + mesh_interface
+                command = ['/sbin/ifconfig', mesh_interface]
                 if self.test:
                     print "TEST: Status.index() command to pull the configuration of a mesh interface:"
                     print command
                 else:
                     logging.debug("Running ifconfig to collect configuration of interface %s.", mesh_interface)
 
-                    output = os.popen(command)
+                    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
                     configuration = output.readlines()
                     logging.debug("Output of ifconfig:")
                     logging.debug(configuration)
@@ -227,14 +228,14 @@ class Status(object):
             for client_interface in result:
                 # For every client interface found, run ifconfig and pull
                 # its configuration information.
-                command = '/sbin/ifconfig ' + client_interface[0]
+                command = ['/sbin/ifconfig', client_interface[0]]
                 if self.test:
                     print "TEST: Status.index() command to pull the configuration of a client interface:"
                     print command
                 else:
                     logging.debug("Running ifconfig to collect configuration of interface %s.", client_interface)
 
-                    output = os.popen(command)
+                    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
                     configuration = output.readlines()
                     logging.debug("Output of ifconfig:")
                     logging.debug(configuration)
@@ -250,13 +251,13 @@ class Status(object):
                 # associated arp table to count the number of clients currently
                 # associated.  Note that one has to be subtracted from the
                 # count of rows to account for the line of column headers.
-                command = '/sbin/arp -n -i ' + client_interface[0]
+                command = ['/sbin/arp', '-n', '-i', client_interface[0]]
                 if self.test:
                     print "TEST: Status.index() command to dump the ARP table of interface %s: " % client_interface
                     print command
                 else:
                     logging.debug("Running arp to dump the ARP table of client interface %s.", client_interface)
-                    output = os.popen(command)
+                    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
                     arp_table = output.readlines()
                     logging.debug("Contents of ARP table:")
                     logging.debug(arp_table)

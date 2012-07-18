@@ -60,7 +60,7 @@ def enumerate_network_interfaces():
     # interfaces into wired and wireless.
     for i in interfaces:
         logging.debug("Adding network interface %s.", i)
-        if os.path.isdir('/sys/class/net/' + i + '/wireless'):
+        if os.path.isdir("/sys/class/net/%s/wireless" % i):
             wireless.append(i)
         else:
             wired.append(i)
@@ -87,7 +87,7 @@ class NetworkConfiguration(object):
         if self.test:
             # self.netconfdb = '/home/drwho/network.sqlite'
             self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            print "TEST: Location of NetworkConfiguration.netconfdb: %s" % self.netconfdb
+            logging.debug("Location of NetworkConfiguration.netconfdb: %s", self.netconfdb)
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
 
@@ -128,8 +128,8 @@ class NetworkConfiguration(object):
         wired = []
         wireless = []
         (wired, wireless) = enumerate_network_interfaces()
-        logging.debug("Contents of wired[]: %s", str(wired))
-        logging.debug("Contents of wireless[]: %s", str(wireless))
+        logging.debug("Contents of wired[]: %s", wired)
+        logging.debug("Contents of wireless[]: %s", wireless)
 
         # MOOF MOOF MOOF - call to stub implementation.  We can use the list
         # immediately above (interfaces) as the list to compare the database
@@ -315,11 +315,11 @@ class NetworkConfiguration(object):
             logging.debug("Activating wireless interface.")
 
             # Note that arping returns '2' if the interface isn't online!
-            command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
+            command = ['/sbin/ifconfig', self.mesh_interface, 'up']
             if self.test:
-                print "NetworkConfiguration.tcpip() command to activate network interface is %s." % command
+                logging.debug("NetworkConfiguration.tcpip() command to activate network interface is %s.", command)
             else:
-                os.popen(command)
+                subprocess.Popen(command)
 
             # Sleep five seconds to give the hardware a chance to catch up.
             time.sleep(5)
@@ -346,7 +346,7 @@ class NetworkConfiguration(object):
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       self.mesh_interface, addr]
             if self.test:
-                print "NetworkConfiguration.tcpip() command to probe for a mesh interface IP address is %s" % arping
+                logging.debug("NetworkConfiguration.tcpip() command to probe for a mesh interface IP address is %s", ' '.join(arping))
                 time.sleep(5)
             else:
                 ip_in_use = subprocess.call(arping)
@@ -359,7 +359,7 @@ class NetworkConfiguration(object):
 
             # In test mode, don't let this turn into an endless loop.
             if self.test:
-                print "Breaking out of this loop to exercise the rest of the code."
+                logging.debug("Breaking out of this loop to exercise the rest of the code.")
                 break
 
         # Next pick a distinct IP address for the client interface and its
@@ -383,7 +383,7 @@ class NetworkConfiguration(object):
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       str(self.mesh_interface), addr]
             if self.test:
-                print "NetworkConfiguration.tcpip() command to probe for a client interface IP address is %s" % arping
+                logging.debug("NetworkConfiguration.tcpip() command to probe for a client interface IP address is %s", ' '.join(arping))
                 time.sleep(5)
             else:
                 ip_in_use = subprocess.call(arping)
@@ -396,7 +396,7 @@ class NetworkConfiguration(object):
 
             # In test mode, don't let this turn into an endless loop.
             if self.test:
-                print "Breaking out of this loop to exercise the rest of the code."
+                logging.debug("Breaking out of this loop to exercise the rest of the code.")
                 break
 
         # For testing, hardcode some IP addresses so the rest of the code has
@@ -408,11 +408,11 @@ class NetworkConfiguration(object):
         # Deactivate the interface as if it was down to begin with.
         if not len(result):
             logging.debug("Deactivating wireless interface.")
-            command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
+            command = ['/sbin/ifconfig', self.mesh_interface, 'down']
             if self.test:
-                print "NetworkConfiguration.tcpip() command to deactivate a mesh interface: %s" % command
+                logging.debug("NetworkConfiguration.tcpip() command to deactivate a mesh interface: %s", command)
             else:
-                os.popen(command)
+                subprocess.Popen(command)
 
         # Close the database connection.
         connection.close()
@@ -446,11 +446,11 @@ class NetworkConfiguration(object):
         # network interface.  Full steam ahead, damn the torpedoes!
         # First, take the wireless NIC offline so its mode can be changed.
         logging.debug("Deactivating wireless interface.")
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
+        command = ['/sbin/ifconfig', self.mesh_interface, 'down']
         if self.test:
-            print "NetworkConfiguration.set_ip() command to deactivate a wireless interface: %s" % command
+            logging.debug("NetworkConfiguration.set_ip() command to deactivate a wireless interface: %s", command)
         else:
-            os.popen(command)
+            subprocess.Popen(command)
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless
@@ -462,47 +462,47 @@ class NetworkConfiguration(object):
 
             # Set wireless interface mode.
             logging.debug("Configuring wireless interface for ad-hoc mode.")
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
+            command = ['/sbin/iwconfig', self.mesh_interface, 'mode ad-hoc']
             if self.test:
-                print "NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s" % command
+                logging.debug("NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s", command)
             else:
-                os.popen(command)
+                subprocess.Popen(command)
                 time.sleep(1)
 
             # Set ESSID.
             logging.debug("Configuring ESSID of wireless interface.")
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
+            command = ['/sbin/iwconfig', self.mesh_interface, 'essid', self.essid]
             if self.test:
-                print "NetworkConfiguration.set_ip() command to set the ESSID: %s" % command
+                logging.debug("NetworkConfiguration.set_ip() command to set the ESSID: %s", command)
             else:
-                os.popen(command)
+                subprocess.Popen(command)
                 time.sleep(1)
 
             # Set BSSID.
             logging.debug("Configuring BSSID of wireless interface.")
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' ap ' + self.bssid
+            command = ['/sbin/iwconfig', self.mesh_interface, 'ap', self.bssid]
             if self.test:
-                print "NetworkConfiguration.set_ip() command to set the BSSID: %s" % command
+                logging.debug("NetworkConfiguration.set_ip() command to set the BSSID: %s", command)
             else:
-                os.popen(command)
+                subprocess.Popen(command)
                 time.sleep(1)
 
             # Set wireless channel.
             logging.debug("Configuring channel of wireless interface.")
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
+            command = ['/sbin/iwconfig', self.mesh_interface, 'channel', self.channel]
             if self.test:
-                print "NetworkConfiguration.set_ip() command to set the channel: %s" % command
+                logging.debug("NetworkConfiguration.set_ip() command to set the channel: %s", command)
             else:
-                os.popen(command)
+                subprocess.Popen(command)
                 time.sleep(1)
 
             # Run iwconfig again and capture the current wireless configuration.
-            command = '/sbin/iwconfig ' + self.mesh_interface
+            command = ['/sbin/iwconfig', self.mesh_interface]
             configuration = ''
             if self.test:
-                print "NetworkConfiguration.set_ip()command to capture the current state of a network interface: %s" % command
+                logging.debug("NetworkConfiguration.set_ip()command to capture the current state of a network interface: %s", command)
             else:
-                output = os.popen(command)
+                output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
                 configuration = output.readlines()
 
             break_flag = False
@@ -561,21 +561,21 @@ class NetworkConfiguration(object):
 
         # Call ifconfig and set up the network configuration information.
         logging.debug("Setting IP configuration information on wireless interface.")
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
-        command = command + ' netmask ' + self.mesh_netmask + ' up'
+        command = ['/sbin/ifconfig', self.mesh_interface, self.mesh_ip,
+                   'netmask', self.mesh_netmask, 'up']
         if self.test:
-            print "NetworkConfiguration.set_ip()command to set the IP configuration of the mesh interface: %s" % command
+            logging.debug("NetworkConfiguration.set_ip()command to set the IP configuration of the mesh interface: %s", command)
         else:
-            os.popen(command)
+            subprocess.Popen(command)
         time.sleep(5)
 
         # Add the client interface.
         logging.debug("Adding client interface.")
-        command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
+        command = ['/sbin/ifconfig', self.client_interface, self.client_ip, 'up']
         if self.test:
-            print "NetworkConfiguration.set_ip()command to set the IP configuration of the client interface: %s" % command
+            logging.debug("NetworkConfiguration.set_ip()command to set the IP configuration of the client interface: %s", command)
         else:
-            os.popen(command)
+            subprocess.Popen(command)
 
         # Commit the interface's configuration to the database.
         connection = sqlite3.connect(self.netconfdb)
@@ -595,7 +595,7 @@ class NetworkConfiguration(object):
                                  '-d' ]
         captive_portal_return = 0
         if self.test:
-            print "NetworkConfiguration.set_ip() command to start the captive portal daemon: %s" % captive_portal_daemon
+            logging.debug("NetworkConfiguration.set_ip() command to start the captive portal daemon: %s", captive_portal_daemon)
             captive_portal_return = 6
         else:
             captive_portal_return = subprocess.Popen(captive_portal_daemon)
@@ -642,7 +642,7 @@ class NetworkConfiguration(object):
 
             logging.debug("value of portal_pid is %s.", portal_pid)
             if self.test:
-                print "Faking PID of captive_portal.py."
+                logging.debug("Faking PID of captive_portal.py.")
                 portal_pid = "Insert clever PID for captive_portal.py here."
 
             if not portal_pid:
@@ -683,14 +683,14 @@ class NetworkConfiguration(object):
         # See if the /etc/hosts.mesh backup file exists.  If it does, delete it.
         old_hosts_file = self.hosts_file + '.bak'
         if self.test:
-            print "Deleted old /etc/hosts.mesh.bak."
+            logging.debug("Deleted old /etc/hosts.mesh.bak.")
         else:
             if os.path.exists(old_hosts_file):
                 os.remove(old_hosts_file)
 
         # Back up the old hosts.mesh file.
         if self.test:
-            print "Renamed /etc/hosts.mesh file to /etc/hosts.mesh.bak."
+            logging.debug("Renamed /etc/hosts.mesh file to /etc/hosts.mesh.bak.")
         else:
             if os.path.exists(self.hosts_file):
                 os.rename(self.hosts_file, old_hosts_file)
@@ -704,7 +704,7 @@ class NetworkConfiguration(object):
 
         # Generate the contents of the new hosts.mesh file.
         if self.test:
-            print "Pretended to generate new /etc/hosts.mesh file."
+            logging.debug("Pretended to generate new /etc/hosts.mesh file.")
             return
         else:
             hosts = open(self.hosts_file, "w")
@@ -741,15 +741,15 @@ class NetworkConfiguration(object):
         # If an include file already exists, move it out of the way.
         oldfile = self.dnsmasq_include_file + '.bak'
         if self.test:
-            print "Deleting old /etc/dnsmasq.conf.include.bak file."
+            logging.debug("Deleting old /etc/dnsmasq.conf.include.bak file.")
         else:
             if os.path.exists(oldfile):
                 os.remove(oldfile)
 
         # Back up the old dnsmasq.conf.include file.
         if self.test:
-            print "Backing up /etc/dnsmasq.conf.include file."
-            print "Now returning to save time."
+            logging.debug("Backing up /etc/dnsmasq.conf.include file.")
+            logging.debug("Now returning to save time.")
             return
         else:
             if os.path.exists(self.dnsmasq_include_file):
