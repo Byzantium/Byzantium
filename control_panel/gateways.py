@@ -121,7 +121,7 @@ class Gateways(object):
         if procnetdev:
             logging.debug("Successfully opened /proc/net/dev.")
         else:
-                # Note: This means that we use the contents of the database.
+            # Note: This means that we use the contents of the database.
             logging.debug("Warning: Unable to open /proc/net/dev.")
             return
 
