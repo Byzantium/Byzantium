@@ -47,6 +47,9 @@ class Config(object):
 		self.services_live_dir = '/etc/avahi/services'
 		self.servicedb = '/var/db/controlpanel/services.sqlite'
 		self.no_services_msg = 'No services found in the network. Please try again in a little while.'
+		self.no_internet_msg = '<span class="sad-face">This mesh network is probably not connected to the internet.</span>'
+		self.no_internet_msg = '<span class="winning">This mesh network is probably connected to the internet.</span>'
 		self.uri_post_port_string_key = 'appendtourl'
 		self.service_description_key = 'description'
 		self.service_info = {'chat':'/chat/?channels=byzantium'}
+
