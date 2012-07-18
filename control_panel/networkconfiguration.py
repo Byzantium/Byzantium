@@ -408,11 +408,11 @@ class NetworkConfiguration(object):
         # Deactivate the interface as if it was down to begin with.
         if not len(result):
             logging.debug("Deactivating wireless interface.")
-            command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
+            command = ['/sbin/ifconfig', self.mesh_interface, 'down']
             if self.test:
                 logging.debug("NetworkConfiguration.tcpip() command to deactivate a mesh interface: %s", command)
             else:
-                os.popen(command)
+                subprocess.popen(command)
 
         # Close the database connection.
         connection.close()
@@ -446,11 +446,11 @@ class NetworkConfiguration(object):
         # network interface.  Full steam ahead, damn the torpedoes!
         # First, take the wireless NIC offline so its mode can be changed.
         logging.debug("Deactivating wireless interface.")
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
+        command = ['/sbin/ifconfig', self.mesh_interface, 'down']
         if self.test:
             logging.debug("NetworkConfiguration.set_ip() command to deactivate a wireless interface: %s", command)
         else:
-            os.popen(command)
+            subprocess.popen(command)
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless
@@ -462,38 +462,38 @@ class NetworkConfiguration(object):
 
             # Set wireless interface mode.
             logging.debug("Configuring wireless interface for ad-hoc mode.")
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
+            command = ['/sbin/iwconfig', self.mesh_interface, 'mode ad-hoc']
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s", command)
             else:
-                os.popen(command)
+                subprocess.popen(command)
                 time.sleep(1)
 
             # Set ESSID.
             logging.debug("Configuring ESSID of wireless interface.")
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
+            command = ['/sbin/iwconfig', self.mesh_interface, 'essid', self.essid]
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip() command to set the ESSID: %s", command)
             else:
-                os.popen(command)
+                subprocess.popen(command)
                 time.sleep(1)
 
             # Set BSSID.
             logging.debug("Configuring BSSID of wireless interface.")
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' ap ' + self.bssid
+            command = ['/sbin/iwconfig', self.mesh_interface, 'ap', self.bssid]
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip() command to set the BSSID: %s", command)
             else:
-                os.popen(command)
+                subprocess.popen(command)
                 time.sleep(1)
 
             # Set wireless channel.
             logging.debug("Configuring channel of wireless interface.")
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
+            command = ['/sbin/iwconfig', self.mesh_interface, 'channel', self.channel]
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip() command to set the channel: %s", command)
             else:
-                os.popen(command)
+                subprocess.popen(command)
                 time.sleep(1)
 
             # Run iwconfig again and capture the current wireless configuration.
@@ -561,21 +561,21 @@ class NetworkConfiguration(object):
 
         # Call ifconfig and set up the network configuration information.
         logging.debug("Setting IP configuration information on wireless interface.")
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
-        command = command + ' netmask ' + self.mesh_netmask + ' up'
+        command = ['/sbin/ifconfig', self.mesh_interface, self.mesh_ip,
+                   'netmask', self.mesh_netmask, 'up']
         if self.test:
             logging.debug("NetworkConfiguration.set_ip()command to set the IP configuration of the mesh interface: %s", command)
         else:
-            os.popen(command)
+            subprocess.popen(command)
         time.sleep(5)
 
         # Add the client interface.
         logging.debug("Adding client interface.")
-        command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
+        command = ['/sbin/ifconfig', self.client_interface, self.client_ip, 'up']
         if self.test:
             logging.debug("NetworkConfiguration.set_ip()command to set the IP configuration of the client interface: %s", command)
         else:
-            os.popen(command)
+            subprocess.popen(command)
 
         # Commit the interface's configuration to the database.
         connection = sqlite3.connect(self.netconfdb)
