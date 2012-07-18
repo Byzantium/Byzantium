@@ -45,9 +45,19 @@ from cherrypy.process.plugins import PIDFile
 from mako.lookup import TemplateLookup
 
 import argparse
+import fcntl
 import logging
 import os
+import socket
+import struct
 import subprocess
+
+
+# Need this for the 404 method
+def get_ip_address(interface):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(sock.fileno(), 0x8915,
+                            struct.pack('256s', interface[:15]))[20:24])
 
 
 # The CaptivePortalDetector class implements a fix for an undocumented bit of
@@ -168,7 +178,7 @@ class CaptivePortal(object):
     # calling self.index() directly) but the stable's fresh out of ponies.
     # We don't use any of the arguments passed to this method so I reference
     # a few of them in debug mode.
-    def error_page_404(status, message, traceback, version):
+    def error_page_404(self, status, message, traceback, version):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
         logging.debug("Client's IP address: %s", clientip)
@@ -177,7 +187,10 @@ class CaptivePortal(object):
 
         # Assemble some HTML to redirect the client to the captive portal's
         # /index.html-* page.
-        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + self.args.address + """/" /></head> <body></body> </html>"""
+        #
+        # We are using eth0 here for the address - this may or may not be
+        # right, but since
+        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + get_ip_address("eth0") + """/" /></head> <body></body> </html>"""
 
         logging.debug("Generated HTML refresh is:")
         logging.debug(redirect)
