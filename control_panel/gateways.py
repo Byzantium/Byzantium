@@ -383,7 +383,7 @@ class Gateways(object):
 
         # First, take the wireless NIC offline so its mode can be changed.
         command = ['/sbin/ifconfig', self.mesh_interface, 'down']
-        output = subprocess.popen(command)
+        output = subprocess.Popen(command)
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless
@@ -393,15 +393,15 @@ class Gateways(object):
         while True:
             # Set the mode, ESSID and channel.
             command = ['/sbin/iwconfig', self.mesh_interface, 'mode ad-hoc']
-            output = subprocess.popen(command)
+            output = subprocess.Popen(command)
             command = ['/sbin/iwconfig', self.mesh_interface, 'essid', self.essid]
-            output = subprocess.popen(command)
+            output = subprocess.Popen(command)
             command = ['/sbin/iwconfig', self.mesh_interface, 'channel',  self.channel]
-            output = subprocess.popen(command)
+            output = subprocess.Popen(command)
 
             # Run iwconfig again and capture the current wireless configuration.
             command = ['/sbin/iwconfig', self.mesh_interface]
-            output = subprocess.popen(command)
+            output = subprocess.Popen(command)
             configuration = output.readlines()
 
             # Test the interface by going through the captured text to see if
@@ -437,12 +437,12 @@ class Gateways(object):
         # Call ifconfig and set up the network configuration information.
         command = ['/sbin/ifconfig', self.mesh_interface, self.mesh_ip,
                    'netmask', self.mesh_netmask, 'up']
-        output = subprocess.popen(command)
+        output = subprocess.Popen(command)
         time.sleep(5)
 
         # Add the client interface.
         command = ['/sbin/ifconfig', self.client_interface, self.client_ip, 'up']
-        output = subprocess.popen(command)
+        output = subprocess.Popen(command)
 
         # Commit the interface's configuration to the database.
         connection = sqlite3.connect(self.netconfdb)

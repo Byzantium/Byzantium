@@ -315,11 +315,11 @@ class NetworkConfiguration(object):
             logging.debug("Activating wireless interface.")
 
             # Note that arping returns '2' if the interface isn't online!
-            command = '/sbin/ifconfig ' + self.mesh_interface + ' up'
+            command = ['/sbin/ifconfig', self.mesh_interface, 'up']
             if self.test:
                 logging.debug("NetworkConfiguration.tcpip() command to activate network interface is %s.", command)
             else:
-                os.popen(command)
+                subprocess.Popen(command)
 
             # Sleep five seconds to give the hardware a chance to catch up.
             time.sleep(5)
@@ -412,7 +412,7 @@ class NetworkConfiguration(object):
             if self.test:
                 logging.debug("NetworkConfiguration.tcpip() command to deactivate a mesh interface: %s", command)
             else:
-                subprocess.popen(command)
+                subprocess.Popen(command)
 
         # Close the database connection.
         connection.close()
@@ -450,7 +450,7 @@ class NetworkConfiguration(object):
         if self.test:
             logging.debug("NetworkConfiguration.set_ip() command to deactivate a wireless interface: %s", command)
         else:
-            subprocess.popen(command)
+            subprocess.Popen(command)
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless
@@ -466,7 +466,7 @@ class NetworkConfiguration(object):
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s", command)
             else:
-                subprocess.popen(command)
+                subprocess.Popen(command)
                 time.sleep(1)
 
             # Set ESSID.
@@ -475,7 +475,7 @@ class NetworkConfiguration(object):
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip() command to set the ESSID: %s", command)
             else:
-                subprocess.popen(command)
+                subprocess.Popen(command)
                 time.sleep(1)
 
             # Set BSSID.
@@ -484,7 +484,7 @@ class NetworkConfiguration(object):
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip() command to set the BSSID: %s", command)
             else:
-                subprocess.popen(command)
+                subprocess.Popen(command)
                 time.sleep(1)
 
             # Set wireless channel.
@@ -493,16 +493,16 @@ class NetworkConfiguration(object):
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip() command to set the channel: %s", command)
             else:
-                subprocess.popen(command)
+                subprocess.Popen(command)
                 time.sleep(1)
 
             # Run iwconfig again and capture the current wireless configuration.
-            command = '/sbin/iwconfig ' + self.mesh_interface
+            command = ['/sbin/iwconfig', self.mesh_interface]
             configuration = ''
             if self.test:
                 logging.debug("NetworkConfiguration.set_ip()command to capture the current state of a network interface: %s", command)
             else:
-                output = os.popen(command)
+                output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
                 configuration = output.readlines()
 
             break_flag = False
@@ -566,7 +566,7 @@ class NetworkConfiguration(object):
         if self.test:
             logging.debug("NetworkConfiguration.set_ip()command to set the IP configuration of the mesh interface: %s", command)
         else:
-            subprocess.popen(command)
+            subprocess.Popen(command)
         time.sleep(5)
 
         # Add the client interface.
@@ -575,7 +575,7 @@ class NetworkConfiguration(object):
         if self.test:
             logging.debug("NetworkConfiguration.set_ip()command to set the IP configuration of the client interface: %s", command)
         else:
-            subprocess.popen(command)
+            subprocess.Popen(command)
 
         # Commit the interface's configuration to the database.
         connection = sqlite3.connect(self.netconfdb)
