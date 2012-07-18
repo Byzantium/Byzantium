@@ -38,7 +38,7 @@ def json2file(obj, file_name, mode = 'w'):
 		debug(type_e,5)
 		return False
 
-class Config:
+class Config(object):
 	''' Make me read from a file '''
 	def __init__(self):
 		self.services_cache = '/tmp/byz_services.json'
