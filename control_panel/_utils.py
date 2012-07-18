@@ -16,7 +16,7 @@ def str2file(string,file_name,mode = 'w'):
 	fileobj.write(string)
 	fileobj.close()
 
-class config:
+class Config(object):
 	''' Make me read from a file '''
 	def __init__(self):
 		self.services_cache = '/tmp/byz_services.json'
