@@ -28,7 +28,7 @@ class Services(object):
     
         # Database used to store states of services and webapps.
         
-        if test:
+        if self.test:
             self.servicedb = 'var/db/controlpanel/services.sqlite'
         else:
             self.servicedb = '/var/db/controlpanel/services.sqlite'

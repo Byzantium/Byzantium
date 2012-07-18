@@ -62,7 +62,7 @@ def check_args(args):
 
 def main():
     args = check_args(parse_args())
-    if args.debug:
+    if args.debug or args.test:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.ERROR)

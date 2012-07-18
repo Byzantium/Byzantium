@@ -48,10 +48,10 @@ class Gateways(object):
         if self.test:
             # self.netconfdb = '/home/drwho/network.sqlite'
             self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            print "TEST: Location of Gateways.netconfdb: %s" % self.netconfdb
+            logging.debug("Location of Gateways.netconfdb: %s", self.netconfdb)
             # self.meshconfdb = '/home/drwho/mesh.sqlite'
             self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
-            print "TEST: Location of Gateways.meshconfdb: %s" % self.meshconfdb
+            logging.debug("Location of Gateways.meshconfdb: %s", self.meshconfdb)
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
             self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
@@ -121,7 +121,7 @@ class Gateways(object):
         if procnetdev:
             logging.debug("Successfully opened /proc/net/dev.")
         else:
-                # Note: This means that we use the contents of the database.
+            # Note: This means that we use the contents of the database.
             logging.debug("Warning: Unable to open /proc/net/dev.")
             return
 
@@ -143,7 +143,7 @@ class Gateways(object):
         # the interfaces.
         interfaces = []
         if self.test:
-            print "TEST: Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
+            logging.debug("Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback.", self.netconfdb)
             return
         else:
             for line in procnetdev:
@@ -307,16 +307,14 @@ class Gateways(object):
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
             logging.debug("Setting ESSID to %s.", self.essid)
             if self.test:
-                print "TEST: Command to set ESSID:"
-                print str(command)
+                logging.debug("Command to set ESSID:\n%s", ' '.join(command))
             else:
                 subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
             logging.debug("Setting channel %s.", self.channel)
             if self.test:
-                print "TEST: Command to set channel:"
-                print str(command)
+                logging.debug("Command to set channel:\n%s", ' '.join(command))
             else:
                 subprocess.Popen(command)
 
@@ -328,9 +326,8 @@ class Gateways(object):
         command = ['/usr/local/sbin/gateway.sh', interface]
         logging.debug("Preparing to configure interface %s.", interface)
         if self.test:
-            print "TEST: Pretending to run gateway.sh on interface %s." % interface
-            print "TEST: Command that would be run:"
-            print str(command)
+            logging.debug("Pretending to run gateway.sh on interface %s.", interface)
+            logging.debug("Command that would be run:\n%s", ' '.join(command))
         else:
             process = subprocess.Popen(command)
 
@@ -385,8 +382,8 @@ class Gateways(object):
         # network interface.  Full steam ahead, damn the torpedoes!
 
         # First, take the wireless NIC offline so its mode can be changed.
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' down'
-        output = os.popen(command)
+        command = ['/sbin/ifconfig', self.mesh_interface, 'down']
+        output = subprocess.Popen(command)
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless
@@ -395,16 +392,16 @@ class Gateways(object):
         # we can go on.
         while True:
             # Set the mode, ESSID and channel.
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' mode ad-hoc'
-            output = os.popen(command)
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' essid ' + self.essid
-            output = os.popen(command)
-            command = '/sbin/iwconfig ' + self.mesh_interface + ' channel ' + self.channel
-            output = os.popen(command)
+            command = ['/sbin/iwconfig', self.mesh_interface, 'mode ad-hoc']
+            output = subprocess.Popen(command)
+            command = ['/sbin/iwconfig', self.mesh_interface, 'essid', self.essid]
+            output = subprocess.Popen(command)
+            command = ['/sbin/iwconfig', self.mesh_interface, 'channel',  self.channel]
+            output = subprocess.Popen(command)
 
             # Run iwconfig again and capture the current wireless configuration.
-            command = '/sbin/iwconfig ' + self.mesh_interface
-            output = os.popen(command)
+            command = ['/sbin/iwconfig', self.mesh_interface]
+            output = subprocess.Popen(command)
             configuration = output.readlines()
 
             # Test the interface by going through the captured text to see if
@@ -438,14 +435,14 @@ class Gateways(object):
             break
 
         # Call ifconfig and set up the network configuration information.
-        command = '/sbin/ifconfig ' + self.mesh_interface + ' ' + self.mesh_ip
-        command = command + ' netmask ' + self.mesh_netmask + ' up'
-        output = os.popen(command)
+        command = ['/sbin/ifconfig', self.mesh_interface, self.mesh_ip,
+                   'netmask', self.mesh_netmask, 'up']
+        output = subprocess.Popen(command)
         time.sleep(5)
 
         # Add the client interface.
-        command = '/sbin/ifconfig ' + self.client_interface + ' ' + self.client_ip + ' up'
-        output = os.popen(command)
+        command = ['/sbin/ifconfig', self.client_interface, self.client_ip, 'up']
+        output = subprocess.Popen(command)
 
         # Commit the interface's configuration to the database.
         connection = sqlite3.connect(self.netconfdb)

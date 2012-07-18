@@ -55,10 +55,10 @@ class MeshConfiguration(object):
         if self.test:
             # self.netconfdb = '/home/drwho/network.sqlite'
             self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            print "TEST: Location of netconfdb: %s" % self.netconfdb
+            logging.debug("Location of netconfdb: %s", self.netconfdb)
             # self.meshconfdb = '/home/drwho/mesh.sqlite'
             self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
-            print "TEST: Location of meshconfdb: %s" % self.meshconfdb
+            logging.debug("Location of meshconfdb: %s", self.meshconfdb)
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
             self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
@@ -225,7 +225,7 @@ class MeshConfiguration(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
-        logging.debug("babeld command to be executed: %s", babeld_command)
+        logging.debug("babeld command to be executed: %s", ' '.join(babeld_command))
 
         # Test to see if babeld is running.  If it is, it's routing for at
         # least one interface, in which case we add the one the user just
@@ -234,13 +234,13 @@ class MeshConfiguration(object):
         pid = self.pid_check()
         if pid:
             if self.test:
-                print "TEST: Pretending to kill babeld."
+                logging.debug("Pretending to kill babeld.")
             else:
                 logging.debug("Killing current instance of babeld...")
                 os.kill(int(pid), signal.SIGTERM)
             time.sleep(self.babeld_timeout)
         if self.test:
-            print "TEST: Pretending to restart babeld."
+            logging.debug("Pretending to restart babeld.")
         else:
             logging.debug("Restarting babeld.")
             subprocess.Popen(babeld_command)
@@ -256,7 +256,7 @@ class MeshConfiguration(object):
             if not os.path.isdir(procdir):
                 error = "ERROR: babeld is not running!  Did it crash after startup?"
             else:
-                output = self.babeld + " has been successfully started with PID " + pid + "."
+                output = "%s has been successfully started with PID %s." % (self.babeld, pid)
 
                 # Update the mesh configuration database to take into account
                 # the presence of the new interface.
@@ -338,14 +338,14 @@ class MeshConfiguration(object):
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
-        logging.debug("New invocation of babeld: %s", babeld_command)
+        logging.debug("New invocation of babeld: %s", ' '.join(babeld_command))
 
         # Test to see if babeld is running.  If it is, we restart it without
         # the network interface that the user wants to drop out of the mesh.
         pid = self.pid_check()
         if pid:
             if self.test:
-                print "TEST: Pretending to kill babeld."
+                logging.debug("Pretending to kill babeld.")
             else:
                 logging.debug("Killing babeld.")
                 os.kill(int(pid), signal.SIGTERM)
@@ -356,7 +356,7 @@ class MeshConfiguration(object):
         if len(interfaces):
             logging.debug("value of babeld_command is %s", babeld_command)
             if self.test:
-                print "TEST: Pretending to restart babeld."
+                logging.debug("Pretending to restart babeld.")
             else:
                 subprocess.Popen(babeld_command)
             time.sleep(self.babeld_timeout)
@@ -370,7 +370,7 @@ class MeshConfiguration(object):
             if not os.path.isdir(procdir):
                 error = "ERROR: babeld is not running!  Did it crash during startup?"
             else:
-                output = self.babeld + " has been successfully started with PID " + pid + "."
+                output = "%s has been successfully started with PID %s" % (self.babeld, pid)
                 # Update the mesh configuration database to take into account
                 # the presence of the new interface.
                 template = ('yes', self.interface, )

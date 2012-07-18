@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import _services
-from _utils import *
+import _utils
 
-conf = config()
+conf = _utils.Config()
 
 def main():
-	service_entry = file2str('tmpl/services_entry.tmpl')
-	page = file2str('tmpl/services_page.tmpl')
+	service_entry = _utils.file2str('tmpl/services_entry.tmpl')
+	page = _utils.file2str('tmpl/services_page.tmpl')
 	services_list = _services.get_services_list()
 	if len(services_list) < 1:
 		page = page % {'service-list':conf.no_services_msg}

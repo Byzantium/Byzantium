@@ -7,11 +7,11 @@ A module that reads the database of services running on the node and those found
 
 __author__ = 'haxwithaxe (me at haxwithaxe dot net)'
 
-from _utils import *
+import _utils
 import sqlite3
 
 # grab shared config
-conf = config()
+conf = _utils.Config()
 
 def get_local_services_list():
 	'''
@@ -22,23 +22,23 @@ def get_local_services_list():
 	service_list = []
 
 	# Set up a connection to the database.
-	debug("DEBUG: Opening service database.",5)
+	_utils.debug("DEBUG: Opening service database.",5)
 	connection = sqlite3.connect(servicedb)
 	cursor = connection.cursor()
 
 	# Pull a list of running web apps on the node.
-	debug("DEBUG: Getting list of running webapps from database.",5)
+	_utils.debug("DEBUG: Getting list of running webapps from database.",5)
 	cursor.execute("SELECT name FROM webapps WHERE status='active';")
 	results = cursor.fetchall()
 	for service in results:
 		service_list += [{'name':service[0],'path':'/'+service[0],'description':''}]
 
 	# Pull a list of daemons running on the node. This means that most of the web apps users will access will be displayed.
-	debug("DEBUG: Getting list of running servers from database.",5)
+	_utils.debug("DEBUG: Getting list of running servers from database.",5)
 	cursor.execute("SELECT name FROM daemons WHERE status='active' AND showtouser='yes';")
 	results = cursor.fetchall()
 	for service in results:
-		debug("DEBUG: Value of service: %s" % str(service))
+		_utils.debug("DEBUG: Value of service: %s" % str(service))
 		if service[0] in conf.service_info:
 			path = conf.service_info[service[0]]
 		else:
@@ -46,7 +46,7 @@ def get_local_services_list():
 		service_list += [{'name':service[0],'path':path,'description':''}]
 
 		# Clean up after ourselves.
-		debug("DEBUG: Closing service database.",5)
+		_utils.debug("DEBUG: Closing service database.",5)
 		cursor.close()
 	return service_list
 
@@ -83,4 +83,4 @@ def get_services_list():
 	return local_srvc + remote_srvc
 
 if __name__ == '__main__':
-	debug(get_services_list(),0)
+	_utils.debug(get_services_list(),0)
