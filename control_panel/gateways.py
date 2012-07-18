@@ -48,10 +48,10 @@ class Gateways(object):
         if self.test:
             # self.netconfdb = '/home/drwho/network.sqlite'
             self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            print "TEST: Location of Gateways.netconfdb: %s" % self.netconfdb
+            logging.debug("Location of Gateways.netconfdb: %s", self.netconfdb)
             # self.meshconfdb = '/home/drwho/mesh.sqlite'
             self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
-            print "TEST: Location of Gateways.meshconfdb: %s" % self.meshconfdb
+            logging.debug("Location of Gateways.meshconfdb: %s", self.meshconfdb)
         else:
             self.netconfdb = '/var/db/controlpanel/network.sqlite'
             self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
@@ -143,7 +143,7 @@ class Gateways(object):
         # the interfaces.
         interfaces = []
         if self.test:
-            print "TEST: Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback." % self.netconfdb
+            logging.debug("Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback.", self.netconfdb)
             return
         else:
             for line in procnetdev:
@@ -307,16 +307,14 @@ class Gateways(object):
             command = ['/sbin/iwconfig', interface, 'essid', self.essid]
             logging.debug("Setting ESSID to %s.", self.essid)
             if self.test:
-                print "TEST: Command to set ESSID:"
-                print str(command)
+                logging.debug("Command to set ESSID:\n%s", ' '.join(command))
             else:
                 subprocess.Popen(command)
         if self.channel:
             command = ['/sbin/iwconfig', interface, 'channel', self.channel]
             logging.debug("Setting channel %s.", self.channel)
             if self.test:
-                print "TEST: Command to set channel:"
-                print str(command)
+                logging.debug("Command to set channel:\n%s", ' '.join(command))
             else:
                 subprocess.Popen(command)
 
@@ -328,9 +326,8 @@ class Gateways(object):
         command = ['/usr/local/sbin/gateway.sh', interface]
         logging.debug("Preparing to configure interface %s.", interface)
         if self.test:
-            print "TEST: Pretending to run gateway.sh on interface %s." % interface
-            print "TEST: Command that would be run:"
-            print str(command)
+            logging.debug("Pretending to run gateway.sh on interface %s.", interface)
+            logging.debug("Command that would be run:\n%s", ' '.join(command))
         else:
             process = subprocess.Popen(command)
 

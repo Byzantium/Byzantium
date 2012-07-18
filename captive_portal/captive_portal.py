@@ -139,8 +139,7 @@ class CaptivePortal(object):
         # Set up the command string to add the client to the IP tables ruleset.
         addclient = ['/usr/local/sbin/captive-portal.sh', 'add', clientip]
         if self.args.test:
-            print "Command that would be executed:"
-            print str(addclient)
+            logging.debug("Command that would be executed:\n%s", addclient)
         else:
             subprocess.call(addclient)
 
@@ -307,7 +306,7 @@ def setup_iptables(args):
                            args.address, args.interface]
     iptables = 0
     if args.test:
-        print "Command that would be executed:"
+        logging.debug("Command that would be executed:\n%s", ' '.join(initialize_iptables))
         print str(initialize_iptables)
     else:
         iptables = subprocess.call(initialize_iptables)
@@ -320,8 +319,7 @@ def setup_reaper(test):
                           '-i', '60']
     reaper = 0
     if test:
-        print "Idle client monitor command that would be executed:"
-        print str(idle_client_reaper)
+        logging.debug("Idle client monitor command that would be executed:\n%s", ' '.join(idle_client_reaper))
     else:
         logging.debug("Starting mop_up_dead_clients.py.")
         reaper = subprocess.Popen(idle_client_reaper)
@@ -335,8 +333,7 @@ def setup_hijacker(args):
     dns_hijacker = ['/usr/local/sbin/fake_dns.py', args.address]
     hijacker = 0
     if args.test:
-        print "Command that would start the fake DNS server:"
-        print str(dns_hijacker)
+        logging.debug("Command that would start the fake DNS server:\n%s", ' '.join(dns_hijacker))
     else:
         logging.debug("Starting fake_dns.py.")
         hijacker = subprocess.Popen(dns_hijacker)
