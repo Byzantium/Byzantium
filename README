@@ -1,46 +1,27 @@
-ANNOUNCING BYZANTIUM LINUX V0.1a (Scarab)
+ANNOUNCING BYZANTIUM LINUX V0.2a (Bath Salts)
 Approved for: GENERAL RELEASE, DISTRIBUTION UNLIMITED
 
-Project Byzantium, a working group of HacDC (http://hacdc.org/) is proud to 
-announce the release of v0.1 alpha of Byzantium Linux, a live distribution of 
-Linux designed to fulfill a crucial role in the evolution of the Internet.  
-That role is a rapidly deployable ad-hoc wireless mesh network which can 
-augment or replace the current telecommunications infrastructure in the event 
-that it is knocked offline (for example, due to a natural disaster) or 
-rendered untrustworthy (widespread surveillance or disconnection by hostile 
-entities).  Unlike other mesh networking projects Byzantium was designed to 
-be run on any x86 computer with at least one 802.11 a/b/g/n wireless 
-interface.  Byzantium can be burned to a CD- or DVD-ROM (the .iso image is 
-just over 300 megabytes in size), booted from an external hard drive, or can 
-even be installed in parallel with an existing operating system without risk 
-to the user's data and software.  Byzantium Linux will then act as a node 
-within the mesh and will automatically connect to other mesh nodes and act as 
-an access point for WiFi-enabled mobile devices.
+Project Byzantium, a working group of HacDC (http://hacdc.org/) is proud to announce the release of v0.2 alpha of Byzantium Linux, a live distribution of Linux which makes it fast and easy to construct an ad-hoc wireless mesh network which can augment or replace the current telecommunications infrastructure in the event that it is knocked offline (for example, due to a natural disaster) or rendered untrustworthy (through widespread surveillance or disconnection by hostile entities).  Byzantium Linux is designed to run on any x86 computer with at least one 802.11 a/b/g/n wireless interface.  Byzantium can be burned to a CD- or DVD-ROM (the .iso image is around 460 megabytes in size), booted from an external hard drive, or can even be installed in parallel with an existing operating system without risk to the user's data and software.  Byzantium Linux will act as a node of the mesh and will automatically connect to other mesh nodes and act as an access point for wifi-enabled mobile devices.
 
-THIS IS AN ALPHA RELEASE!  Do NOT expect Byzantium to be perfect.  Some 
-features are not ready yet, others need work.  Things are going to break in 
-weird ways and we need to know what those ways are so we can fix them.  
-Please, for the love of LOLcats, do not deploy Byzantium in situations where 
-lives are at stake.
+THIS IS AN ALPHA RELEASE!  Do NOT expect Byzantium to be perfect.  Some features are not ready yet, others need work.  Things are going to break in weird ways and we need to know what those ways are so we can fix them.  Please, for the love of LOLcats, do not deploy Byzantium in situations where lives are at stake.
 
 FEATURES:
-- Binary compatible with Slackware v13.37, so existing packages can be 
-  converted with a single command.
-- Able to act as a gateway to the Internet if a link is available.
-- Linux kernel v2.6.38.8
+- Binary compatible with Slackware-CURRENT.  Existing Slackware packages can be converted with a single command.
+- Can act as a gateway to the Internet if a link is available (via Ethernet or tethered smartphone).
+- Linux kernel v3.1.8
 - Drivers for dozens of wireless chipsets
-- KDE v3.5
+- KDE Trinity v3.5.12
 - LXDE (2010 release of all components)
 - Mplayer
 - GCC v4.5.2
 - Perl v5.12.3
 - Python v2.6.6
 - Firefox v4.0.1
-- X.org v7.4
+- X.org
 - Custom web-based control panel
 
 SYSTEM REQUIREMENTS (to use)
-- Minimum of 512MB of RAM
+- Minimum of 1GB of RAM (512MB without copy2ram boot option)
 - i586 CPU or better
 - CD- or DVD-ROM drive
 - BIOS must boot removable media
@@ -55,24 +36,16 @@ WHAT WE NEED:
 - Developers!
 - DEVELOPERS!
 - No more Bill Ballmer impersonations.
-- People downloading and running Byzantium to find bugs and tell us where the 
-  problems are so we can fix them.
-- People filing bug reports on our Github page 
-  (https://github.com/Byzantium/Byzantium/issues).  We can't fix what we don't 
-  know about!
-- People submitting patches.
-- People booting Byzantium and setting up small meshes (2-5 clients) to tell 
-  us how well it works for you with your hardware.  We have a hardware 
-  compatibility list on our wiki that needs to be expanded.
-- People who can help us translate the user interface.  We especially need 
-  people fluent in dialects of Chinese, Arabic, Farsi, and Urdu.
-- People to help us write and translate documentation.
+- People running Byzantium to find bugs.
+- People reporting bugs on our Github page (https://github.com/Byzantium/Byzantium/issues).  We can't fix what we don't know about!
+- Patches.
+- People booting Byzantium and setting up small meshes (2-5 clients) to tell us how well it works for you with your hardware.  We have a hardware compatibility list on our wiki that needs to be expanded.
+- Help translating the user interface.  We especially need people fluent in dialects of Chinese, Arabic, Farsi, and Urdu.
+- Help us write and translate documentation.
 
-Homepage: http://wiki.hacdc.org/index.php/Byzantium (website coming soon)
+Homepage: http://project-byzantium.org/
 
-Download sites: http://wiki.hacdc.org/index.php/Downloading_Byzantium
+Download sites: http://project-byzantium.org/download/
 
-This document is published under a Creative Commons By Attribution / 
-	Noncommercial / Share Alike v3.0 License. 
-(http://creativecommons.org/licenses/by-nc-sa/3.0/)
+This announcement is published under a Creative Commons By Attribution / Noncommercial / Share Alike v3.0 License. (http://creativecommons.org/licenses/by-nc-sa/3.0/)
 
