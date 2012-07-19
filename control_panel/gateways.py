@@ -34,6 +34,76 @@ def output_error_data():
         print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
 
 
+def audit_procnetdev(procnetdev):
+    if procnetdev:
+        logging.debug("Successfully opened /proc/net/dev.")
+    else:
+        # Note: This means that we use the contents of the database.
+        logging.debug("Warning: Unable to open /proc/net/dev.")
+        return False
+
+    # Smoke test by trying to read the first two lines from the pseudofile
+    # (which comprises the column headers.  If this fails, just return
+    # because we're falling back on the existing contents of the database.
+    headers = procnetdev.readline()
+    headers = procnetdev.readline()
+    if not headers:
+        logging.debug("Smoke test of /proc/net/dev read failed.")
+        procnetdev.close()
+        return False
+    return True
+    
+    
+def build_interfaces(interfaces, procnetdev):
+    for line in procnetdev:
+        interface = line.split()[0]
+        interface = interface.strip()
+        interface = interface.strip(':')
+        interfaces.append(interface)
+    return interfaces
+
+
+def check_for_wired_interface(interface, cursor):
+    template = (interface, )
+    logging.debug("Checking to see if interface %s is a known wired interface...", interface)
+    cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
+    result = cursor.fetchall()
+    if not result:
+        logging.debug("Interface %s isn't a known wired interface.  Checking wireless interfaces...",
+                      interface)
+        return ''
+    else:
+        logging.debug("Interface %s is a known wired interface.", interface)
+        return 'wired'
+
+
+def check_for_wireless_interface(interface, cursor):
+    cursor.execute("SELECT mesh_interface FROM wireless WHERE mesh_interface=?;", template)
+    result = cursor.fetchall()
+
+    # If it's not in there, either, figure out which table it
+    # has to go in.
+    if not result:
+        logging.debug("%s isn't a known wireless interface, either.  Figuring out where it has to go...", 
+                      interface)
+    else:
+        logging.debug("%s is a known wireless interface.", interface)
+        return 'wireless'
+
+
+def check_wireless_table():
+    table = False
+    procnetwireless = open('/proc/net/wireless', 'r')
+    headers = procnetwireless.readline()
+    headers = procnetwireless.readline()
+    for line in procnetwireless:
+        if interface in line:
+            logging.debug("Goes in wireless table.")
+            table = 'wireless'
+    procnetwireless.close()
+    return True
+
+
 # Classes.
 # This class allows the user to turn a configured network interface on their
 # node into a gateway from the mesh to another network (usually the global Net).
@@ -46,10 +116,8 @@ class Gateways(object):
         # Class constants.
         # Path to network configuration database.
         if self.test:
-            # self.netconfdb = '/home/drwho/network.sqlite'
             self.netconfdb = 'var/db/controlpanel/network.sqlite'
             logging.debug("Location of Gateways.netconfdb: %s", self.netconfdb)
-            # self.meshconfdb = '/home/drwho/mesh.sqlite'
             self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
             logging.debug("Location of Gateways.meshconfdb: %s", self.meshconfdb)
         else:
@@ -114,25 +182,10 @@ class Gateways(object):
     # arguments; returns nothing (but alters the database).
     def update_network_interfaces(self):
         logging.debug("Entered Gateways.update_network_interfaces().")
-        interfaces = []
 
         # Open the kernel's canonical list of network interfaces.
         procnetdev = open("/proc/net/dev", "r")
-        if procnetdev:
-            logging.debug("Successfully opened /proc/net/dev.")
-        else:
-            # Note: This means that we use the contents of the database.
-            logging.debug("Warning: Unable to open /proc/net/dev.")
-            return
-
-        # Smoke test by trying to read the first two lines from the pseudofile
-        # (which comprises the column headers.  If this fails, just return
-        # because we're falling back on the existing contents of the database.
-        headers = procnetdev.readline()
-        headers = procnetdev.readline()
-        if not headers:
-            logging.debug("Smoke test of /proc/net/dev read failed.")
-            procnetdev.close()
+        if not audit_procnetdev(procnetdev):
             return
 
         # Open the network configuration database.
@@ -146,72 +199,34 @@ class Gateways(object):
             logging.debug("Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback.", self.netconfdb)
             return
         else:
-            for line in procnetdev:
-                interface = line.split()[0]
-                interface = interface.strip()
-                interface = interface.strip(':')
-                interfaces.append(interface)
+            interfaces = build_interfaces(interfaces, procnetdev)
 
             # Walk through the list of interfaces just generated and see if
             # each one is already in the database.  If it's not, add it.
             for interface in interfaces:
-                found = ''
 
                 # See if it's in the table of wired interfaces.
-                template = (interface, )
-                logging.debug("Checking to see if interface %s is a known wired interface...", interface)
-                cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
-                result = cursor.fetchall()
-                if not len(result):
-                    logging.debug("Interface %s isn't a known wired interface.  Checking wireless interfaces...",
-                                  interface)
-                else:
-                    logging.debug("Interface %s is a known wired interface.", interface)
-                    found = 'wired'
+                found = check_for_wired_interface(interface, cursor)
 
                 # If it's not in the wired table, check the wireless table.
                 if not found:
-                    cursor.execute("SELECT mesh_interface FROM wireless WHERE mesh_interface=?;", template)
-                    result = cursor.fetchall()
-
-                    # If it's not in there, either, figure out which table it
-                    # has to go in.
-                    if not len(result):
-                        logging.debug("%s isn't a known wireless interface, either.  Figuring out where it has to go...", 
-                                      interface)
-                    else:
-                        logging.debug("%s is a known wireless interface.", interface)
-                        found = 'wireless'
+                    found = check_for_wired_interface(interface, cursor)
 
                 # If it still hasn't been found, figure out where it has to go.
                 if not found:
                     logging.debug("Interface %s really is new.  Figuring out where it should go.", interface)
-                    table = ''
 
                     # Look in /proc/net/wireless.  If it's in there, it
                     # goes in the wireless table.  Otherwise it goes in
                     # the wired table.
-                    procnetwireless = open('/proc/net/wireless', 'r')
-                    headers = procnetwireless.readline()
-                    headers = procnetwireless.readline()
-                    for line in procnetwireless:
-                        if interface in line:
-                            logging.debug("Goes in wireless table.")
-                            table = 'wireless'
-                    procnetwireless.close()
-
-                    # Failing that, it goes in the wired table.
-                    if not table:
-                        logging.debug("Goes in wired table.")
-                        table = 'wired'
-
-                    # If we've made it this far, we know what to do.
-                    if table == 'wired':
-                        template = ('no', 'no', interface, )
-                        cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
-                    else:
+                    if check_wireless_table():
                         template = ('no', interface + ':1', 'no', 0, '', interface , )
                         cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?);", template)
+                    else:
+                        logging.debug("Goes in wired table.")
+                        template = ('no', 'no', interface, )
+                        cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
+
                     connection.commit()
 
         # Close the network configuration database and return.
