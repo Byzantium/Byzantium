@@ -501,9 +501,7 @@ class Gateways(object):
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
-        # self.make_hosts(self.client_ip)
         networkconfiguration.make_hosts(self.hosts_file, self.test, starting_ip=self.client_ip)
-        # self.configure_dnsmasq(self.client_ip)
         networkconfiguration.configure_dnsmasq(self.dnsmasq_include_file, self.test, starting_ip=self.client_ip)
 
         # Render and display the page.
