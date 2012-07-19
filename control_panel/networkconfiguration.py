@@ -533,7 +533,7 @@ class NetworkConfiguration(object):
         logging.debug("Entered NetworkConfiguration.set_ip().")
 
         # Set up the error catcher variable.
-        error = ''
+        error = []
 
         # Define the PID of the captive portal daemon in the topmost context
         # of this method.
@@ -702,17 +702,17 @@ class NetworkConfiguration(object):
         # Now do some error checking.
         warnings = "<p>WARNING!  captive_portal.py exited with code %d - %s!</p>\n"
         if captive_portal_return == 1:
-            error += warnings % (captive_portal_return, "insufficient command line arguments passed to daemon")
+            error.append(warnings % (captive_portal_return, "insufficient command line arguments passed to daemon"))
         elif captive_portal_return == 2:
-            error += warnigs % (captive_portal_return, "bad arguments passed to daemon")
+            error.append(warnings % (captive_portal_return, "bad arguments passed to daemon"))
         elif captive_portal_return == 3:
-            error += warnigs % (captive_portal_return, "bad IP tables commands during firewall initialization")
+            error.append(warnings % (captive_portal_return, "bad IP tables commands during firewall initialization"))
         elif captive_portal_return == 4:
-            error += warnigs % (captive_portal_return, "bad parameters passed to IP tables")
+            error.append(warnings % (captive_portal_return, "bad parameters passed to IP tables"))
         elif captive_portal_return == 5:
-            error += warnigs % (captive_portal_return, "daemon already running on interface")
+            error.append(warnings % (captive_portal_return, "daemon already running on interface"))
         elif captive_portal_return == 6:
-            error = error + "<p>NOTICE: captive_portal.py started in TEST mode - did not actually start up!</p>\n"
+            error.append("<p>NOTICE: captive_portal.py started in TEST mode - did not actually start up!</p>\n")
         else:
             logging.debug("Getting PID of captive portal daemon.")
 
@@ -725,7 +725,7 @@ class NetworkConfiguration(object):
             elif os.path.exists('/tmp/' + captive_portal_pidfile):
                 captive_portal_pidfile = '/tmp/' + captive_portal_pidfile
             else:
-                error = error + "<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n"
+                error.append("<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n")
                 logging.debug("Unable to find PID file %s of captive portal daemon.", captive_portal_pidfile)
 
             # Try to open the PID file.
@@ -736,7 +736,7 @@ class NetworkConfiguration(object):
                 portal_pid = pidfile.readline()
                 pidfile.close()
             except:
-                error = error + "<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n"
+                error.append("<p>WARNING: Unable to open captive portal PID file " + captive_portal_pidfile + "</p>\n")
 
             logging.debug("value of portal_pid is %s.", portal_pid)
             if self.test:
@@ -753,7 +753,7 @@ class NetworkConfiguration(object):
 
         problem = make_hosts(self.hosts_file, self.test, starting_ip=self.client_ip)
         if problem:
-            error = error + "<p>WARNING!  /etc/hosts.mesh not generated!  Something went wrong!</p>"
+            error.append("<p>WARNING!  /etc/hosts.mesh not generated!  Something went wrong!</p>")
             logging.debug("Couldn't generate /etc/hosts.mesh!")
         configure_dnsmasq(self.dnsmasq_include_file, self.test, starting_ip=self.client_ip)
 
@@ -762,7 +762,7 @@ class NetworkConfiguration(object):
             page = self.templatelookup.get_template("/network/done.html")
             return page.render(title = "Network interface configured.",
                                purpose_of_page = "Configured!",
-                               error = error, interface = self.mesh_interface,
+                               error = ''.join(error), interface = self.mesh_interface,
                                ip_address = self.mesh_ip,
                                netmask = self.mesh_netmask,
                                portal_pid = portal_pid,
