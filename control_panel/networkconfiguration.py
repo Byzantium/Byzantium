@@ -67,6 +67,101 @@ def enumerate_network_interfaces():
     return (wired, wireless)
 
 
+# Method that generates an /etc/hosts.mesh file for the node for dnsmasq.
+# Takes three args, the first and last IP address of the netblock.  Returns
+# nothing.
+def make_hosts(hosts_file, test, starting_ip=None):
+    logging.debug("Entered NetworkConfiguration.make_hosts().")
+
+    # See if the /etc/hosts.mesh backup file exists.  If it does, delete it.
+    old_hosts_file = hosts_file + '.bak'
+    if test:
+        logging.debug("Deleted old /etc/hosts.mesh.bak.")
+    else:
+        if os.path.exists(old_hosts_file):
+            os.remove(old_hosts_file)
+
+    # Back up the old hosts.mesh file.
+    if test:
+        logging.debug("Renamed /etc/hosts.mesh file to /etc/hosts.mesh.bak.")
+    else:
+        if os.path.exists(hosts_file):
+            os.rename(hosts_file, old_hosts_file)
+
+    # We can make a few assumptions given only the starting IP address of
+    # the client IP block.  Each node has a /24 netblock for clients, so
+    # we only have to generate 254 entries for that file (.2-254).  First,
+    # split the last octet off of the IP address passed to this method.
+    (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
+    prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
+
+    # Generate the contents of the new hosts.mesh file.
+    if test:
+        logging.debug("Pretended to generate new /etc/hosts.mesh file.")
+        return False
+    else:
+        hosts = open(hosts_file, "w")
+        line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
+        hosts.write(line)
+        for i in range(2, 255):
+            line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
+            hosts.write(line)
+        hosts.close()
+
+    # Test for successful generation of the file.
+    error = False
+    if not os.path.exists(hosts_file):
+        os.rename(old_hosts_file, hosts_file)
+        error = True
+    return error
+
+# Generates an /etc/dnsmasq.conf.include file for the node.  Takes one arg,
+# the IP address to start from.
+def configure_dnsmasq(dnsmasq_include_file, test, starting_ip=None):
+    logging.debug("Entered NetworkConfiguration.configure_dnsmasq().")
+
+    # Split the last octet off of the IP address passed into this
+    # method.
+    (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
+    prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
+    start = prefix + str('2')
+    end = prefix + str('254')
+
+    # Use that to generate the line for the config file.
+    # dhcp-range=<starting IP>,<ending IP>,<length of lease>
+    dhcp_range = 'dhcp-range=' + start + ',' + end + ',5m\n'
+
+    # If an include file already exists, move it out of the way.
+    oldfile = dnsmasq_include_file + '.bak'
+    if test:
+        logging.debug("Deleting old /etc/dnsmasq.conf.include.bak file.")
+    else:
+        if os.path.exists(oldfile):
+            os.remove(oldfile)
+
+    # Back up the old dnsmasq.conf.include file.
+    if test:
+        logging.debug("Backing up /etc/dnsmasq.conf.include file.")
+        logging.debug("Now returning to save time.")
+        return
+    else:
+        if os.path.exists(dnsmasq_include_file):
+            os.rename(dnsmasq_include_file, oldfile)
+
+    # Open the include file so it can be written to.
+    include_file = open(dnsmasq_include_file, 'w')
+
+    # Write the DHCP range for this node's clients.
+    include_file.write(dhcp_range)
+
+    # Close the include file.
+    include_file.close()
+
+    # Restart dnsmasq.
+    subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
+    return
+
+
 # Constants.
 # Ugly, I know, but we need a list of wi-fi channels to frequencies for the
 # sanity checking code.
@@ -653,11 +748,11 @@ class NetworkConfiguration(object):
         # dnsmasq config files.
         logging.debug("Generating dnsmasq configuration files.")
 
-        problem = self.make_hosts(self.client_ip)
+        problem = make_hosts(self.hosts_file, self.test, starting_ip=self.client_ip)
         if problem:
             error = error + "<p>WARNING!  /etc/hosts.mesh not generated!  Something went wrong!</p>"
             logging.debug("Couldn't generate /etc/hosts.mesh!")
-        self.configure_dnsmasq(self.client_ip)
+        configure_dnsmasq(self.dnsmasq_include_file, self.test, starting_ip=self.client_ip)
 
         # Render and display the page.
         try:
@@ -673,98 +768,4 @@ class NetworkConfiguration(object):
         except:
             output_error_data()
     set_ip.exposed = True
-
-    # Method that generates an /etc/hosts.mesh file for the node for dnsmasq.
-    # Takes three args, the first and last IP address of the netblock.  Returns
-    # nothing.
-    def make_hosts(self, starting_ip=None):
-        logging.debug("Entered NetworkConfiguration.make_hosts().")
-
-        # See if the /etc/hosts.mesh backup file exists.  If it does, delete it.
-        old_hosts_file = self.hosts_file + '.bak'
-        if self.test:
-            logging.debug("Deleted old /etc/hosts.mesh.bak.")
-        else:
-            if os.path.exists(old_hosts_file):
-                os.remove(old_hosts_file)
-
-        # Back up the old hosts.mesh file.
-        if self.test:
-            logging.debug("Renamed /etc/hosts.mesh file to /etc/hosts.mesh.bak.")
-        else:
-            if os.path.exists(self.hosts_file):
-                os.rename(self.hosts_file, old_hosts_file)
-
-        # We can make a few assumptions given only the starting IP address of
-        # the client IP block.  Each node has a /24 netblock for clients, so
-        # we only have to generate 254 entries for that file (.2-254).  First,
-        # split the last octet off of the IP address passed to this method.
-        (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
-        prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
-
-        # Generate the contents of the new hosts.mesh file.
-        if self.test:
-            logging.debug("Pretended to generate new /etc/hosts.mesh file.")
-            return
-        else:
-            hosts = open(self.hosts_file, "w")
-            line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
-            hosts.write(line)
-            for i in range(2, 255):
-                line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
-                hosts.write(line)
-            hosts.close()
-
-        # Test for successful generation of the file.
-        error = False
-        if not os.path.exists(self.hosts_file):
-            os.rename(old_hosts_file, self.hosts_file)
-            error = True
-        return error
-
-    # Generates an /etc/dnsmasq.conf.include file for the node.  Takes one arg,
-    # the IP address to start from.
-    def configure_dnsmasq(self, starting_ip=None):
-        logging.debug("Entered NetworkConfiguration.configure_dnsmasq().")
-
-        # Split the last octet off of the IP address passed into this
-        # method.
-        (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
-        prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
-        start = prefix + str('2')
-        end = prefix + str('254')
-
-        # Use that to generate the line for the config file.
-        # dhcp-range=<starting IP>,<ending IP>,<length of lease>
-        dhcp_range = 'dhcp-range=' + start + ',' + end + ',5m\n'
-
-        # If an include file already exists, move it out of the way.
-        oldfile = self.dnsmasq_include_file + '.bak'
-        if self.test:
-            logging.debug("Deleting old /etc/dnsmasq.conf.include.bak file.")
-        else:
-            if os.path.exists(oldfile):
-                os.remove(oldfile)
-
-        # Back up the old dnsmasq.conf.include file.
-        if self.test:
-            logging.debug("Backing up /etc/dnsmasq.conf.include file.")
-            logging.debug("Now returning to save time.")
-            return
-        else:
-            if os.path.exists(self.dnsmasq_include_file):
-                os.rename(self.dnsmasq_include_file, oldfile)
-
-        # Open the include file so it can be written to.
-        include_file = open(self.dnsmasq_include_file, 'w')
-
-        # Write the DHCP range for this node's clients.
-        include_file.write(dhcp_range)
-
-        # Close the include file.
-        include_file.close()
-
-        # Restart dnsmasq.
-        subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
-        return
 

@@ -18,11 +18,11 @@
 from mako.exceptions import RichTraceback
 
 import logging
-import os
-import os.path
 import sqlite3
 import subprocess
 import time
+
+import networkconfiguration
 
 
 def output_error_data():
@@ -64,7 +64,7 @@ def build_interfaces(interfaces, procnetdev):
 
 
 def check_for_wired_interface(interface, cursor):
-    template = (interface, )
+    template = (interface,)
     logging.debug("Checking to see if interface %s is a known wired interface...", interface)
     cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
     result = cursor.fetchall()
@@ -78,6 +78,7 @@ def check_for_wired_interface(interface, cursor):
 
 
 def check_for_wireless_interface(interface, cursor):
+    template = (interface,)
     cursor.execute("SELECT mesh_interface FROM wireless WHERE mesh_interface=?;", template)
     result = cursor.fetchall()
 
@@ -91,17 +92,17 @@ def check_for_wireless_interface(interface, cursor):
         return 'wireless'
 
 
-def check_wireless_table():
+def check_wireless_table(interface):
     table = False
     procnetwireless = open('/proc/net/wireless', 'r')
-    headers = procnetwireless.readline()
-    headers = procnetwireless.readline()
+    procnetwireless.readline()
+    procnetwireless.readline()
     for line in procnetwireless:
         if interface in line:
             logging.debug("Goes in wireless table.")
-            table = 'wireless'
+            table = True
     procnetwireless.close()
-    return True
+    return table
 
 
 # Classes.
@@ -132,6 +133,23 @@ class Gateways(object):
 
         # Used for sanity checking user input.
         self.frequency = 0
+        
+        # Class attributes which make up a network interface.  By default they are
+        # blank, but will be populated from the network.sqlite database if the
+        # user picks an already-configured interface.
+        self.mesh_interface = ''
+        self.mesh_ip = ''
+        self.client_interface = ''
+        self.client_ip = ''
+
+        # Set the netmasks aside so everything doesn't run together.
+        self.mesh_netmask = '255.255.0.0'
+        self.client_netmask = '255.255.255.0'
+
+        # Attributes for flat files that this object maintains for the client side
+        # of the network subsystem.
+        self.hosts_file = '/etc/hosts.mesh'
+        self.dnsmasq_include_file = '/etc/dnsmasq.conf.include'
 
     # Pretends to be index.html.
     def index(self):
@@ -210,7 +228,7 @@ class Gateways(object):
 
                 # If it's not in the wired table, check the wireless table.
                 if not found:
-                    found = check_for_wired_interface(interface, cursor)
+                    found = check_for_wireless_interface(interface, cursor)
 
                 # If it still hasn't been found, figure out where it has to go.
                 if not found:
@@ -219,7 +237,7 @@ class Gateways(object):
                     # Look in /proc/net/wireless.  If it's in there, it
                     # goes in the wireless table.  Otherwise it goes in
                     # the wired table.
-                    if check_wireless_table():
+                    if check_wireless_table(interface):
                         template = ('no', interface + ':1', 'no', 0, '', interface , )
                         cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?);", template)
                     else:
@@ -312,6 +330,37 @@ class Gateways(object):
             output_error_data()
     wireless.exposed = True
 
+    def _get_mesh_interfaces(self, interface):
+        interfaces = []
+        connection = sqlite3.connect(self.meshconfdb)
+        cursor = connection.cursor()
+        cursor.execute("SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';")
+        results = cursor.fetchall()
+        for i in results:
+            interfaces.append(i[0])
+        interfaces.append(interface)
+        cursor.close()
+        return interfaces
+        
+    def _update_netconfdb(self, interface):
+        connection = sqlite3.connect(self.netconfdb)
+        cursor = connection.cursor()
+        template = (interface, )
+        cursor.execute("SELECT interface FROM wired WHERE interface=?;",
+                       template)
+        results = cursor.fetchall()
+        template = ('yes', interface, )
+        if results:
+            cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
+                            template)
+        # Otherwise, it's a wireless interface.
+        else:
+            cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
+
+        # Clean up.
+        connection.commit()
+        cursor.close()
+
     # Method that does the deed of turning an interface into a gateway.  This
     def activate(self, interface=None):
         logging.debug("Entered Gateways.activate().")
@@ -344,41 +393,20 @@ class Gateways(object):
             logging.debug("Pretending to run gateway.sh on interface %s.", interface)
             logging.debug("Command that would be run:\n%s", ' '.join(command))
         else:
-            process = subprocess.Popen(command)
+            subprocess.Popen(command)
 
         # See what value was returned by the script.
 
         # Set up a list of mesh interfaces for which babeld is already running.
-        interfaces = []
-        connection = sqlite3.connect(self.meshconfdb)
-        cursor = connection.cursor()
-        cursor.execute("SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';")
-        results = cursor.fetchall()
-        for i in results:
-            interfaces.append(i[0])
-        interfaces.append(interface)
-        cursor.close()
+        #
+        # NOTE: the interfaces variable doesn't seem to ever get used anywhere :/
+        #
+        interfaces = self._get_mesh_interfaces(interface)
 
         # Update the network configuration database to reflect the fact that
         # the interface is now a gateway.  Search the table of Ethernet
         # interfaces first.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-        template = (interface, )
-        cursor.execute("SELECT interface FROM wired WHERE interface=?;",
-                       template)
-        results = cursor.fetchall()
-        template = ('yes', interface, )
-        if len(results):
-            cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
-                            template)
-        # Otherwise, it's a wireless interface.
-        else:
-            cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
-
-        # Clean up.
-        connection.commit()
-        cursor.close()
+        self._update_netconfdb(interface)
 
         # Display the confirmation of the operation to the user.
         try:
@@ -390,7 +418,9 @@ class Gateways(object):
             output_error_data()
     activate.exposed = True
 
-    # TODO(shanel): Where is self.mesh_* set? I only see ref to them in networkconfiguration.py?
+    # TODO(shanel): Where is self.mesh_* set? Same with client_*, make_hosts,
+    # and configure_dnsmasq. I only see ref to them in networkconfiguration.py?
+    #
     # Configure the network interface.
     def set_ip(self):
         # If we've made it this far, the user's decided to (re)configure a
@@ -416,7 +446,7 @@ class Gateways(object):
 
             # Run iwconfig again and capture the current wireless configuration.
             command = ['/sbin/iwconfig', self.mesh_interface]
-            output = subprocess.Popen(command)
+            output = subprocess.Popen(command).stdout
             configuration = output.readlines()
 
             # Test the interface by going through the captured text to see if
@@ -471,8 +501,10 @@ class Gateways(object):
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
-        self.make_hosts(self.client_ip)
-        self.configure_dnsmasq(self.client_ip)
+        # self.make_hosts(self.client_ip)
+        networkconfiguration.make_hosts(self.hosts_file, self.test, starting_ip=self.client_ip)
+        # self.configure_dnsmasq(self.client_ip)
+        networkconfiguration.configure_dnsmasq(self.dnsmasq_include_file, self.test, starting_ip=self.client_ip)
 
         # Render and display the page.
         try:

@@ -5,6 +5,7 @@
 
 # captive_portal_test.py
 
+import flexmock  # http://github.com/has207/flexmock
 import unittest
 import captive_portal
 
