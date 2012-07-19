@@ -242,6 +242,8 @@ class NetworkConfiguration(object):
         wireless_buttons = ""
         ethernet_buttons = ""
 
+        interface_tag_start = "<input type='submit' name='interface' value='"
+
         # Start with wireless interfaces.
         for i in wireless:
             logging.debug("Checking to see if %s is in the database.", i)
@@ -249,7 +251,7 @@ class NetworkConfiguration(object):
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
-            if not len(result):
+            if not result:
                 logging.debug("Adding %s to table 'wired'.", i)
 
                 # gateway, client_interface, enabled, channel, essid,
@@ -258,18 +260,18 @@ class NetworkConfiguration(object):
 
                 cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?);", template)
                 connection.commit()
-                wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
+                wireless_buttons += "%s%s' />\n" % (interface_tag_start, i)
                 continue
 
             # If it is there test to see if it's been configured or not.  If it
             # has, use a CSS hack to make its button a different color.
             if result[0][1] == "yes":
-                wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' style='background-color:red' />\n"
+                wireless_buttons += "%s%s' style='background-color:red' />\n" % (interface_tag_start, i)
                 continue
 
             # If all else fails, just add the button without any extra
             # decoration.
-            wireless_buttons = wireless_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
+            wireless_buttons += "%s%s' />\n" % (interface_tag_start, i)
 
         # Wired interfaces.
         for i in wired:
@@ -278,25 +280,25 @@ class NetworkConfiguration(object):
             result = cursor.fetchall()
 
             # If the interface is not found in database, add it.
-            if not len(result):
+            if not result:
                 logging.debug("Adding %s to table 'wired'.", i)
 
                 # enabled, gateway, interface
                 template = ('no', 'no', i, )
                 cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
                 connection.commit()
-                ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "'/>\n"
+                ethernet_buttons += "%s%s' />\n" % (interface_tag_start, i)
                 continue
 
             # If it is found test to see if it's been configured or not.  If it
             # has, use a CSS hack to make its button a different color.
             if result[0][1] == "yes":
-                ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "' style='background-color:red' />\n"
+                ethernet_buttons += "%s%s' style='background-color:red' />\n" % (interface_tag_start, i)
                 continue
 
             # If all else fails, just add the button without any extra
             # decoration.
-            ethernet_buttons = ethernet_buttons + "<input type='submit' name='interface' value='" + i + "' />\n"
+            ethernet_buttons += "%s%s' />\n" % (interface_tag_start, i)
 
         # Render the HTML page.
         cursor.close()
@@ -406,7 +408,7 @@ class NetworkConfiguration(object):
         template = (self.mesh_interface, 'yes', )
         cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=? AND enabled=?;", template)
         result = cursor.fetchall()
-        if not len(result):
+        if not result:
             logging.debug("Activating wireless interface.")
 
             # Note that arping returns '2' if the interface isn't online!
@@ -476,7 +478,7 @@ class NetworkConfiguration(object):
             # -f: Stop after the first positive response.
             # -I Network interface to use.  Mandatory.
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
-                      str(self.mesh_interface), addr]
+                      self.mesh_interface, addr]
             if self.test:
                 logging.debug("NetworkConfiguration.tcpip() command to probe for a client interface IP address is %s", ' '.join(arping))
                 time.sleep(5)
@@ -501,7 +503,7 @@ class NetworkConfiguration(object):
             self.client_ip = '10.0.0.1'
 
         # Deactivate the interface as if it was down to begin with.
-        if not len(result):
+        if not result:
             logging.debug("Deactivating wireless interface.")
             command = ['/sbin/ifconfig', self.mesh_interface, 'down']
             if self.test:
@@ -698,16 +700,17 @@ class NetworkConfiguration(object):
         time.sleep(5)
 
         # Now do some error checking.
+        warnings = "<p>WARNING!  captive_portal.py exited with code %d - %s!</p>\n"
         if captive_portal_return == 1:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 1 - insufficient command line arguments passed to daemon!</p>\n"
+            error += warnings % (captive_portal_return, "insufficient command line arguments passed to daemon")
         elif captive_portal_return == 2:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 2 - bad arguments passed to daemon!</p>\n"
+            error += warnigs % (captive_portal_return, "bad arguments passed to daemon")
         elif captive_portal_return == 3:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 3 - bad IP tables commands during firewall initialization!</p>\n"
+            error += warnigs % (captive_portal_return, "bad IP tables commands during firewall initialization")
         elif captive_portal_return == 4:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 4 - bad parameters passed to IP tables!</p>\n"
+            error += warnigs % (captive_portal_return, "bad parameters passed to IP tables")
         elif captive_portal_return == 5:
-            error = error + "<p>WARNING!  captive_portal.py exited with code 5 - daemon already running on interface!</p>\n"
+            error += warnigs % (captive_portal_return, "daemon already running on interface")
         elif captive_portal_return == 6:
             error = error + "<p>NOTICE: captive_portal.py started in TEST mode - did not actually start up!</p>\n"
         else:
