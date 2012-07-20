@@ -168,7 +168,7 @@ class Gateways(object):
         # Each interface gets its own button in a table.
         cursor.execute("SELECT interface FROM wired WHERE gateway='no';")
         results = cursor.fetchall()
-        if len(results):
+        if results:
             for interface in results:
                 ethernet_buttons = ethernet_buttons + "<td><input type='submit' name='interface' value='" + interface[0] + "' /></td>\n"
 
@@ -177,7 +177,7 @@ class Gateways(object):
         # in a table.
         cursor.execute("SELECT mesh_interface FROM wireless WHERE gateway='no';")
         results = cursor.fetchall()
-        if len(results):
+        if results:
             for interface in results:
                 wireless_buttons = wireless_buttons + "<td><input type='submit' name='interface' value='" + interface[0] + "' /></td>\n"
 

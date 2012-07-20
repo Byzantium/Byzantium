@@ -332,7 +332,7 @@ class MeshConfiguration(object):
 
         # If there are no mesh interfaces configured anymore, then the node
         # is offline.
-        if not len(interfaces):
+        if not interfaces:
             output = 'Byzantium node offline.'
 
         # Assemble the invocation of babeld.

@@ -42,7 +42,7 @@ def _get_stash():
         fobj = open(CACHEFILE,'r')
         fstr = fobj.read()
         fobj.close()
-        if len(fstr) > 0:
+        if fstr:
             try:
                 return json.loads()
             except ValueError as ve:
@@ -127,7 +127,7 @@ def bring_out_your_dead(metrics):
 
     # If the clients dict isn't populated, go through the dict of clients and
     # associate the current time (in time_t format) with their packet count.
-    if len(clients) < 1:
+    if not clients:
         for c in metrics:
             c['lastChanged'] = int(time.time())
             clients[c['mac']] = c
@@ -165,7 +165,7 @@ def mop_up():
 # If running this code as a separate process, main() gets called.
 '''this is run if this is used as a script'''
 def main(args):
-    if len(args) > 1:
+    if args:
         global CACHEFILE
         global STASHTO
         global MAXIDLESEC
