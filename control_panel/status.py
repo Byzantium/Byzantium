@@ -70,6 +70,8 @@ def get_load():
     
 # Queries the OS to get the system memory usage stats.
 def get_memory():
+    memtotal = 0
+    memused = 0
     # Open /proc/meminfo.
     meminfo = open("/proc/meminfo", "r")
 
@@ -121,29 +123,18 @@ class Status(object):
     # Pretends to be index.html.
     def index(self):
         logging.debug("Entered Status.index().")
-
-        # Set the variables that'll eventually be displayed to the user to
-        # known values.  If nothing else, we'll know if something is going wrong
-        # someplace if they don't change.
-        uptime = 0
-        ram = 0
-        ram_used = 0
-
+        
         # Get the node's uptime from the OS.
-        sysuptime = get_uptime()
-        if sysuptime:
-            uptime = sysuptime
+        uptime = get_uptime() or 0
 
         # Convert the uptime in seconds into something human readable.
         (minutes, seconds) = divmod(float(uptime), 60)
         (hours, minutes) = divmod(minutes, 60)
         uptime = "%i hours, %i minutes, %i seconds" % (hours, minutes, seconds)
-        logging.debug("System uptime: %s", str(uptime))
+        logging.debug("System uptime: %s", uptime)
 
         # Get the amount of RAM in and in use by the system.
-        sysmem = get_memory()
-        if sysmem:
-            (ram, ram_used) = sysmem
+        ram, ram_used = get_memory()
         logging.debug("Total RAM: %s", ram)
         logging.debug("RAM in use: %s", ram_used)
 
@@ -190,7 +181,7 @@ class Status(object):
                 command = ['/sbin/ifconfig', mesh_interface]
                 if self.test:
                     print "TEST: Status.index() command to pull the configuration of a mesh interface:"
-                    print command
+                    print ' '.join(command)
                 else:
                     logging.debug("Running ifconfig to collect configuration of interface %s.", mesh_interface)
 
