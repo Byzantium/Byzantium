@@ -188,7 +188,7 @@ class MeshConfiguration(object):
             output_error_data()
     addtomesh.exposed = True
     
-    def _pid_helper(self, pid, error, output, cursor):
+    def _pid_helper(self, pid, error, output, cursor, connection, commit=False):
         if not os.path.isdir('/proc/' + pid):
             error = "ERROR: babeld is not running!  Did it crash during or after startup?"
         else:
@@ -198,6 +198,7 @@ class MeshConfiguration(object):
             # the presence of the new interface.
             template = ('yes', self.interface, )
             cursor.execute("UPDATE meshes SET enabled=? WHERE interface=?;", template)
+            connection.commit()
         return error, output
 
     # Runs babeld to turn self.interface into a mesh interface.
@@ -263,8 +264,7 @@ class MeshConfiguration(object):
         # babeld isn't running.
         pid = self.pid_check()
         if pid:
-            error, output = self._pid_helper(pid, error, output, cursor)
-                connection.commit()
+            error, output = self._pid_helper(pid, error, output, cursor, connection, commit=True)
         cursor.close()
 
         # Render the HTML page.

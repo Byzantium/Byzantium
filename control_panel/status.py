@@ -23,16 +23,15 @@ from gateways import Gateways
 
 
 # Query the node's uptime (in seconds) from the OS.
-def get_uptime():
+def get_uptime(injected_open=open):
     # Open /proc/uptime.
-    uptime = open("/proc/uptime", "r")
-
-    # Read the first vlaue from the file.  If it can't be opened, return
-    # nothing and let the default values take care of it.
-    system_uptime = uptime.readline()
-    if not system_uptime:
-        uptime.close()
+    try:
+        uptime = injected_open("/proc/uptime", "r")
+    except IOError:
+        # Can't find file
         return False
+
+    system_uptime = uptime.readline()
 
     # Separate the uptime from the idle time.
     node_uptime = system_uptime.split()[0]
@@ -42,22 +41,19 @@ def get_uptime():
 
     # Return the system uptime (in seconds).
     return node_uptime
-    
-    
-# Queries the OS to get the system load stats.
-def get_load():
-    # Open /proc/loadavg.
-    loadavg = open("/proc/loadavg", "r")
 
-    # Read first three values from /proc/loadavg.  If it can't be opened,
-    # return nothing and let the default values take care of it.
-    loadstring = loadavg.readline()
-    if not loadstring:
-        loadavg.close()
+
+# Queries the OS to get the system load stats.
+def get_load(injected_open=open):
+    # Open /proc/loadavg.
+    try:
+        loadavg = injected_open("/proc/loadavg", "r")
+    except IOError:
         return False
 
+    loadstring = loadavg.readline()
     # Extract the load averages from the string.
-    averages = loadstring.split()
+    averages = loadstring.split(' ')
     loadavg.close()
     # check to avoid errors
     if len(averages) < 3:
@@ -66,14 +62,14 @@ def get_load():
 
     # Return the load average values.
     return (averages[:3])
-    
-    
+
+
 # Queries the OS to get the system memory usage stats.
-def get_memory():
+def get_memory(injected_open=open):
     memtotal = 0
     memused = 0
     # Open /proc/meminfo.
-    meminfo = open("/proc/meminfo", "r")
+    meminfo = injected_open("/proc/meminfo", "r")
 
     # Read in the contents of that virtual file.  Put them into a dictionary
     # to make it easy to pick out what we want.  If this can't be done,
