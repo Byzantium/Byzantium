@@ -69,7 +69,10 @@ def get_memory(injected_open=open):
     memtotal = 0
     memused = 0
     # Open /proc/meminfo.
-    meminfo = injected_open("/proc/meminfo", "r")
+    try:
+        meminfo = injected_open("/proc/meminfo", "r")
+    except IOError:
+        return False
 
     # Read in the contents of that virtual file.  Put them into a dictionary
     # to make it easy to pick out what we want.  If this can't be done,
@@ -83,6 +86,9 @@ def get_memory(injected_open=open):
                 memtotal = line.split()[1]
             elif line.startswith('memfree'):
                 memfree = line.split()[1]
+            # break out early
+            if bool(memtotal) and bool(memused):
+                break
         except KeyError as e:
             print(e)
             print('WARNING: /proc/meminfo is not formatted as expected')
