@@ -99,6 +99,22 @@ def get_memory(injected_open=open):
     return (memtotal, memused)
 
 
+def get_ip_address(interface):
+    ip_address = ''
+    command = ['/sbin/ifconfig', interface]
+    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
+    configuration = output.readlines()
+    logging.debug("Output of ifconfig:")
+    logging.debug(configuration)
+
+    # Parse the output of ifconfig.
+    for line in configuration:
+        if 'inet addr' in line:
+            line = line.strip()
+            ip_address = line.split(' ')[1].split(':')[1]
+            logging.debug("IP address is %s", ip_address)
+    return ip_address
+
 # The Status class implements the system status report page that makes up
 # /index.html.
 class Status(object):
@@ -183,21 +199,11 @@ class Status(object):
                 command = ['/sbin/ifconfig', mesh_interface]
                 if self.test:
                     print "TEST: Status.index() command to pull the configuration of a mesh interface:"
-                    print ' '.join(command)
+                    print '/sbin/ifconfig' + mesh_interface
                 else:
                     logging.debug("Running ifconfig to collect configuration of interface %s.", mesh_interface)
 
-                    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
-                    configuration = output.readlines()
-                    logging.debug("Output of ifconfig:")
-                    logging.debug(configuration)
-
-                    # Parse the output of ifconfig.
-                    for line in configuration:
-                        if 'inet addr' in line:
-                            line = line.strip()
-                            ip_address = line.split(' ')[1].split(':')[1]
-                            logging.debug("IP address is %s", ip_address)
+                    ip_address = get_ip_address(mesh_interface)
 
                 # Assemble the HTML for the status page using the mesh
                 # interface configuration data.
@@ -221,24 +227,12 @@ class Status(object):
             for client_interface in result:
                 # For every client interface found, run ifconfig and pull
                 # its configuration information.
-                command = ['/sbin/ifconfig', client_interface[0]]
                 if self.test:
                     print "TEST: Status.index() command to pull the configuration of a client interface:"
-                    print command
+                    print '/sbin/ifconfig' + client_interface[0]
                 else:
                     logging.debug("Running ifconfig to collect configuration of interface %s.", client_interface)
-
-                    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
-                    configuration = output.readlines()
-                    logging.debug("Output of ifconfig:")
-                    logging.debug(configuration)
-
-                    # Parse the output of ifconfig.
-                    for line in configuration:
-                        if 'inet addr' in line:
-                            line = line.strip()
-                            ip_address = line.split(' ')[1].split(':')[1]
-                            logging.debug("IP address is %s", ip_address)
+                    ip_address = get_ip_address(client_interface[0])
 
                 # For each client interface, count the number of rows in its
                 # associated arp table to count the number of clients currently

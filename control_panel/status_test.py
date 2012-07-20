@@ -8,6 +8,7 @@
 from flexmock import flexmock  # http://has207.github.com/flexmock
 import unittest
 import status
+import subprocess
 import sys
 
 
@@ -50,7 +51,15 @@ class StatusHelpersTest(unittest.TestCase):
                'Buffers:           98136 kB']
         expected = (509424, 449192)
         self.assertEqual(expected, status.get_memory(injected_open=lambda x, y: mem))
-        
+
+    def test_get_ip_address(self):
+        out = ['eth0      Link encap:Ethernet  HWaddr ff:ff:ff:ff:ff:ff\n',
+               '          inet addr:12.12.12.12  Bcast:12.12.12.255  Mask:255.255.255.0\n',
+               '          inet6 addr: ffff::ffff:ffff:ffff:ffff/64 Scope:Link\n']
+        mockfile = flexmock(readlines=lambda: out)
+        mock = flexmock(stdout=mockfile)
+        flexmock(subprocess).should_receive('Popen').once.and_return(mock)
+        self.assertEqual('12.12.12.12', status.get_ip_address('eth0'))
 
 if __name__ == '__main__':
     unittest.main()
