@@ -48,11 +48,8 @@ class StatusHelpersTest(unittest.TestCase):
         mem = ['MemTotal:         509424 kB',
                'MemFree:           60232 kB',
                'Buffers:           98136 kB']
-        mock = flexmock()
-        mock.should_receive('readline').once.and_return(mem)
-        mock.should_receive('close').once
         expected = (509424, 449192)
-        self.assertEqual(expected, status.get_memory(injected_open=lambda x, y: mock))
+        self.assertEqual(expected, status.get_memory(injected_open=lambda x, y: mem))
         
 
 if __name__ == '__main__':

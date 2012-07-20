@@ -83,9 +83,9 @@ def get_memory(injected_open=open):
         # Figure out how much RAM and swap are in use right now
         try:
             if line.startswith('memtotal'):
-                memtotal = line.split()[1]
+                memtotal = int(line.split()[1])
             elif line.startswith('memfree'):
-                memfree = line.split()[1]
+                memfree = int(line.split()[1])
             # break out early
             if bool(memtotal) and bool(memused):
                 break
@@ -93,7 +93,7 @@ def get_memory(injected_open=open):
             print(e)
             print('WARNING: /proc/meminfo is not formatted as expected')
             return False
-    memused = int(memtotal) - int(memfree)
+    memused = memtotal - memfree
 
     # Return total RAM, RAM used, total swap space, swap space used.
     return (memtotal, memused)
