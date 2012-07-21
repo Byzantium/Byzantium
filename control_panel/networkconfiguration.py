@@ -220,9 +220,7 @@ class NetworkConfiguration(object):
         self.reinitialize_attributes()
 
         # Get a list of all network interfaces on the node (sans loopback).
-        wired = []
-        wireless = []
-        (wired, wireless) = enumerate_network_interfaces()
+        wired, wireless = enumerate_network_interfaces()
         logging.debug("Contents of wired[]: %s", wired)
         logging.debug("Contents of wireless[]: %s", wireless)
 
@@ -252,7 +250,7 @@ class NetworkConfiguration(object):
 
             # If the interface is not found in database, add it.
             if not result:
-                logging.debug("Adding %s to table 'wired'.", i)
+                logging.debug("Adding %s to table 'wireless'.", i)
 
                 # gateway, client_interface, enabled, channel, essid,
                 # mesh_interface
@@ -481,7 +479,7 @@ class NetworkConfiguration(object):
                       self.mesh_interface, addr]
             if self.test:
                 logging.debug("NetworkConfiguration.tcpip() command to probe for a client interface IP address is %s", ' '.join(arping))
-                time.sleep(5)
+                time.sleep(5)  # Why do we sleep here if we are just testing?
             else:
                 ip_in_use = subprocess.call(arping)
 
@@ -557,41 +555,18 @@ class NetworkConfiguration(object):
         while True:
             logging.debug("At top of wireless configuration loop.")
 
-            # Set wireless interface mode.
-            logging.debug("Configuring wireless interface for ad-hoc mode.")
-            command = ['/sbin/iwconfig', self.mesh_interface, 'mode ad-hoc']
-            if self.test:
-                logging.debug("NetworkConfiguration.set_ip() command to activate ad-hoc mode: %s", command)
-            else:
-                subprocess.Popen(command)
-                time.sleep(1)
-
-            # Set ESSID.
-            logging.debug("Configuring ESSID of wireless interface.")
-            command = ['/sbin/iwconfig', self.mesh_interface, 'essid', self.essid]
-            if self.test:
-                logging.debug("NetworkConfiguration.set_ip() command to set the ESSID: %s", command)
-            else:
-                subprocess.Popen(command)
-                time.sleep(1)
-
-            # Set BSSID.
-            logging.debug("Configuring BSSID of wireless interface.")
-            command = ['/sbin/iwconfig', self.mesh_interface, 'ap', self.bssid]
-            if self.test:
-                logging.debug("NetworkConfiguration.set_ip() command to set the BSSID: %s", command)
-            else:
-                subprocess.Popen(command)
-                time.sleep(1)
-
-            # Set wireless channel.
-            logging.debug("Configuring channel of wireless interface.")
-            command = ['/sbin/iwconfig', self.mesh_interface, 'channel', self.channel]
-            if self.test:
-                logging.debug("NetworkConfiguration.set_ip() command to set the channel: %s", command)
-            else:
-                subprocess.Popen(command)
-                time.sleep(1)
+            chunks = {"mode": ("ad-hoc"),
+                      "ESSID": ("essid", self.essid).
+                      "BSSID": ("ap", self.bssid),
+                      "channel": ("channel", self.channel)}
+            for chunk in chunks:
+                logging.debug("Configuring wireless interface: %s = %s" % (chunk, chunks[chunk]))
+                command = ['/sbin/iwconfig', self.mesh_interface].extend(chunks[chunk])
+                if self.test:
+                    logging.debug("NetworkConfiguration.set_ip() command to set the %s: %s" % (chunk, ' '.join(command)))
+                else:
+                    subprocess.Popen(command)
+                    time.sleep(1)
 
             # Run iwconfig again and capture the current wireless configuration.
             command = ['/sbin/iwconfig', self.mesh_interface]
