@@ -19,6 +19,7 @@ import logging
 import os
 import os.path
 import random
+import re
 import sqlite3
 import subprocess
 import time
@@ -582,9 +583,13 @@ class NetworkConfiguration(object):
             # it's in ad-hoc mode.  If it's not, go back to the top of the
             # loop to try again.
             for line in configuration:
+                if re.search("Mode|ESSID|Cell|Frequency", line):
+                    line = line.split(' ')
+                else:
+                    continue
+
                 if 'Mode' in line:
-                    line = line.strip()
-                    mode = line.split(' ')[0].split(':')[1]
+                    mode = line[0].split(':')[1]
                     if mode != 'Ad-Hoc':
                         logging.debug("Uh-oh!  Not in ad-hoc mode!  Starting over.")
                         break_flag = True
@@ -592,8 +597,7 @@ class NetworkConfiguration(object):
 
                 # Test the ESSID to see if it's been set properly.
                 if 'ESSID' in line:
-                    line = line.strip()
-                    essid = line.split(' ')[-1].split(':')[1]
+                    essid = line[-1].split(':')[1]
                     if essid != self.essid:
                         logging.debug("Uh-oh!  ESSID wasn't set!  Starting over.")
                         break_flag = True
@@ -601,8 +605,7 @@ class NetworkConfiguration(object):
 
                 # Test the BSSID to see if it's been set properly.
                 if 'Cell' in line:
-                    line = line.strip()
-                    bssid = line.split(' ')[-1]
+                    bssid = line[-1]
                     if bssid != self.bssid:
                         logging.debug("Uh-oh!  BSSID wasn't set!  Starting over.")
                         break_flag = True
@@ -610,8 +613,7 @@ class NetworkConfiguration(object):
 
                 # Check the wireless channel to see if it's been set properly.
                 if 'Frequency' in line:
-                    line = line.strip()
-                    frequency = line.split(' ')[2].split(':')[1]
+                    frequency = line[2].split(':')[1]
                     if frequency != self.frequency:
                         logging.debug("Uh-oh!  Wireless channel wasn't set!  starting over.")
                         break_flag = True
