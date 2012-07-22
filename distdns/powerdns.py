@@ -3,94 +3,94 @@
 
 import sys
 
-msg = '%s\t%s\t%s\t%s\t%s\t%s\n' # type	qname	qclass	qtype	id	remote-ip-address
+msg = '%s\t%s\t%s\t%s\t%s\t%s\n' # type qname   qclass  qtype   id  remote-ip-address
 
 def output(data):
 
-	sys.stdout.write(data)
+    sys.stdout.write(data)
 
 def input():
 
-	return sys.stdin.readline()
+    return sys.stdin.readline()
 
 class PDNS:
 
-	def __init__(self):
+    def __init__(self):
 
-		self.db = records.Database('/etc/resolv.db')
+        self.db = records.Database('/etc/resolv.db')
 
-		self.isaxfr = False
+        self.isaxfr = False
 
-		self.gothelo = False
+        self.gothelo = False
 
-		while True:
+        while True:
 
-			line = input()
+            line = input()
 
-			if self.gothelo and not line in (None, ''):
+            if self.gothelo and not line in (None, ''):
 
-				output(self.handleinput(line))
+                output(self.handleinput(line))
 
-			elif line == 'HELO\t1\n':
+            elif line == 'HELO\t1\n':
 
-				output('OK\t\n')
+                output('OK\t\n')
 
-				self.gothelo = True
+                self.gothelo = True
 
-			else:
+            else:
 
-				return 1
+                return 1
 
-	def handleinput(line):
+    def handleinput(line):
 
-		line = line.split('\t')
+        line = line.split('\t')
 
-		if line[0] == 'Q':
+        if line[0] == 'Q':
 
-			return self.lookup(line)
+            return self.lookup(line)
 
-		elif line[0] == 'AXFR':
+        elif line[0] == 'AXFR':
 
-			return self.axfr(line)
+            return self.axfr(line)
 
-		elif line[0] == 'PING':
+        elif line[0] == 'PING':
 
-			pass
+            pass
 
-		elif line[0] == 'DATA':
+        elif line[0] == 'DATA':
 
-			self.store(line)
+            self.store(line)
 
-		elif line[0] == 'END':
+        elif line[0] == 'END':
 
-			pass
+            pass
 
-		elif line[0] == 'FAIL':
+        elif line[0] == 'FAIL':
 
-			pass
+            pass
 
-		else:
+        else:
 
-			return 'FAIL\t\n'
+            return 'FAIL\t\n'
 
-	def store(self,line):
+    def store(self,line):
 
-		getmac(line[6])
+        getmac(line[6])
 
-		self.db.add({'ip': line[6],'name': line[1],'mac': macaddr,'type': line[3]})
+        self.db.add({'ip': line[6],'name': line[1],'mac': macaddr,'type': line[3]})
 
-	def lookup(self,line):
+    def lookup(self,line):
 
-		self.db.check("type='%s', name='%s'")
+        self.db.check("type='%s', name='%s'")
 
-	def axfr(self,line):
+    def axfr(self,line):
 
-		output = ''
+        output = ''
 
-		self.db.check()
+        self.db.check()
 
-		for i in self.db:
+        for i in self.db:
 
-			output += msg % ('DATA',i['name'],'IN',i['type'],str(i['ttl']),'1'+i['ip'])
+            output += msg % ('DATA',i['name'],'IN',i['type'],str(i['ttl']),'1'+i['ip'])
 
-		return output
+        return output

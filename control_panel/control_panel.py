@@ -14,8 +14,8 @@
 # For security reasons I see no reason to change this; if you want to admin a
 # Byzantium node remotely you'll have to use SSH port forwarding.
 
-# v0.2	- Split the network traffic graphs from the system status report.
-# v0.1	- Initial release.
+# v0.2  - Split the network traffic graphs from the system status report.
+# v0.1  - Initial release.
 
 # Import modules.
 import cherrypy

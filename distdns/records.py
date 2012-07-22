@@ -5,48 +5,48 @@ import sqlite3
 
 class Database:
 
-	def __init__(self, dbfile):
+    def __init__(self, dbfile):
 
-		self.database = sqlite3.connect(dbfile) # can be :memory: to run db in memory
+        self.database = sqlite3.connect(dbfile) # can be :memory: to run db in memory
 
-		self.db = self.database.cursor()
+        self.db = self.database.cursor()
 
-		if not os.path.isfile(dbfile):
+        if not os.path.isfile(dbfile):
 
-			self.db.execute('create table hosts (ip text, name text, mac text, type text, ttl integer, ts integer)')
+            self.db.execute('create table hosts (ip text, name text, mac text, type text, ttl integer, ts integer)')
 
-		self.database.commit()
+        self.database.commit()
 
-	def add(self, vals):
+    def add(self, vals):
 
-		# check for record
+        # check for record
 
-		# do magic to remove old dups
+        # do magic to remove old dups
 
-		self.db.execute("insert into hosts values ('%s', '%s', '%s')" % (vals['ip'], vals['name'], vals['mac'], vals['type']) )
+        self.db.execute("insert into hosts values ('%s', '%s', '%s')" % (vals['ip'], vals['name'], vals['mac'], vals['type']) )
 
-		self.database.commit()
+        self.database.commit()
 
-	def del(self, cond):
+    def del(self, cond):
 
       self.execute("delete from hosts where %s" % cond )
 
-		self.database.commit()
+        self.database.commit()
 
-	def check(self, name, rectype = 'A'):
+    def check(self, name, rectype = 'A'):
 
-		records = []
+        records = []
 
-		rectype = rectype.upper()
+        rectype = rectype.upper()
 
-		self.db.execute("select * from hosts where name = '%s' and type = '%s'" % (name, rectype) )
+        self.db.execute("select * from hosts where name = '%s' and type = '%s'" % (name, rectype) )
 
-		for i in self.db:
+        for i in self.db:
 
-			records.append(i)
+            records.append(i)
 
-		return records
+        return records
 
-	def close(self):
+    def close(self):
 
-		self.database.close()
+        self.database.close()
