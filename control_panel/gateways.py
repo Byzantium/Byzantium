@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: set expandtab tabstop=4 shiftwidth=4 :
+
 # gateways.py - Implements the network gateway configuration subsystem of the
 #    Byzantium control panel.
 

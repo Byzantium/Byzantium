@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: set expandtab tabstop=4 shiftwidth=4 :
+
 # status.py - Implements the status screen of the Byzantium control panel.
 #    Relies on a few other things running under the hood that are independent
 #    of the control panel.  By default, this comprises the /index.html part of

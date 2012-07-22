@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: set expandtab tabstop=4 shiftwidth=4 :
+
 import sys
 
 msg = '%s\t%s\t%s\t%s\t%s\t%s\n' # type	qname	qclass	qtype	id	remote-ip-address

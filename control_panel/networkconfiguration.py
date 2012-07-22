@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: set expandtab tabstop=4 shiftwidth=4 :
+
 # networkconfiguration.py - Implements the network interface configuration
 #    subsystem of the Byzantium control panel.
 

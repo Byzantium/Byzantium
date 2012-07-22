@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: set expandtab tabstop=4 shiftwidth=4 :
+
 # networktraffic.py - Web application that displays the rrdtool traffic
 #    graphs, so that the node's administrator can see how active their node is.
 

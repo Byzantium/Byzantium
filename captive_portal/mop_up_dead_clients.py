@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim: set expandtab tabstop=4 shiftwidth=4 :
 
 # mop_up_dead_clients.py - Daemon that pairs with the captive portal to remove
 #    IP tables rules for idle clients so they don't overflow the kernel.

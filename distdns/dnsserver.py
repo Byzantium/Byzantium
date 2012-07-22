@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: set expandtab tabstop=4 shiftwidth=4 :
+
 ## {{{ http://code.activestate.com/recipes/491264/ (r4)
 import socket
 

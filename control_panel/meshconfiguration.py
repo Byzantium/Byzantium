@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: set expandtab tabstop=4 shiftwidth=4 :
+
 # meshconfiguration.py - Lets the user configure and manipulate mesh-enabled
 #    wireless network interfaces.  Wired interfaces (Ethernet) are reserved for
 #    use as net.gateways and fall under a different web app.
