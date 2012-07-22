@@ -12,9 +12,6 @@
 # - Find a way to prune network interfaces that have vanished.
 #   MOOF MOOF MOOF - Stubbed in.
 
-# Import external modules.
-from mako.exceptions import RichTraceback
-
 import logging
 import os
 import os.path
@@ -86,7 +83,7 @@ def make_hosts(hosts_file, test, starting_ip=None):
     # the client IP block.  Each node has a /24 netblock for clients, so
     # we only have to generate 254 entries for that file (.2-254).  First,
     # split the last octet off of the IP address passed to this method.
-    (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
+    (octet_one, octet_two, octet_three, _) = starting_ip.split('.')
     prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 
     # Generate the contents of the new hosts.mesh file.
@@ -116,7 +113,7 @@ def configure_dnsmasq(dnsmasq_include_file, test, starting_ip=None):
 
     # Split the last octet off of the IP address passed into this
     # method.
-    (octet_one, octet_two, octet_three, octet_four) = starting_ip.split('.')
+    (octet_one, octet_two, octet_three, _) = starting_ip.split('.')
     prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
     start = prefix + str('2')
     end = prefix + str('254')
@@ -301,7 +298,7 @@ class NetworkConfiguration(object):
                                wireless_buttons = wireless_buttons,
                                ethernet_buttons = ethernet_buttons)
         except:
-            output_error_data()
+            _utils.output_error_data()
     index.exposed = True
 
     # Used to reset this class' attributes to a known state.
@@ -373,14 +370,14 @@ class NetworkConfiguration(object):
             arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
                       interface, addr]
             if self.test:
-                logging.debug("NetworkConfiguration.tcpip() command to probe for a %s interface IP address is %s", (kind, ' '.join(arping)))
+                logging.debug("NetworkConfiguration.tcpip() command to probe for a %s interface IP address is %s", kind, ' '.join(arping))
                 time.sleep(5)
             else:
                 ip_in_use = subprocess.call(arping)
 
             # arping returns 1 if the IP is in use, 0 if it's not.
             if not ip_in_use:
-                logging.debug("IP address of %s interface is %s.", (kind, addr))
+                logging.debug("IP address of %s interface is %s.", kind, addr)
                 return addr
                 
             # In test mode, don't let this turn into an endless loop.
@@ -390,7 +387,7 @@ class NetworkConfiguration(object):
 
     def update_mesh_interface_status(self, status):
         """docstring for update_mesh_interface_status"""
-        logging.debug("Setting wireless interface status: %s" % status)
+        logging.debug("Setting wireless interface status: %s", status)
         command = ['/sbin/ifconfig', self.mesh_interface, status]
         if self.test:
             logging.debug("NetworkConfiguration.tcpip() command to update mesh interface status: %s", command)
@@ -424,7 +421,7 @@ class NetworkConfiguration(object):
         cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=? AND enabled=?;", template)
         result = cursor.fetchall()
         if not result:
-            update_mesh_interface_status(self, 'up')
+            self.update_mesh_interface_status('up')
 
             # Sleep five seconds to give the hardware a chance to catch up.
             time.sleep(5)
@@ -438,7 +435,7 @@ class NetworkConfiguration(object):
         addr = '192.168.'
         addr = addr + str(random.randint(0, 254)) + '.'
         addr = addr + str(random.randint(1, 254))
-        self.mesh_ip = get_unused_ip(self.mesh_interface, addr, type="mesh")
+        self.mesh_ip = self.get_unused_ip(self.mesh_interface, addr, kind="mesh")
     
         # Next pick a distinct IP address for the client interface and its
         # netblock.  This is potentially trickier depending on how large the
@@ -448,7 +445,7 @@ class NetworkConfiguration(object):
         addr = '10.'
         addr = addr + str(random.randint(0, 254)) + '.'
         addr = addr + str(random.randint(0, 254)) + '.1'
-        self.mesh_ip = get_unused_ip(self.client_interface, addr, type="client")
+        self.mesh_ip = self.get_unused_ip(self.client_interface, addr, kind="client")
 
         # For testing, hardcode some IP addresses so the rest of the code has
         # something to work with.
@@ -458,7 +455,7 @@ class NetworkConfiguration(object):
 
         # Deactivate the interface as if it was down to begin with.
         if not result:
-            update_mesh_interface_status(self, 'down')
+            self.update_mesh_interface_status('down')
 
         # Close the database connection.
         connection.close()
@@ -491,7 +488,7 @@ class NetworkConfiguration(object):
         # If we've made it this far, the user's decided to (re)configure a
         # network interface.  Full steam ahead, damn the torpedoes!
         # First, take the wireless NIC offline so its mode can be changed.
-        update_mesh_interface_status(self, 'down')
+        self.update_mesh_interface_status('down')
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless
@@ -506,10 +503,10 @@ class NetworkConfiguration(object):
                       "BSSID": ("ap", self.bssid),
                       "channel": ("channel", self.channel)}
             for chunk in chunks:
-                logging.debug("Configuring wireless interface: %s = %s" % (chunk, chunks[chunk]))
+                logging.debug("Configuring wireless interface: %s = %s", chunk, chunks[chunk])
                 command = ['/sbin/iwconfig', self.mesh_interface].extend(chunks[chunk])
                 if self.test:
-                    logging.debug("NetworkConfiguration.set_ip() command to set the %s: %s" % (chunk, ' '.join(command)))
+                    logging.debug("NetworkConfiguration.set_ip() command to set the %s: %s", chunk, ' '.join(command))
                 else:
                     subprocess.Popen(command)
                     time.sleep(1)

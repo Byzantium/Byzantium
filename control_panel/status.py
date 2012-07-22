@@ -89,8 +89,8 @@ def get_memory(injected_open=open):
             # break out early
             if bool(memtotal) and bool(memused):
                 break
-        except KeyError as e:
-            print(e)
+        except KeyError as ex:
+            print(ex)
             print('WARNING: /proc/meminfo is not formatted as expected')
             return False
     memused = memtotal - memfree

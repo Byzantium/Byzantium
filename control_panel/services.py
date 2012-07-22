@@ -16,6 +16,8 @@ from mako import exceptions
 import sqlite3
 import subprocess
 
+import _utils
+
 
 # Classes.
 # Allows the user to configure to configure mesh networking on wireless network
@@ -52,19 +54,19 @@ class Services(object):
             # Set up the first cell in the row, the name of the webapp.
             if status == 'active':
                 # White on green means that it's active.
-                row += "<td style='background-color:green; color:white;' >" + name + "</td>"
+                row += "<td style='background-color:green; color:white;' >%s</td>" % name
             else:
                 # White on red means that it's not active.
-                row += "<td style='background-color:red; color:white;' >" + name + "</td>"
+                row += "<td style='background-color:red; color:white;' >%s</td>" % name
 
             # Set up the second cell in the row, the toggle that will either
             # turn the web app off or on.
             if status == 'active':
                 # Give the option to deactivate the app.
-                row += "<td><button type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
+                row += "<td><button type='submit' name='service' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % name
             else:
                 # Give the option to activate the app.
-                row += "<td><button type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' >Activate</button></td>"
+                row += "<td><button type='submit' name='service' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % name
 
             # Set the closing tag of the row.
             row += "</tr>\n"
@@ -92,18 +94,18 @@ class Services(object):
         results = cursor.fetchall()
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table webapps.  SELECT query failed.</p>"
+            error = "<p>ERROR: Something went wrong in database %s, table webapps.  SELECT query failed.</p>" % self.servicedb
         else:
-            webapps = generate_rows(results)
+            webapps = self.generate_rows(results)
 
         # Do the same thing for system services.
         cursor.execute("SELECT name, status FROM daemons;")
         results = cursor.fetchall()
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table daemons.  SELECT query failed.</p>"
+            error = "<p>ERROR: Something went wrong in database %s, table daemons.  SELECT query failed.</p>" % self.servicedb
         else:
-            systemservice = generate_rows(results)
+            systemservices = self.generate_rows(results)
 
         # Gracefully detach the system services database.
         cursor.close()
@@ -133,7 +135,7 @@ class Services(object):
 
         query = "SELECT name, status FROM webapps WHERE name=?;"
         template = (self.app, )
-        connection, cursor = _utils.execute_query(self.sericedb, query, template=template)
+        _, cursor = _utils.execute_query(self.servicedb, query, template=template)
         result = cursor.fetchall()
         status = result[0][1]
 
@@ -178,7 +180,7 @@ class Services(object):
 
         query = "UPDATE webapps SET status=? WHERE name=?;"
         template = template = (status, self.app, )
-        database, cursor = _utils.execute_query(self.sericedb, query, template=template)
+        database, cursor = _utils.execute_query(self.servicedb, query, template=template)
         database.commit()
         cursor.close()
 
@@ -203,9 +205,8 @@ class Services(object):
 
         query = "SELECT name, status, initscript FROM daemons WHERE name=?;"
         template = (service, )
-        database, cursor = _utils.execute_query(self.sericedb, query, template=template)
+        _, cursor = _utils.execute_query(self.servicedb, query, template=template)
         result = cursor.fetchall()
-        name = result[0][0]
         status = result[0][1]
         initscript = result[0][2]
 
@@ -245,7 +246,7 @@ class Services(object):
         error = ''
         query = "SELECT name, initscript FROM daemons WHERE name=?;"
         template = template = (self.app, )
-        database, cursor = _utils.execute_query(self.sericedb, query, template=template)
+        database, cursor = _utils.execute_query(self.servicedb, query, template=template)
         results = cursor.fetchall()
         self.initscript = results[0][1]
 

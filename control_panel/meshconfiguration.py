@@ -19,9 +19,6 @@
 #   network interface.  This will also likely involve selecting multiple mesh
 #   routing protocols (i.e., babel+others).
 
-# Import external modules.
-from mako.exceptions import RichTraceback
-
 import logging
 import os
 import signal
@@ -182,10 +179,11 @@ class MeshConfiguration(object):
             # the presence of the new interface.
             template = ('yes', self.interface, )
             cursor.execute("UPDATE meshes SET enabled=? WHERE interface=?;", template)
-            connection.commit()
+            if commit:
+                connection.commit()
         return error, output
 
-    def update_babeld(self):
+    def update_babeld(self, common_babeld_opts, unique_babeld_opts, interfaces):
         # Assemble the invocation of babeld.
         babeld_command = []
         babeld_command.append(self.babeld)
@@ -211,6 +209,7 @@ class MeshConfiguration(object):
             logging.debug("Restarting babeld.")
             subprocess.Popen(babeld_command)
         time.sleep(self.babeld_timeout)
+        return babeld_command
 
     # Runs babeld to turn self.interface into a mesh interface.
     def enable(self):
@@ -243,7 +242,7 @@ class MeshConfiguration(object):
         # added yet.
         interfaces.append(self.interface)
 
-        self.update_babeld()
+        self.update_babeld(common_babeld_opts, unique_babeld_opts, interfaces)
 
         # Get the PID of babeld, then test to see if that pid exists and
         # corresponds to a running babeld process.  If there is no match,
@@ -307,6 +306,7 @@ class MeshConfiguration(object):
 
         # Set up a list of mesh interfaces for which babeld is already running
         # but omit self.interface.
+        interfaces = []
         query = "SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';"
         connection, cursor = _utils.execute_query(self.meshconfdb, query)
         results = cursor.fetchall()
@@ -319,7 +319,7 @@ class MeshConfiguration(object):
         if not interfaces:
             output = 'Byzantium node offline.'
 
-        self.update_babeld()
+        babeld_command = self.update_babeld(common_babeld_opts, unique_babeld_opts, interfaces)
 
         # If there is at least one wireless network interface still configured,
         # then re-run babeld.
@@ -336,7 +336,7 @@ class MeshConfiguration(object):
         # babeld isn't running, in which case something went wrong.
         pid = self.pid_check()
         if pid:
-            error, output = self._pid_helper(pid, error, output, cursor)
+            error, output = self._pid_helper(pid, error, output, cursor, connection)
         else:
             # There are no mesh interfaces left, so update the database to
             # deconfigure self.interface.

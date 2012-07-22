@@ -14,9 +14,6 @@
 # - Add code to update_network_interfaces() to delete interfaces from the
 #   database if they don't exist anymore.
 
-# Import external modules.
-from mako.exceptions import RichTraceback
-
 import logging
 import sqlite3
 import subprocess
@@ -144,7 +141,7 @@ class Gateways(object):
         self.update_network_interfaces()
 
         query = "SELECT interface FROM wired WHERE gateway='no';"
-        connection, cursor = _utils.execute_query(self.netconfdb, query)
+        _, cursor = _utils.execute_query(self.netconfdb, query)
         results = cursor.fetchall()
         if results:
             for interface in results:
@@ -170,7 +167,7 @@ class Gateways(object):
                                ethernet_buttons = ethernet_buttons,
                                wireless_buttons = wireless_buttons)
         except:
-            output_error_data()
+            _utils.output_error_data()
     index.exposed = True
 
     # Utility method to update the list of all network interfaces on a node.
@@ -262,7 +259,7 @@ class Gateways(object):
                                purpose_of_page = "Confirm gateway mode.",
                                interface = interface, iwconfigs = iwconfigs)
         except:
-            output_error_data()
+            _utils.output_error_data()
     tcpip.exposed = True
 
     # Allows the user to enter the ESSID and wireless channel of the wireless
@@ -290,13 +287,13 @@ class Gateways(object):
                            warning = warning, interface = interface,
                            channel = channel, essid = essid)
         except:
-            output_error_data()
+            _utils.output_error_data()
     wireless.exposed = True
 
     def _get_mesh_interfaces(self, interface):
         interfaces = []
         query = "SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';"
-        connection, cursor = _utils.execute_query(self.meshconfdb, query)
+        _, cursor = _utils.execute_query(self.meshconfdb, query)
         results = cursor.fetchall()
         for i in results:
             interfaces.append(i[0])
@@ -374,12 +371,9 @@ class Gateways(object):
                                purpose_of_page = "Confirm gateway mode.",
                                interface = interface)
         except:
-            output_error_data()
+            _utils.output_error_data()
     activate.exposed = True
 
-    # TODO(shanel): Where is self.mesh_* set? Same with client_*, make_hosts,
-    # and configure_dnsmasq. I only see ref to them in networkconfiguration.py?
-    #
     # Configure the network interface.
     def set_ip(self):
         # If we've made it this far, the user's decided to (re)configure a
@@ -467,6 +461,6 @@ class Gateways(object):
                                client_ip = self.client_ip,
                                client_netmask = self.client_netmask)
         except:
-            output_error_data()
+            _utils.output_error_data()
     set_ip.exposed = True
 
