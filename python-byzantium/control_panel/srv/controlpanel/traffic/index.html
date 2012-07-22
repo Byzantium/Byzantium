@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<!-- This includes all of the stuff to set up an HTML page. -->
+<!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
+<!-- /index.html - Displays graphics of traffic statistics. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+<link rel="stylesheet" href="/css/reset.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/text.css" />
+</head>
+
+<body>
+<div id="container">
+<!-- Pull in the code for the top part of the page that says what this page is for. -->
+<div id="header"><%include file="/includes/header.html" /></div>
+
+<!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
+
+<!-- This is where all of the content of the network traffic report page goes. -->
+<div id="mainInfo">
+<!-- This is where the PNG files from rrdtool are referenced.  That variable contains HTML code. -->
+${graphs}
+</div>
+<div id="footer"></div>
+</div>
+</body>
+</html>

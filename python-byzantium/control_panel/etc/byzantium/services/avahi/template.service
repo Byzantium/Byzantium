@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+	<name>%(name)s</name>
+	<service>
+		<type>%(stype)s</type>
+		<subtype>%(subtype)s</subtype>
+		<port>%(port)d</port>
+		%(text)s
+	</service>
+</service-group>

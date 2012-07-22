@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<!-- This includes all of the stuff to set up an HTML page. -->
+<!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
+<!-- /index.html - Shows status of the Byzantium node. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+<link rel="stylesheet" href="css/reset.css" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/text.css" />
+</head>
+
+<body>
+<div id="container">
+<!-- Pull in the code for the top part of the page that says what this page is for. -->
+<div id="header"><%include file="/includes/header.html" /></div>
+
+<!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
+
+<!-- This is where all of the content of the status page goes. -->
+	 <div id="memoryutilization">
+		<table style="border:1px solid;">
+		<tr>
+		<td style="border:1px solid;padding:1px;">Memory utilization</td>
+		</tr>
+		
+		<tr>
+		<td style="border:1px solid;padding:1px;">memory used (in kb)</td>
+		<td style="border:1px solid;padding:1px;">${ram_used}</td>
+		</tr>
+		
+		<tr>
+		<td style="border:1px solid;padding:1px;">memory (in kb)</td>
+		<td style="border:1px solid;padding:1px;">${ram}</td>	
+		</tr>
+		</table>
+	 </div>
+
+	 <div id="nodeuptime">
+		<table style="border:1px solid;">
+		<tr>
+		<td style="border:1px solid;padding:1px;">Node uptime:</td>
+		<td style="border:1px solid;padding:1px;">${uptime}</td>
+		</tr>
+		</table>
+    </div>
+
+    <br /><br /><br /><br /><br />
+
+	 <div id="meshinterfaces">
+	     <table style="border:1px solid;">
+	         <tr>
+	         <td style="border:1px solid;padding:1px;">Mesh network interfaces</td>
+	         </tr>
+	         
+				<tr>
+				<td style="border:1px solid;padding:1px;">Interface</td>
+				<td style="border:1px solid;padding:1px;">IP Address</td>
+				<td style="border:1px solid;padding:1px;">ESSID</td>
+				<td style="border:1px solid;padding:1px;">Channel</td>
+				</tr>
+				
+				${mesh_interfaces}
+	     </table>
+	 </div>
+
+	 <div id="clientinterfaces">
+	     <table style="border:1px solid;">
+		      <tr>
+		      <td style="border:1px solid;padding:1px;">Client network interfaces</td>
+		      </tr>
+		      
+				<tr>
+				<td style="border:1px solid;padding:1px;">Interface</td>
+				<td style="border:1px solid;padding:1px;">IP address</td>
+				<td style="border:1px solid;padding:1px;">Number of associated clients</td>
+				</tr>		      
+		      
+		      ${client_interfaces}
+	     </table>
+	 </div>
+
+	<div id="footer"></div>
+
+</div>
+</body>
+</html>

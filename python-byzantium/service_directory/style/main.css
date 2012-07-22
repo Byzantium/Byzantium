@@ -1,0 +1,12 @@
+@charset "UTF-8";
+/* CSS Document */
+
+div.winning {
+	color: green;
+	font-family: Sans, Arial;
+}
+div.sad-face {
+	color: orange;
+	font-family: Sans, Arial;
+}
+

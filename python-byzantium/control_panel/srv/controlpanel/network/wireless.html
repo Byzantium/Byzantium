@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<!-- Uses the Mako templating system (http://www.makotemplates.org/). -->
+<!-- /network/wireless.html - The user enters wireless network parameters. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+<link rel="stylesheet" href="/css/reset.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/text.css" />
+</head>
+
+<body>
+<div id="container">
+<!-- Pull in the code for the top part of the page that says what this page is for. -->
+<div id="header"><%include file="/includes/header.html" /></div>
+
+<!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
+
+<!-- This is where all of the content of the network traffic report page goes. -->
+<div id="mainInfo">
+<p>You have selected wireless interface ${interface} to configure.</p>
+
+<!-- If this variable is set, the user is trying to reconfigure an active interface. -->
+${warning}
+
+<p>Enter the wireless channel and ESSID the network interface will use (default: ${channel} / ${essid}):</p>
+<form action="tcpip" method="post">
+<input type="text" name="channel" size="2" maxlength="2" value="${channel}" />
+<input type="text" name="essid" size="32" maxlength="32" value="${essid}" />
+<input type="submit" value="Submit" />
+<input type="reset" value="Clear" />
+</form>
+
+</div>
+<div id="footer"></div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<!-- /mesh/index.html - Allows the user to configure a network interface to participate in a mesh. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+<link rel="stylesheet" href="/css/reset.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/text.css" />
+</head>
+
+
+<body>
+<div id="container">
+
+<!-- Pull in the code for the top part of the page that says what this page is for. -->
+<div id="header"><%include file="/includes/header.html" /></div>
+
+<!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
+
+<div id="mainInfo">
+<!-- If an error is detected, it'll be printed here.  Otherwise, this is just a blank line. -->
+${error}
+
+<!-- List of meshable network interfaces. -->
+<h2>Wireless network interfaces</h2>
+<table border="1">
+<form action="addtomesh" method="post">
+<tr>${interfaces}</tr>
+</form>
+</table>
+
+<!-- List of active mesh interfaces. -->
+<h2>Active mesh interfaces</h2>
+<table border="1">
+<form action="removefrommesh" method="post">
+<tr>${active_interfaces}</tr>
+</form>
+</table>
+
+</div>
+<div id="footer"></div>
+
+</div>
+</body>
+</html>

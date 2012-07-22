@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<!-- Uses the Mako templating system (http://www.makotemplates.org/).) -->
+<!-- /mesh/addtomesh.html - The user picks which mesh networking protocol (if there is a choice) to run on the
+     wireless interface. -->
+
+<html>
+<head>
+<meta charset="utf-8" />
+<title>${title}</title>
+<link rel="stylesheet" href="/css/reset.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/text.css" />
+</head>
+
+
+<body>
+<div id="container">
+
+<!-- Pull in the code for the top part of the page that says what this page is for. -->
+<div id="header"><%include file="/includes/header.html" /></div>
+
+<!-- Pull in the code for the left part of the page that contains links to sub-apps. -->
+<div id="leftsidebar"><%include file="/includes/leftbar.html" /></div>
+
+<div id="mainInfo">
+
+<!-- Either an error message or a successful result will be displayed here. -->
+<p>${error}</p>
+<p>${output}</p>
+
+</div>
+<div id="footer"></div>
+
+</div>
+</body>
+</html>

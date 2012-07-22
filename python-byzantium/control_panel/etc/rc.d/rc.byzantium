@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# rc.byzantium - Initscript called at boot-time when runlevel 3 is entered (the
+#	default).  Here, long-running scripts and daemons will be started that are
+#	directly involved in Byzantium.  Other things (like optional system services)
+#	will be controlled by other initscripts, just not at boot-time.
+
+# Start the Byzantium control panel in a loop to ensure that it stays running.
+# Consider using supervise to keep an eye on it.
+python /usr/local/sbin/control_panel.py &
