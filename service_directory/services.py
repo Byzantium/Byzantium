@@ -5,7 +5,13 @@ import _utils
 
 conf = _utils.Config()
 
+
 def has_internet():
+	'''
+	determine whether there is an internet connection available with a reasonable amount of certainty.
+	return bool True if there is an internet connection False if not
+	'''
+	# insert magic to determine if there is an internet gateway here
 	return False
 
 def main():

@@ -12,6 +12,7 @@ import sqlite3
 
 # grab shared config
 conf = _utils.Config()
+logging = _utils.get_logging()
 
 def get_local_services_list():
 	'''
@@ -22,31 +23,31 @@ def get_local_services_list():
 	service_list = []
 
 	# Set up a connection to the database.
-	_utils.debug("DEBUG: Opening service database.",5)
+	logging.debug("DEBUG: Opening service database.")
 	connection = sqlite3.connect(servicedb)
 	cursor = connection.cursor()
 
 	# Pull a list of running web apps on the node.
-	_utils.debug("DEBUG: Getting list of running webapps from database.",5)
+	logging.debug("DEBUG: Getting list of running webapps from database.")
 	cursor.execute("SELECT name FROM webapps WHERE status='active';")
 	results = cursor.fetchall()
 	for service in results:
-		service_list += [{'name':service[0],'path':'/'+service[0],'description':''}]
+		service_list += [{'name':service[0],'path':'/%s' % service[0],'description':''}]
 
 	# Pull a list of daemons running on the node. This means that most of the web apps users will access will be displayed.
-	_utils.debug("DEBUG: Getting list of running servers from database.",5)
+	logging.debug("DEBUG: Getting list of running servers from database.")
 	cursor.execute("SELECT name FROM daemons WHERE status='active' AND showtouser='yes';")
 	results = cursor.fetchall()
 	for service in results:
-		_utils.debug("DEBUG: Value of service: %s" % str(service))
+		logging.debug("DEBUG: Value of service: %s" % str(service))
 		if service[0] in conf.service_info:
 			path = conf.service_info[service[0]]
 		else:
-			path = '/'+service[0]+'/'
+			path = '/%s/' % service[0]
 		service_list += [{'name':service[0],'path':path,'description':''}]
 
 		# Clean up after ourselves.
-		_utils.debug("DEBUG: Closing service database.",5)
+		logging.debug("DEBUG: Closing service database.")
 		cursor.close()
 	return service_list
 
@@ -83,4 +84,4 @@ def get_services_list():
 	return local_srvc + remote_srvc
 
 if __name__ == '__main__':
-	_utils.debug(get_services_list(),0)
+	logging.debug(get_services_list())
