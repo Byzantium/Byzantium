@@ -29,14 +29,7 @@ import sqlite3
 import subprocess
 import time
 
-
-def output_error_data():
-    traceback = RichTraceback()
-    for (filename, lineno, function, line) in traceback.traceback:
-        print "\n"
-        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-        print "Execution died on line %s\n" % line
-        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
+import _utils
 
 
 # Classes.
@@ -52,16 +45,7 @@ class MeshConfiguration(object):
         self.babeld_pid = '/var/run/babeld.pid'
         self.babeld_timeout = 3
 
-        if self.test:
-            # self.netconfdb = '/home/drwho/network.sqlite'
-            self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            logging.debug("Location of netconfdb: %s", self.netconfdb)
-            # self.meshconfdb = '/home/drwho/mesh.sqlite'
-            self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
-            logging.debug("Location of meshconfdb: %s", self.meshconfdb)
-        else:
-            self.netconfdb = '/var/db/controlpanel/network.sqlite'
-            self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+        self.netconfdb, self.meshconfdb = _utils.set_confdbs(self.test)
 
         # Class attributes which apply to a network interface.  By default they
         # are blank but will be populated from the mesh.sqlite database if the
@@ -153,7 +137,7 @@ class MeshConfiguration(object):
                                error = ''.join(error), interfaces = ''.join(interfaces),
                                active_interfaces = ''.join(active_interfaces))
         except:
-            output_error_data()
+            _utils.output_error_data()
     index.exposed = True
 
     # Reinitialize the attributes of an instance of this class to a known
@@ -185,7 +169,7 @@ class MeshConfiguration(object):
                                interface = self.interface,
                                protocol = self.protocol)
         except:
-            output_error_data()
+            _utils.output_error_data()
     addtomesh.exposed = True
     
     def _pid_helper(self, pid, error, output, cursor, connection, commit=False):
@@ -200,6 +184,33 @@ class MeshConfiguration(object):
             cursor.execute("UPDATE meshes SET enabled=? WHERE interface=?;", template)
             connection.commit()
         return error, output
+
+    def update_babeld(self):
+        # Assemble the invocation of babeld.
+        babeld_command = []
+        babeld_command.append(self.babeld)
+        babeld_command = babeld_command + common_babeld_opts
+        babeld_command = babeld_command + unique_babeld_opts + interfaces
+        logging.debug("babeld command to be executed: %s", ' '.join(babeld_command))
+
+        # Test to see if babeld is running.  If it is, it's routing for at
+        # least one interface, in which case we add the one the user just
+        # picked to the list because we'll have to restart babeld.  Otherwise,
+        # we just start babeld.
+        pid = self.pid_check()
+        if pid:
+            if self.test:
+                logging.debug("Pretending to kill babeld.")
+            else:
+                logging.debug("Killing babeld...")
+                os.kill(int(pid), signal.SIGTERM)
+            time.sleep(self.babeld_timeout)
+        if self.test:
+            logging.debug("Pretending to restart babeld.")
+        else:
+            logging.debug("Restarting babeld.")
+            subprocess.Popen(babeld_command)
+        time.sleep(self.babeld_timeout)
 
     # Runs babeld to turn self.interface into a mesh interface.
     def enable(self):
@@ -221,9 +232,8 @@ class MeshConfiguration(object):
 
         # Set up a list of mesh interfaces for which babeld is already running.
         interfaces = []
-        connection = sqlite3.connect(self.meshconfdb)
-        cursor = connection.cursor()
-        cursor.execute("SELECT interface, enabled, protocol FROM meshes WHERE enabled='yes' AND protocol='babel';")
+        query = "SELECT interface, enabled, protocol FROM meshes WHERE enabled='yes' AND protocol='babel';"
+        connection, cursor = _utils.execute_query(self.meshconfdb, query)
         results = cursor.fetchall()
         for i in results:
             logging.debug("Adding interface: %s", i[0])
@@ -233,31 +243,7 @@ class MeshConfiguration(object):
         # added yet.
         interfaces.append(self.interface)
 
-        # Assemble the invocation of babeld.
-        babeld_command = []
-        babeld_command.append(self.babeld)
-        babeld_command = babeld_command + common_babeld_opts
-        babeld_command = babeld_command + unique_babeld_opts + interfaces
-        logging.debug("babeld command to be executed: %s", ' '.join(babeld_command))
-
-        # Test to see if babeld is running.  If it is, it's routing for at
-        # least one interface, in which case we add the one the user just
-        # picked to the list because we'll have to restart babeld.  Otherwise,
-        # we just start babeld.
-        pid = self.pid_check()
-        if pid:
-            if self.test:
-                logging.debug("Pretending to kill babeld.")
-            else:
-                logging.debug("Killing current instance of babeld...")
-                os.kill(int(pid), signal.SIGTERM)
-            time.sleep(self.babeld_timeout)
-        if self.test:
-            logging.debug("Pretending to restart babeld.")
-        else:
-            logging.debug("Restarting babeld.")
-            subprocess.Popen(babeld_command)
-        time.sleep(self.babeld_timeout)
+        self.update_babeld()
 
         # Get the PID of babeld, then test to see if that pid exists and
         # corresponds to a running babeld process.  If there is no match,
@@ -276,7 +262,7 @@ class MeshConfiguration(object):
                                interface = self.interface,
                                error = error, output = output)
         except:
-            output_error_data()
+            _utils.output_error_data()
     enable.exposed = True
 
     # Allows the user to remove a configured interface from the mesh.  Takes
@@ -297,7 +283,7 @@ class MeshConfiguration(object):
                                purpose_of_page = "Disable Mesh Interface",
                                interface = interface)
         except:
-            output_error_data()
+            _utils.output_error_data()
     removefrommesh.exposed = True
 
     # Re-runs babeld without self.interface to drop it out of the mesh.
@@ -321,10 +307,8 @@ class MeshConfiguration(object):
 
         # Set up a list of mesh interfaces for which babeld is already running
         # but omit self.interface.
-        interfaces = []
-        connection = sqlite3.connect(self.meshconfdb)
-        cursor = connection.cursor()
-        cursor.execute("SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';")
+        query = "SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';"
+        connection, cursor = _utils.execute_query(self.meshconfdb, query)
         results = cursor.fetchall()
         for i in results:
             if i[0] != self.interface:
@@ -335,23 +319,7 @@ class MeshConfiguration(object):
         if not interfaces:
             output = 'Byzantium node offline.'
 
-        # Assemble the invocation of babeld.
-        babeld_command = []
-        babeld_command.append(self.babeld)
-        babeld_command = babeld_command + common_babeld_opts
-        babeld_command = babeld_command + unique_babeld_opts + interfaces
-        logging.debug("New invocation of babeld: %s", ' '.join(babeld_command))
-
-        # Test to see if babeld is running.  If it is, we restart it without
-        # the network interface that the user wants to drop out of the mesh.
-        pid = self.pid_check()
-        if pid:
-            if self.test:
-                logging.debug("Pretending to kill babeld.")
-            else:
-                logging.debug("Killing babeld.")
-                os.kill(int(pid), signal.SIGTERM)
-            time.sleep(self.babeld_timeout)
+        self.update_babeld()
 
         # If there is at least one wireless network interface still configured,
         # then re-run babeld.
@@ -385,6 +353,6 @@ class MeshConfiguration(object):
                                purpose_of_page = "Disable Mesh Interface",
                                error = error, output = output)
         except:
-            output_error_data()
+            _utils.output_error_data()
     removefrommesh.exposed = True
     disable.exposed = True

@@ -22,16 +22,8 @@ import sqlite3
 import subprocess
 import time
 
+import _utils
 import networkconfiguration
-
-
-def output_error_data():
-    traceback = RichTraceback()
-    for (filename, lineno, function, line) in traceback.traceback:
-        print "\n"
-        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-        print "Execution died on line %s\n" % line
-        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
 
 
 def audit_procnetdev(procnetdev):
@@ -114,16 +106,7 @@ class Gateways(object):
         self.templatelookup = templatelookup
         self.test = test
 
-        # Class constants.
-        # Path to network configuration database.
-        if self.test:
-            self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            logging.debug("Location of Gateways.netconfdb: %s", self.netconfdb)
-            self.meshconfdb = 'var/db/controlpanel/mesh.sqlite'
-            logging.debug("Location of Gateways.meshconfdb: %s", self.meshconfdb)
-        else:
-            self.netconfdb = '/var/db/controlpanel/network.sqlite'
-            self.meshconfdb = '/var/db/controlpanel/mesh.sqlite'
+        self.netconfdb, self.meshconfdb = _utils.set_confdbs(self.test)
 
         # Configuration information for the network device chosen by the user to
         # act as the uplink.
@@ -160,13 +143,8 @@ class Gateways(object):
         # the node.
         self.update_network_interfaces()
 
-        # Open a connection to the network configuration database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-
-        # Generate a list of Ethernet interfaces on the node that are enabled.
-        # Each interface gets its own button in a table.
-        cursor.execute("SELECT interface FROM wired WHERE gateway='no';")
+        query = "SELECT interface FROM wired WHERE gateway='no';"
+        connection, cursor = _utils.execute_query(self.netconfdb, query)
         results = cursor.fetchall()
         if results:
             for interface in results:
@@ -317,9 +295,8 @@ class Gateways(object):
 
     def _get_mesh_interfaces(self, interface):
         interfaces = []
-        connection = sqlite3.connect(self.meshconfdb)
-        cursor = connection.cursor()
-        cursor.execute("SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';")
+        query = "SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';"
+        connection, cursor = _utils.execute_query(self.meshconfdb, query)
         results = cursor.fetchall()
         for i in results:
             interfaces.append(i[0])
@@ -328,13 +305,10 @@ class Gateways(object):
         return interfaces
         
     def _update_netconfdb(self, interface):
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-        template = (interface, )
-        cursor.execute("SELECT interface FROM wired WHERE interface=?;",
-                       template)
-        results = cursor.fetchall()
+        query = "SELECT interface FROM wired WHERE interface=?;"
         template = ('yes', interface, )
+        connection, cursor = _utils.execute_query(self.netconfdb, query, template=template)
+        results = cursor.fetchall()
         if results:
             cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
                             template)
@@ -474,15 +448,8 @@ class Gateways(object):
         command = ['/sbin/ifconfig', self.client_interface, self.client_ip, 'up']
         output = subprocess.Popen(command)
 
-        # Commit the interface's configuration to the database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-
-        # Update the wireless table.
-        template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface, )
-        cursor.execute("UPDATE wireless SET enabled=?, channel=?, essid=?, mesh_interface=?, client_interface=? WHERE mesh_interface=?;", template)
-        connection.commit()
-        cursor.close()
+        template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface)
+        _utils.set_wireless_db_entry(self.netconfdb, template)
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.

@@ -25,15 +25,6 @@ import subprocess
 import time
 
 import _utils
-
-
-def output_error_data():
-    traceback = RichTraceback()
-    for (filename, lineno, function, line) in traceback.traceback:
-        print "\n"
-        print "Error in file %s\n\tline %s\n\tfunction %s" % (filename, lineno, function)
-        print "Execution died on line %s\n" % line
-        print "%s: %s" % (str(traceback.error.__class__.__name__), traceback.error)
         
 
 # Utility method to enumerate all of the network interfaces on a node.
@@ -365,8 +356,37 @@ class NetworkConfiguration(object):
                            warning = warning, interface = self.mesh_interface,
                            channel = channel, essid = essid)
         except:
-            output_error_data()
+            _utils.output_error_data()
     wireless.exposed = True
+
+    def get_unused_ip(self, interface, addr, kind):
+        """docstring for get_unused_ip"""
+        ip_in_use = 1
+        while ip_in_use:
+            # Run arping to see if any node in range has claimed that IP address
+            # and capture the return code.
+            # Argument breakdown:
+            # -c 5: Send 5 packets
+            # -D: Detect specified address.  Return 1 if found, 0 if not,
+            # -f: Stop after the first positive response.
+            # -I Network interface to use.  Mandatory.
+            arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
+                      interface, addr]
+            if self.test:
+                logging.debug("NetworkConfiguration.tcpip() command to probe for a %s interface IP address is %s", (kind, ' '.join(arping)))
+                time.sleep(5)
+            else:
+                ip_in_use = subprocess.call(arping)
+
+            # arping returns 1 if the IP is in use, 0 if it's not.
+            if not ip_in_use:
+                logging.debug("IP address of %s interface is %s.", (kind, addr))
+                return addr
+                
+            # In test mode, don't let this turn into an endless loop.
+            if self.test:
+                logging.debug("Breaking out of this loop to exercise the rest of the code.")
+                break
 
     # Implements step two of the interface configuration process: selecting
     # IP address blocks for the mesh and client interfaces.  Draws upon class
@@ -412,75 +432,21 @@ class NetworkConfiguration(object):
         # tested to see if they have been taken already or not.  Loop until we
         # have a winner.
         logging.debug("Probing for an IP address for the mesh interface.")
-        ip_in_use = 1
-        while ip_in_use:
-            # Pick a random IP address in 192.168/16.
-            addr = '192.168.'
-            addr = addr + str(random.randint(0, 254)) + '.'
-            addr = addr + str(random.randint(1, 254))
-
-            # Run arping to see if any node in range has claimed that IP address
-            # and capture the return code.
-            # Argument breakdown:
-            # -c 5: Send 5 packets
-            # -D: Detect specified address.  Return 1 if found, 0 if not,
-            # -f: Stop after the first positive response.
-            # -I Network interface to use.  Mandatory.
-            arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
-                      self.mesh_interface, addr]
-            if self.test:
-                logging.debug("NetworkConfiguration.tcpip() command to probe for a mesh interface IP address is %s", ' '.join(arping))
-                time.sleep(5)
-            else:
-                ip_in_use = subprocess.call(arping)
-
-            # arping returns 1 if the IP is in use, 0 if it's not.
-            if not ip_in_use:
-                self.mesh_ip = addr
-                logging.debug("IP address of mesh interface is %s.", addr)
-                break
-
-            # In test mode, don't let this turn into an endless loop.
-            if self.test:
-                logging.debug("Breaking out of this loop to exercise the rest of the code.")
-                break
-
+        # Pick a random IP address in a 192.168/24.
+        addr = '192.168.'
+        addr = addr + str(random.randint(0, 254)) + '.'
+        addr = addr + str(random.randint(1, 254))
+        self.mesh_ip = get_unused_ip(self.mesh_interface, addr, type="mesh")
+    
         # Next pick a distinct IP address for the client interface and its
         # netblock.  This is potentially trickier depending on how large the
         # mesh gets.
         logging.debug("Probing for an IP address for the client interface.")
-        ip_in_use = 1
-        while ip_in_use:
-            # Pick a random IP address in a 10/24.
-            addr = '10.'
-            addr = addr + str(random.randint(0, 254)) + '.'
-            addr = addr + str(random.randint(0, 254)) + '.1'
-
-            # Run arping to see if any mesh node in range has claimed that IP
-            # address and capture the return code.
-            # Argument breakdown:
-            # -c 5: Send 5 packets
-            # -D: Detect specified address.  Return 1 if found, 0 if not,
-            # -f: Stop after the first positive response.
-            # -I Network interface to use.  Mandatory.
-            arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I',
-                      self.mesh_interface, addr]
-            if self.test:
-                logging.debug("NetworkConfiguration.tcpip() command to probe for a client interface IP address is %s", ' '.join(arping))
-                time.sleep(5)  # Why do we sleep here if we are just testing?
-            else:
-                ip_in_use = subprocess.call(arping)
-
-            # arping returns 1 if the IP is in use, 0 if it's not.
-            if not ip_in_use:
-                self.client_ip = addr
-                logging.debug("IP address of client interface is %s.", addr)
-                break
-
-            # In test mode, don't let this turn into an endless loop.
-            if self.test:
-                logging.debug("Breaking out of this loop to exercise the rest of the code.")
-                break
+        # Pick a random IP address in a 10/24.
+        addr = '10.'
+        addr = addr + str(random.randint(0, 254)) + '.'
+        addr = addr + str(random.randint(0, 254)) + '.1'
+        self.mesh_ip = get_unused_ip(self.client_interface, addr, type="client")
 
         # For testing, hardcode some IP addresses so the rest of the code has
         # something to work with.
@@ -511,7 +477,7 @@ class NetworkConfiguration(object):
                                client_ip = self.client_ip,
                                client_netmask = self.client_netmask)
         except:
-            output_error_data()
+            _utils.output_error_data()
     tcpip.exposed = True
 
     # Configure the network interface.
@@ -638,15 +604,8 @@ class NetworkConfiguration(object):
         else:
             subprocess.Popen(command)
 
-        # Commit the interface's configuration to the database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-
-        # Update the wireless table.
-        template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface, )
-        cursor.execute("UPDATE wireless SET enabled=?, channel=?, essid=?, mesh_interface=?, client_interface=? WHERE mesh_interface=?;", template)
-        connection.commit()
-        cursor.close()
+        template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface)
+        _utils.set_wireless_db_entry(self.netconfdb, template)
 
         # Start the captive portal daemon.  This will also initialize the IP
         # tables ruleset for the client interface.
@@ -733,6 +692,6 @@ class NetworkConfiguration(object):
                                client_ip = self.client_ip,
                                client_netmask = self.client_netmask)
         except:
-            output_error_data()
+            _utils.output_error_data()
     set_ip.exposed = True
 

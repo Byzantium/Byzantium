@@ -43,6 +43,35 @@ class Services(object):
         self.status = ''
         self.initscript = ''
 
+    def generate_rows(self, results):
+        # Set up the opening tag of the table.
+        row = '<tr>'
+
+        # Roll through the list returned by the SQL query.
+        for (name, status) in results:
+            # Set up the first cell in the row, the name of the webapp.
+            if status == 'active':
+                # White on green means that it's active.
+                row += "<td style='background-color:green; color:white;' >" + name + "</td>"
+            else:
+                # White on red means that it's not active.
+                row += "<td style='background-color:red; color:white;' >" + name + "</td>"
+
+            # Set up the second cell in the row, the toggle that will either
+            # turn the web app off or on.
+            if status == 'active':
+                # Give the option to deactivate the app.
+                row += "<td><button type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
+            else:
+                # Give the option to activate the app.
+                row += "<td><button type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' >Activate</button></td>"
+
+            # Set the closing tag of the row.
+            row += "</tr>\n"
+
+        # Add that row to the buffer of HTML for the webapp table.
+        return row
+
     # Pretends to be index.html.
     def index(self):
         # Set up the strings that will hold the HTML for the tables on this
@@ -65,33 +94,7 @@ class Services(object):
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table webapps.  SELECT query failed.</p>"
         else:
-            # Set up the opening tag of the table.
-            webapp_row = '<tr>'
-
-            # Roll through the list returned by the SQL query.
-            for (name, status) in results:
-                # Set up the first cell in the row, the name of the webapp.
-                if status == 'active':
-                    # White on green means that it's active.
-                    webapp_row = webapp_row + "<td style='background-color:green; color:white;' >" + name + "</td>"
-                else:
-                    # White on red means that it's not active.
-                    webapp_row = webapp_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
-
-                # Set up the second cell in the row, the toggle that will either
-                # turn the web app off or on.
-                if status == 'active':
-                    # Give the option to deactivate the app.
-                    webapp_row = webapp_row + "<td><button type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
-                else:
-                    # Give the option to activate the app.
-                    webapp_row = webapp_row + "<td><button type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' >Activate</button></td>"
-
-                # Set the closing tag of the row.
-                webapp_row = webapp_row + "</tr>\n"
-
-            # Add that row to the buffer of HTML for the webapp table.
-            webapps = webapps + webapp_row
+            webapps = generate_rows(results)
 
         # Do the same thing for system services.
         cursor.execute("SELECT name, status FROM daemons;")
@@ -100,33 +103,7 @@ class Services(object):
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table daemons.  SELECT query failed.</p>"
         else:
-            # Set up the opening tag of the table.
-            services_row = '<tr>'
-
-            # Roll through the list returned by the SQL query.
-            for (name, status) in results:
-                # Set up the first cell in the row, the name of the webapp.
-                if status == 'active':
-                    # White on green means that it's active.
-                    services_row = services_row + "<td style='background-color:green; color:white;' >" + name + "</td>"
-                else:
-                    # White on red means that it's not active.
-                    services_row = services_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
-
-                # Set up the second cell in the row, the toggle that will either
-                # turn the web app off or on.
-                if status == 'active':
-                    # Give the option to deactivate the app.
-                    services_row = services_row + "<td><button type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
-                else:
-                    # Give the option to activate the app.
-                    services_row = services_row + "<td><button type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' >Activate</button></td>"
-
-                # Set the closing tag of the row.
-                services_row = services_row + "</tr>\n"
-
-            # Add that row to the buffer of HTML for the webapp table.
-            systemservices = systemservices + services_row
+            systemservice = generate_rows(results)
 
         # Gracefully detach the system services database.
         cursor.close()
