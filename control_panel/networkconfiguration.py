@@ -388,6 +388,15 @@ class NetworkConfiguration(object):
                 logging.debug("Breaking out of this loop to exercise the rest of the code.")
                 break
 
+    def update_mesh_interface_status(self, status):
+        """docstring for update_mesh_interface_status"""
+        logging.debug("Setting wireless interface status: %s" % status)
+        command = ['/sbin/ifconfig', self.mesh_interface, status]
+        if self.test:
+            logging.debug("NetworkConfiguration.tcpip() command to update mesh interface status: %s", command)
+        else:
+            subprocess.Popen(command)
+
     # Implements step two of the interface configuration process: selecting
     # IP address blocks for the mesh and client interfaces.  Draws upon class
     # attributes where they exist but pseudorandomly chooses values where it
@@ -415,14 +424,7 @@ class NetworkConfiguration(object):
         cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=? AND enabled=?;", template)
         result = cursor.fetchall()
         if not result:
-            logging.debug("Activating wireless interface.")
-
-            # Note that arping returns '2' if the interface isn't online!
-            command = ['/sbin/ifconfig', self.mesh_interface, 'up']
-            if self.test:
-                logging.debug("NetworkConfiguration.tcpip() command to activate network interface is %s.", command)
-            else:
-                subprocess.Popen(command)
+            update_mesh_interface_status(self, 'up')
 
             # Sleep five seconds to give the hardware a chance to catch up.
             time.sleep(5)
@@ -456,12 +458,7 @@ class NetworkConfiguration(object):
 
         # Deactivate the interface as if it was down to begin with.
         if not result:
-            logging.debug("Deactivating wireless interface.")
-            command = ['/sbin/ifconfig', self.mesh_interface, 'down']
-            if self.test:
-                logging.debug("NetworkConfiguration.tcpip() command to deactivate a mesh interface: %s", command)
-            else:
-                subprocess.Popen(command)
+            update_mesh_interface_status(self, 'down')
 
         # Close the database connection.
         connection.close()
@@ -494,12 +491,7 @@ class NetworkConfiguration(object):
         # If we've made it this far, the user's decided to (re)configure a
         # network interface.  Full steam ahead, damn the torpedoes!
         # First, take the wireless NIC offline so its mode can be changed.
-        logging.debug("Deactivating wireless interface.")
-        command = ['/sbin/ifconfig', self.mesh_interface, 'down']
-        if self.test:
-            logging.debug("NetworkConfiguration.set_ip() command to deactivate a wireless interface: %s", command)
-        else:
-            subprocess.Popen(command)
+        update_mesh_interface_status(self, 'down')
         time.sleep(5)
 
         # Wrap this whole process in a loop to ensure that stubborn wireless

@@ -131,16 +131,9 @@ class Services(object):
         # Save the name of the app in a class attribute to save effort later.
         self.app = app
 
-        # Set up a connection to the services.sqlite database.
-        database = sqlite3.connect(self.servicedb)
-        cursor = database.cursor()
-
-        # Search the webapps table of the services.sqlite database for the name
-        # of the app that was passed to this method.  Note the status attached
-        # to the name.
+        query = "SELECT name, status FROM webapps WHERE name=?;"
         template = (self.app, )
-        cursor.execute("SELECT name, status FROM webapps WHERE name=?;",
-                       template)
+        connection, cursor = _utils.execute_query(self.sericedb, query, template=template)
         result = cursor.fetchall()
         status = result[0][1]
 
@@ -176,10 +169,6 @@ class Services(object):
         # Set up a generic error catching variable for this page.
         error = ''
 
-        # Set up a connection to the services.sqlite database.
-        database = sqlite3.connect(self.servicedb)
-        cursor = database.cursor()
-
         if action == 'activate':
             status = 'active'
             action = 'activated'
@@ -187,9 +176,9 @@ class Services(object):
             status = 'disabled'
             action = 'deactivated'
 
-        # Update the database with the new status.
-        template = (status, self.app, )
-        cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
+        query = "UPDATE webapps SET status=? WHERE name=?;"
+        template = template = (status, self.app, )
+        database, cursor = _utils.execute_query(self.sericedb, query, template=template)
         database.commit()
         cursor.close()
 
@@ -212,15 +201,9 @@ class Services(object):
         # Save the name of the app in a class attribute to save effort later.
         self.app = service
 
-        # Set up a connection to the services.sqlite database.
-        database = sqlite3.connect(self.servicedb)
-        cursor = database.cursor()
-
-        # Search the daemons table of the services.sqlite database for the name
-        # of the app passed to this method.  Note the status and name of the
-        # initscript attached to the name.
+        query = "SELECT name, status, initscript FROM daemons WHERE name=?;"
         template = (service, )
-        cursor.execute("SELECT name, status, initscript FROM daemons WHERE name=?;", template)
+        database, cursor = _utils.execute_query(self.sericedb, query, template=template)
         result = cursor.fetchall()
         name = result[0][0]
         status = result[0][1]
@@ -260,15 +243,9 @@ class Services(object):
     def toggle_service(self, action=None):
         # Set up an error handling variable just in case.
         error = ''
-
-        # Set up a connection to the services.sqlite database.
-        database = sqlite3.connect(self.servicedb)
-        cursor = database.cursor()
-
-        # Query the database to extract the name of the initscript.
-        template = (self.app, )
-        cursor.execute("SELECT name, initscript FROM daemons WHERE name=?;",
-                       template)
+        query = "SELECT name, initscript FROM daemons WHERE name=?;"
+        template = template = (self.app, )
+        database, cursor = _utils.execute_query(self.sericedb, query, template=template)
         results = cursor.fetchall()
         self.initscript = results[0][1]
 
