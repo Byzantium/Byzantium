@@ -301,22 +301,7 @@ class Gateways(object):
         channel = 0
         essid = ''
 
-        # Set up a warning in case the interface is already configured.
-        warning = ''
-
-        # If a network interface is marked as configured in the database, pull
-        # its settings and insert them into the page rather than displaying the
-        # defaults.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-        template = (interface, )
-        cursor.execute("SELECT enabled, channel, essid FROM wireless WHERE mesh_interface=?;", template)
-        result = cursor.fetchall()
-        if result and (result[0][0] == 'yes'):
-            channel = result[0][1]
-            essid = result[0][2]
-            warning = '<p>WARNING: This interface is already configured!  Changing it now will break the local mesh!  You can hit cancel now without changing anything!</p>'
-        connection.close()
+        channel, essid, warning = _utils.check_for_configured_interface(self.netconfdb, interface, channel, essid)
 
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
