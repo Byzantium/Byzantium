@@ -1,0 +1,29 @@
+[cd encoded]
+commandline[$e]=
+logfile[$e]=
+presentation=16
+soundfile[$e]=KDE_Beep_ClockChime.wav
+
+[cd ripped]
+commandline[$e]=
+logfile[$e]=
+presentation=16
+soundfile[$e]=
+
+[no jobs left]
+commandline[$e]=
+logfile[$e]=
+presentation=16
+soundfile[$e]=
+
+[track encoded]
+commandline[$e]=
+logfile[$e]=
+presentation=16
+soundfile[$e]=
+
+[track ripped]
+commandline[$e]=
+logfile[$e]=
+presentation=16
+soundfile[$e]=

@@ -1,0 +1,269 @@
+#!/bin/bash
+# Script to mount most archives on a loop device
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter root's password below"
+    mod=`readlink -f $1`
+    su - -c "/opt/porteus-scripts/mloop $mod"
+    exit
+fi
+
+mpoint=/mnt/loop
+tmp=/tmp/mloop
+xfile=$1
+x=`ls -1 /dev/loop* | awk -F/ '{print$3}' | tr -d [:alpha:] | sort -n | tail -n1`
+lp=$(($x+1))
+ext=$(echo $xfile | grep -o '\.[^.]*$')
+
+usage()
+{
+clear
+echo
+echo "##########################"
+echo Usage of $0:
+echo "##########################"
+echo -e "\033[1m$0 module.xzm\033[0m"
+echo -e "\033[1m$0 file.iso\033[0m"
+echo -e "\033[1m$0 /path/to/file.dat\033[0m"
+echo -e "\033[1m$0 /path/to/file.img\033[0m"
+echo -e "\033[1m$0 /path/to/initrd.xz\033[0m"
+echo
+echo "File given will be mounted on a loop at /mnt/loop"
+echo "You can use uloop to unmout loop."
+echo 
+echo
+}
+
+if [ "$xfile" == "" -o "$xfile" == "--help" -o "$xfile" == "-h" -o "$xfile" == "-help" -o "$xfile" == "help" ]; then
+	usage
+	exit
+fi
+
+#######################
+# Begin mount process
+#######################
+
+# Check for loop mount dir
+if [ ! -d $mpoint ]; then
+	mkdir $mpoint
+		else
+	xls=`ls $mpoint`
+fi
+
+if [ "$xls" != "" ]; then
+	umount $mpoint
+fi
+
+#Create a new loop
+mknod /dev/loop$lp b 7 $lp
+
+xmodule()
+{
+mount -t squashfs -o loop $xfile $mpoint
+clear
+echo 
+echo "#################################"
+echo "Your module has been mounted at:"
+echo $mpoint
+echo
+echo "You can unmount it by typing uloop"
+echo
+echo "Here is a list of the files:"
+ls $mpoint
+echo
+exit
+}
+
+xiso()
+{
+mount -t iso9660 -o loop $xfile $mpoint
+clear
+echo 
+echo "#################################"
+echo "Your image has been mounted at:"
+echo $mpoint
+echo
+echo "You can unmount it by typing uloop"
+echo
+echo "Here is a list of the files:"
+ls $mpoint
+echo
+exit
+}
+
+xdat()
+{
+mount -t auto -o loop $xfile $mpoint
+clear
+echo 
+echo "#################################"
+echo "Your data file has been mounted at:"
+echo $mpoint
+echo
+echo "You can unmount it by typing uloop"
+echo
+echo "Here is a list of the files:"
+ls $mpoint
+echo
+exit
+}
+
+ximg()
+{
+mount -t auto -o loop $xfile $mpoint
+clear
+echo 
+echo "#################################"
+echo "Your .img file has been mounted at:"
+echo $mpoint
+echo
+echo "You can unmount it by typing uloop"
+echo
+echo "Here is a list of the files:"
+ls $mpoint
+echo
+exit
+}
+
+xinit()
+{
+clear
+echo
+echo "Backing up initrd ...."
+
+if [ ! -d $tmp ]; then
+	mkdir $tmp
+		else
+	rm -rf $tmp/*
+fi
+cp $xfile $xfile.bak
+cp $xfile $tmp
+echo $xfile > $tmp/initrd.txt
+
+pushd $tmp
+xz -d initrd.xz
+popd
+mount -t auto -o loop $tmp/initrd $mpoint
+echo 
+echo "##################################################"
+echo "Your original initrd.xz is still intact"
+echo "and has been backed up as $xfile.bak"
+echo
+echo "A copy of your initrd.xz file has been mounted at:"
+echo $mpoint
+echo
+echo "You can unmount it by typing uloop which will"
+echo "recompress the initrd upon unmounting. New initrd.xz will"
+echo "located at original location"
+echo
+echo "Here is a list of the files:"
+ls $mpoint
+echo
+exit
+}
+
+# write the unloop script
+
+echo
+echo "Please wait while i gather some info ...."
+echo
+
+uloop()
+{
+cat > /opt/porteus-scripts/uloop << "EOF"
+#!/bin/bash
+
+if [ `whoami` != "root" ]; then
+    su -c "uloop"
+    exit
+fi
+
+if [ -d /mnt/loop ]; then
+	mls=`ls /mnt/loop`
+fi
+
+if [ "$mls" != "" ]; then
+	umount /mnt/loop
+fi
+echo
+echo "/mnt/loop has been unmounted"
+echo
+
+mvinit()
+{
+pinit=$(cat /tmp/mloop/initrd.txt)
+chkinit=$(echo $pinit | awk -F / '{print$NF}')
+if [ "$chkinit" == "initrd.xz" ]; then
+	rm -f $pinit
+	mv /tmp/mloop/initrd.xz $pinit
+	echo
+	echo "Your initrd.xz file has been repacked and moved to:"
+	echo $pinit
+	echo
+		else
+	echo
+	echo "This IS NOT a valid initrd.xz file"
+	echo
+fi
+exit
+}
+
+# Check for leftover initrd.xz
+if [ -f /tmp/mloop/initrd.xz ]; then
+	echo
+	echo "There is still an initrd.xz file"
+	echo "located at /tmp/mloop/. Please remove"
+	echo "it and run uloop again"
+	echo
+fi
+
+# Compress the initrd file
+if [ -f /tmp/mloop/initrd ]; then
+	pushd /tmp/mloop
+	xz --check=crc32 --x86 --lzma2 initrd
+	popd
+	mvinit
+fi
+
+exit
+EOF
+chmod +x /opt/porteus-scripts/uloop
+}
+
+# check for umount loop script
+uloop
+
+# check that file given exists
+if [ ! -f $xfile ]; then
+	echo
+	echo "Sorry, that file was not found"
+	exit
+fi
+
+case "$ext" in
+        .xzm)
+            xmodule
+            ;;
+
+        .iso)
+            xiso
+            ;;
+
+        .dat)
+            xdat
+            ;;
+
+        .xz)
+            xinit
+	    ;;
+
+        .img)
+            ximg
+            ;;
+esac
+
+clear
+echo
+echo  "Sorry, no supported file found"
+exit

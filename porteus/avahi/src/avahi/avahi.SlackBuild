@@ -102,6 +102,9 @@ ln -s "$GET_LIBGDBM_SO" /tmp/package-gdbm/usr/lib$LIBDIRSUFFIX/libgdbm.so || tru
 #LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/tmp/package-gdbm/usr/lib$LIBDIRSUFFIX"
 #export LD_LIBRARY_PATH
 
+# This fixes the avahi-dnsconfd.action script for Slackware
+patch -p0 < $CWD/avahi-dnsconfd-slackware.patch
+
 CFLAGS="$SLKCFLAGS -I/tmp/package-gdbm/usr/lib$LIBDIRSUFFIX" \
 CXXFLAGS="$SLKCFLAGS" \
 LIBDAEMON_CFLAGS="-I/tmp/SBo/package-libdaemon/usr/include" \

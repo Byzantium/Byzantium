@@ -1,0 +1,13 @@
+number=2
+
+[0]
+description=Shockwave Flash 11.1 r102
+file=libflashplayer.so
+mime=application/x-shockwave-flash:swf:Shockwave Flash;application/futuresplash:spl:FutureSplash Player
+name=Shockwave Flash
+
+[1]
+description=The next generation <a href="http://java.sun.com">Java</a> plug-in for Mozilla browsers.
+file=libnpjp2.so
+mime=application/x-java-vm::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in Applet;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet::Java&#153 Plug-in;application/x-java-applet;jpi-version=1.6.0_25::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in JavaBeans;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean::Java&#153 Plug-in;application/x-java-bean;jpi-version=1.6.0_25::Java&#153 Plug-in;application/x-java-vm-npruntime::Java&#153 Plug-in
+name=Java(TM) Plug-in 1.6.0_25

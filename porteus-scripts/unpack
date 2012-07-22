@@ -1,0 +1,17 @@
+#!/bin/bash
+
+INPUT=$1
+FEXT=$(echo $1 | grep -o '\.[^.]*$')
+case "$FEXT" in
+".bz2")
+tar -jxvf $INPUT;
+;;
+".gz")
+tar -zxvf $INPUT
+;;
+".tar")
+tar -xvf $INPUT;
+;;
+".zip")
+unzip $INPUT;
+esac

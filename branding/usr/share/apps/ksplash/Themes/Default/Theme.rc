@@ -1,0 +1,27 @@
+#
+# Blue-Bend KSplash/ML Theme
+#
+
+[KSplash Theme: blue-bend]
+Name = Blue-Bend KDE Splash Theme
+Description = Load Blue-Bend KDE KSplash theme.
+Version = 1.0
+Author = Everaldo Coelho <everaldo@everaldo.com>
+Homepage = http://www.everaldo.com
+
+# Theme behavior settings.
+Engine = Default
+
+# Should icons blink ala KDE, or not?
+Icons Flashing = true
+
+# Configurable Messages.  You may specify messages in as many
+# languages as you prefer.  Messages may be copied verbatim from
+# this file, if you wish to maintain the default settings.
+Message1 = Please wait, starting Byzantium ...
+Message1[es] = Por favor escuchar, estarto Byzantium ...
+Message2 = Loading graphics ...
+Message3 = Preparing user interface ...
+Message4 = Grabbing a beer ...
+Message5 = Preparing desktop now ...
+Message6 = Entering usable phase ...

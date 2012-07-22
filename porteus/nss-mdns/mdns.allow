@@ -1,0 +1,12 @@
+# /etc/mdns.allow
+# Empty lines are ignored as are comments starting with #.
+
+# If the configuration file is absent or unreadable nss-mdns behaves
+# as if the following lines are uncommented
+#
+#.local.
+#.local
+
+# enable mDNS lookups of all names, regardless of the domain suffix
+*
+

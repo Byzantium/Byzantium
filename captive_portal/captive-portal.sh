@@ -59,6 +59,7 @@ case "$1" in
         $IPTABLES -t filter -A INPUT -p tcp --dport 31338 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 53 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 67 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p udp --dport 5353 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 6696 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 31339 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p icmp -j ACCEPT

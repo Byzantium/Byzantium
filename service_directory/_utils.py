@@ -1,14 +1,18 @@
 import os
 import json
+import logging
 
-def debug(message,level = '1'):
-	_debug = ('BYZ_DEBUG' in os.environ)
-	if _debug and os.environ['BYZ_DEBUG'] >= level:
-		print(repr(message))
+if os.environ['BYZ_DEBUG']:
+	logging.basicConfig(level=logging.DEBUG)
+else:
+	logging.basicConfig(level=logging.ERROR)
+
+def get_logging():
+	return logging
 
 def file2str(file_name, mode = 'r'):
 	if not os.path.exists(file_name):
-		debug('File not found: '+file_name)
+		logging.debug('File not found: '+file_name)
 		return ''
 	fileobj = open(file_name,mode)
 	filestr = fileobj.read()
@@ -20,7 +24,7 @@ def file2json(file_name, mode = 'r'):
 	try:
 		return_value = json.loads(filestr)
 	except ValueError as val_e:
-		debug(val_e,5)
+		logging.debug(val_e)
 		return_value = None
 	return return_value
 
@@ -35,11 +39,11 @@ def json2file(obj, file_name, mode = 'w'):
 		str2file(string, file_name, mode)
 		return True
 	except TypeError as type_e:
-		debug(type_e,5)
+		logging.debug(type_e)
 		return False
 
-class config:
-	''' Make me read from a file '''
+class Config(object):
+	''' Make me read from a file and/or environment'''
 	def __init__(self):
 		self.services_cache = '/tmp/byz_services.json'
 		self.service_template = '/etc/byzantium/services/avahi/template.service'
@@ -47,5 +51,9 @@ class config:
 		self.services_live_dir = '/etc/avahi/services'
 		self.servicedb = '/var/db/controlpanel/services.sqlite'
 		self.no_services_msg = 'No services found in the network. Please try again in a little while.'
+		self.no_internet_msg = '<span class="sad-face">This mesh network is probably not connected to the internet.</span>'
+		self.no_internet_msg = '<span class="winning">This mesh network is probably connected to the internet.</span>'
 		self.uri_post_port_string_key = 'appendtourl'
 		self.service_description_key = 'description'
+		self.service_info = {'chat':'/chat/?channels=byzantium'}
+

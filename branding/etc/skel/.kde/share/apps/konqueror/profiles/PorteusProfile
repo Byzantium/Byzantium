@@ -1,0 +1,41 @@
+[Main Window Settings Toolbar bookmarkToolBar]
+Hidden=true
+IconText=IconTextRight
+Index=3
+
+[Main Window Settings Toolbar extraToolBar]
+IconText=IconOnly
+Index=0
+
+[Main Window Settings Toolbar locationToolBar]
+IconText=IconOnly
+Index=2
+
+[Main Window Settings Toolbar mainToolBar]
+Index=1
+
+[Profile]
+Container0_Children=View1,Tabs2
+Container0_Orientation=Horizontal
+Container0_SplitterSizes=200,494
+Container0_activeChildIndex=1
+FullScreen=false
+Name[$e]=PorteusProfile
+RootItem=Container0
+Tabs2_Children=ViewT0
+Tabs2_activeChildIndex=0
+View1_LinkedView=false
+View1_LockedLocation=false
+View1_PassiveMode=true
+View1_ServiceName=konq_sidebartng
+View1_ServiceType=Browser/View
+View1_ToggleView=true
+View1_URL[$e]=
+ViewT0_LinkedView=false
+ViewT0_LockedLocation=false
+ViewT0_PassiveMode=false
+ViewT0_ServiceName=konq_iconview
+ViewT0_ServiceType=inode/directory
+ViewT0_ToggleView=false
+ViewT0_URL[$e]=file://$HOME
+XMLUIFile=konqueror.rc

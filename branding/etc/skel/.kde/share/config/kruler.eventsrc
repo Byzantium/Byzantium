@@ -1,0 +1,5 @@
+[cursormove]
+commandline[$e]=
+logfile[$e]=
+presentation=0
+soundfile[$e]=move.wav

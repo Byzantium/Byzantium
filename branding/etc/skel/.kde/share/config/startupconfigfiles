@@ -1,0 +1,40 @@
+kcminputrc Mouse cursorTheme ''
+/home/guest/.kde3/share/config/kcminputrc
+!/usr/share/config/kcminputrc
+*
+kcminputrc Mouse cursorSize ''
+/home/guest/.kde3/share/config/kcminputrc
+!/usr/share/config/kcminputrc
+*
+kpersonalizerrc General FirstLogin true
+/home/guest/.kde3/share/config/kpersonalizerrc
+!/usr/share/config/kpersonalizerrc
+*
+ksplashrc KSplash Theme Default
+!/home/guest/.kde3/share/config/ksplashrc
+!/usr/share/config/ksplashrc
+*
+kcmrandrrc Display ApplyOnStartup false
+!/home/guest/.kde3/share/config/kcmrandrrc
+!/usr/share/config/kcmrandrrc
+*
+kcmrandrrc [Screen0]
+!/home/guest/.kde3/share/config/kcmrandrrc
+!/usr/share/config/kcmrandrrc
+*
+kcmrandrrc [Screen1]
+!/home/guest/.kde3/share/config/kcmrandrrc
+!/usr/share/config/kcmrandrrc
+*
+kcmrandrrc [Screen2]
+!/home/guest/.kde3/share/config/kcmrandrrc
+!/usr/share/config/kcmrandrrc
+*
+kcmrandrrc [Screen3]
+!/home/guest/.kde3/share/config/kcmrandrrc
+!/usr/share/config/kcmrandrrc
+*
+kcmfonts General forceFontDPI 0
+!/home/guest/.kde3/share/config/kcmfonts
+!/usr/share/config/kcmfonts
+*

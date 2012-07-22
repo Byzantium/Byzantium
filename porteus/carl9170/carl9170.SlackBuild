@@ -1,0 +1,82 @@
+#!/bin/sh
+
+# Slackware build script for carl9170 GPL firmware.
+
+# Written by Haxwithaxe (me at haxwithaxe dot net)
+
+PRGNAM=carl9170
+VERSION=${VERSION:-1.9.5}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+FWNAM='fw1.9.5?action=AttachFile&do=get&target=carl9170-1.fw'
+
+# Automatically determine the architecture we're building on:
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+    # Unless $ARCH is already set, use uname -m for all other archs:
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Exit on most errors.
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cp $PRGNAM.fw $TMP
+cd $TMP
+echo "Disabled the automatic rename of \$FWNAM to \$PRGNAM.fw."
+echo "This is because the shell keeps freaking out on the original filename."
+#mv $FWNAM $PRGNAM.fw
+chown -R root:root .
+
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# Copy program documentation into the package
+# The included documentation varies from one application to another, so be sure
+# to adjust your script as needed
+# Also, include the SlackBuild script in the documentation directory
+
+mkdir -p $PKG/lib/firmware
+cp $TMP/$PRGNAM.fw $PKG/lib/firmware/
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp $CWD/README.* $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Copy the slack-desc (and a custom doinst.sh if necessary) into ./install
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+#cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+# Make the package; be sure to leave it in $OUTPUT
+# If package symlinks need to be created during install *before*
+# your custom contents of doinst.sh runs, then add the -p switch to
+# the makepkg command below -- see makepkg(8) for details
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

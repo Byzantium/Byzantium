@@ -1,0 +1,8 @@
+[$Version]
+update_info=kickerrc.upd:kde_3_5_taskbarEnums
+
+[Appearance]
+ActiveTaskTextColor=255,255,255
+HaloText=true
+InactiveTaskTextColor=255,255,255
+UseCustomColors=true

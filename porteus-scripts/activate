@@ -1,0 +1,136 @@
+#!/bin/bash
+# Activate a module, while running LiveCD.
+# Include it into live directory structure on the fly
+#
+# Author: Tomas M. <http://www.linux-live.org>
+# Modifications for Porteus by fanthom/brokenman
+
+MODULE=$(readlink -f "$1")
+
+# Make sure that only one (two for root) instance of 'activate' script is running
+pid=`ps a | egrep -v 'grep|xterm' | grep -c -w /opt/porteus-scripts/activate`
+while [ $pid -gt 3 ]; do
+    echo "too many activations - sleeping 1 sec..." && sleep 1
+    pid=`ps a | egrep -v 'grep|xterm' | grep -c -w /opt/porteus-scripts/activate`
+done
+
+# Switch to root
+if [ "$DISPLAY" ]; then
+    if [ `whoami` != "root" ]; then
+	xterm -T "Please enter root's password below" -e su -c "/opt/porteus-scripts/xactivate $MODULE && sleep 2"
+	exit
+    fi
+else
+    if [ `whoami` != "root" ]; then
+	echo "Please enter root's password below"
+	su -c "/opt/porteus-scripts/activate $MODULE"
+	exit
+    fi
+fi
+
+if [ "$2" = "-k" ]; then
+   CALLED_BY_GUI_HELPER=1
+fi
+
+if [ -e /opt/porteus-scripts/xactivate -a "$DISPLAY" -a ! "$CALLED_BY_GUI_HELPER" ]; then
+   exec /opt/porteus-scripts/xactivate "$MODULE" 2>/dev/null
+fi
+
+PATH=.:$(dirname $0):/usr/lib:$PATH
+. liblinuxlive || exit 3
+
+BASE=$(basename $1 2>/dev/null)
+if ismountpoint "/mnt/live/memory/images/$BASE"; then
+    echo "Module is already activated. Deactivate? Answer y/n"
+    read ans
+    if [ "$ans" = "y" ]; then
+	deactivate $BASE
+        exit
+    else
+	exit
+    fi
+fi
+
+if [ "$MODULE" = "" -o ! -e "$MODULE" -o -d "$MODULE" ]; then
+   echo
+   echo "Activate a module on the fly while running Linux Live"
+   echo "Usage: $0 module.xzm"
+   exit 1
+fi
+
+if [ "$(echo $MODULE | fgrep -i .xzm)" = "" ]; then
+   echo
+   echo "$(basename $MODULE): Module must end with .xzm"
+   exit 2
+fi
+
+IMAGES=/mnt/live/memory/images
+MODULES=/mnt/live/memory/modules
+
+# are we even using union?
+if [ "$(grep '^aufs / ' /proc/mounts)" = "" ]; then
+   echo "not in the live mode, can't continue. Try xzm2dir $MODULE /"
+   exit 4
+fi
+
+mkdir -p "$MODULES"
+
+# Test whether the module file is stored in union
+# if yes, then we must move it somewhere else (to RAM) else it can't be added
+if [ -e "/mnt/live/memory/changes/$(readlink -f "$MODULE")" ]; then
+   echo "module file is stored inside the union, moving to $MODULES first..."
+   TARGET="$MODULES/$(basename "$MODULE")"
+   mv "$MODULE" "$TARGET"
+   if [ $? -ne 0 ]; then
+      echo "error copying module to memory, not enough free RAM? try df" >&2
+      rm "$TARGET"
+      exit 6
+   fi
+   MODULE="$TARGET"
+fi
+
+# 'Stale NFS' workaround
+cd /etc
+
+MOD=$(union_insert_module / "$MODULE" $IMAGES)
+if [ $? -ne 0 ]; then echo "error inserting module to live filesystem" >&2; exit 3; fi
+MOD="$IMAGES/$(basename $MOD)"
+
+# All executables (but symlinks) in /etc/rc.d/init.d/ from this module will be started
+# with two arguments: "start" "activate".
+# This is done only by the 'activate' script, not in the case when the module is loaded 
+# during OS startup (in that case, your distro is responsible for execution)
+#
+# For compatibility, /etc/init.d is also examined, but it's not recommended for you to put your startup scripts
+# there in your module
+find_n_run_scripts $MOD start activate
+
+# Rebuild the system configuration cache
+echo "Updating shared library links:  /sbin/ldconfig"
+/sbin/ldconfig
+echo "Updating MIME database:  /usr/bin/update-mime-database /usr/share/mime"
+/usr/bin/update-mime-database /usr/share/mime > /dev/null 2>&1
+
+# Update KDE menu
+kdeuser=`ps aux | grep /usr/bin/startkde | grep -v grep | cut -d " " -f1`
+if [ "$kdeuser" ]; then
+    echo "Updating KDE menu: kbuildsycoca"
+    for x in "$kdeuser"; do su --login $x -c "kbuildsycoca"; done
+fi
+
+# Update LXDE menu
+lxuser=`ps aux | grep lxsession | grep -v grep | cut -d " " -f1`
+if [ "$lxuser" ]; then
+    desktop=`find $MOD/usr/share/applications -name "*.desktop" | wc -l`
+    if [ "$desktop" != "0" ]; then
+	echo "Updating LXDE menu: rm ~/.cache/menus/*; lxpanelctl restart" 
+	for x in "$lxuser"; do su --login $x -c "rm ~/.cache/menus/*; lxpanelctl restart"; done
+    fi
+fi
+
+# Make sure that we have at least one free loop device
+x=`grep /dev/loop /proc/mounts | tail -n1 | cut -d " " -f1 | sed 's@/dev/loop@@'`; let y=x+1
+if [ ! -e /dev/loop$y ]; then
+    echo "Adding new loop device: mknod /dev/loop$y b 7 $y"
+    mknod /dev/loop$y b 7 $y
+fi

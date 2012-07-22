@@ -1,0 +1,7 @@
+# -- THEME AUTO-WRITTEN DO NOT EDIT
+include "/usr/share/themes/Nodoka-Aqua/gtk-2.0/gtkrc"
+
+# -- THEME AUTO-WRITTEN DO NOT EDIT
+
+gtk-theme-name="Nodoka-Aqua"
+gtk-icon-theme-name="Humanity-LXDE"

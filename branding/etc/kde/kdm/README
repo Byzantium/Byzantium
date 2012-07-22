@@ -1,0 +1,16 @@
+This automatically generated configuration consists of the following files:
+- /usr/share/config/kdm/kdmrc
+- /usr/share/config/kdm/Xaccess
+- /usr/share/config/kdm/Xwilling
+- /usr/share/config/kdm/Xsetup
+- /usr/share/config/kdm/Xstartup
+- /usr/share/config/kdm/Xreset
+- /usr/share/config/kdm/Xsession
+- /usr/share/config/kdm/backgroundrc
+All files destined for /usr/share/config/kdm were actually saved in
+/dev/shm/package-kdebase/usr/share/config/kdm; this config won't be workable
+until moved in place.
+
+Try 'genkdmconf --help' if you want to generate another configuration.
+
+You may delete this README.

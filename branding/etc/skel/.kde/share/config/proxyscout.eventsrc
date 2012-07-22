@@ -1,0 +1,17 @@
+[download-error]
+commandline[$e]=
+logfile[$e]=
+presentation=16
+soundfile[$e]=
+
+[evaluation-error]
+commandline[$e]=
+logfile[$e]=
+presentation=0
+soundfile[$e]=
+
+[script-error]
+commandline[$e]=
+logfile[$e]=
+presentation=16
+soundfile[$e]=

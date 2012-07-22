@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# This started life as the avahi-dnsconfd.action script from the Avahi package
+# but it does more than we need.. which breaks Avahi, incidentally.  We
+# deleted the netconfig stuff because we don't need it.
+
+set -e
+TRUERESOLV=/etc/resolv.conf.avahi
+test "x$AVAHI_INTERFACE" != "x"
+
+# Command line arguments:
+#   $1 "+" if a new DNS server was found, "-" if one was removed
+#   $2 DNS Server address
+#   $3 interface index where this server was found on
+#   $4 protocol number where this server was found on
+
+# Available environment variables:
+#   $AVAHI_INTERFACE: The interface which heard the announcement of the
+#		      DNS on the gateway node.
+#   $AVAHI_INTERFACE_DNS_SERVERS: A whitespace seperated list of DNS servers
+#				  heard on $AVAHI_INTERFACE.
+#   $AVAHI_DNS_SERVERS: The list of all DNS servers found on all interfaces
+
+# Check for reslov.conf files and link to /etc/resolv.conf.avahi
+if [ ! -e $TRUERESOLV ] && [ ! -h /etc/resolv.conf ] ;then
+	mv /etc/resolv.conf $TRUERESOLV
+	ln -s $TRUERESOLV /etc/resolv.conf
+elif [ -e $TRUERESOLV ] && [ ! -e /etc/resolv.conf ] ;then
+	ln -s $TRUERESOLV /etc/resolv.conf
+elif [ ! -e ${TRUERESLOV} ] && [ ! -e /etc/resolv.conf ] ;then
+	touch $TRUERESOLV
+	ln -s $TRUERESOLV /etc/resolv.conf
+elif [ ! -h /etc/resolv.conf ] ;then
+	cat /etc/reslov.conf $TRUERESOLV > /tmp/resolv.conf
+	rm /etc/reslov.conf $TRUERESOLV
+	mv /tmp/resolv.conf $TRUERESOLV
+	ln -s $TRUERESOLV /etc/resolv.conf
+fi
+# A DNS server and an action were passed to the script (as well as some other junk we current don't care about)
+if [ ! -z $1 ] && [ ! -z $2 ] ;then # for the pedant #|| -z $3 || -z $4 ]; then
+	if [[ $1 == '+' ]] ;then
+		if grep -q $2 ${TRUERESOLV} ;then
+        	    echo "IP address $2 already in ${TRUERESOLV}.  Skipping."
+	        else
+        	    echo "IP address $2 not found in ${TRUERESOLV}.  Adding."
+	            echo "nameserver ${2}" >> ${TRUERESOLV}
+        	fi
+	elif [[ $1 == '-' ]] ;then
+		echo "Removing IP address $2 from ${TRUERESOLV}."
+		sed -i "/${2}/d" ${TRUERESOLV}
+	fi
+fi

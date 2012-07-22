@@ -1,0 +1,118 @@
+#!/bin/bash
+# A script to scrape the system and output
+# a text file on the desktop with sysinfo
+
+# Switch to root
+if [ `whoami` != "root" ]; then
+    echo "Please enter root's password below"
+    su - -c "/opt/porteus-scripts/psinfo `whoami`" || sleep 1
+    exit
+fi
+
+tmp=/tmp/psinfo.txt
+
+# Set vars
+touch $tmp
+
+# Get user info
+[ "$1" ] && user=$1 || user=root
+osdrive=$(ls /mnt/live/mnt)
+kernel=$(uname -r)
+machine=$(uname -m)
+board=$(dmidecode | grep -A2 "Base Board")
+parts=$(cat /proc/partitions | grep "[hs]d.[1-9]*" | awk '{print$4}')
+optical=$(cat /proc/sys/dev/cdrom/info | grep name | awk '{print$3}')
+removable=$(cat /proc/scsi/usb-storage/* | grep Product | awk '{print$2}')
+mounted=$(df -Th | grep dev)
+processor=$(uname -p)
+cfg=$(cat /proc/cmdline)
+ram=$(fgrep Mem /proc/meminfo)
+soundcard=$(cat /proc/asound/cards)
+network=$(ifconfig)
+ns=$(cat /etc/resolv.conf)
+usb=$(lsusb)
+pci=$(lspci -k)
+modules=$(ls /mnt/live/memory/images)
+dmes=$(dmesg | tail )
+logs=$(cat /var/log/messages | tail)
+usblock=$(cat /var/log/messages | grep Protect | awk '{print$8$9$10$12}')
+soundriver=$(cat /proc/asound/version)
+screen=$(xrandr | grep Screen)
+
+cat << EOF > $tmp
+----------------------
+Output from psinfo
+----------------------
+script by jayflood
+.
+.
+
+====== USER INFO =====
+User is: $user
+.
+===== MACHINE INFO =====
+Platform: $machine
+Kernel: $kernel
+Processor: $processor
+$board
+$ram
+Bootparam: $cfg
+.
+===== SOUND INFO =====
+Sound card: $soundcard
+Sound driver: $soundriver
+.
+===== PARTITION INFO =====
+Porteus is on: /mnt/$osdrive
+.
+Partitions: 
+$parts
+.
+Mounted: 
+$mounted
+.
+===== OPTICAl DRIVE =====
+$optical
+.
+===== USB INFO =====
+Removables: $removable
+Removable status: $usblock
+.
+lsusb: $usb
+.
+===== SCREEN INFO =====
+$screen
+.
+===== MODULES LOADED =====
+$modules
+.
+===== NETWORK INFO =====
+$network
+.
+$ns
+.
+===== PCI INFO =====
+lspci: $pci
+.
+.
+===== LOGS INFO =====
+dmesg | tail 
+.
+$dmes
+.
+.
+cat /var/log/messages | tail
+.
+$logs
+..
+EOF
+[ "$1" ] && cp $tmp /home/$1/Desktop/psinfo.txt || cp $tmp /root/Desktop
+rm -f $tmp
+
+if [ "$DISPLAY" ]; then
+    Xdialog --title "PSINFO" --no-close --no-buttons --infobox "All gathered information are stored in psinfo.txt file which is placed on $user Desktop" 0 0 3000
+else
+    echo "All gathered information are stored in psinfo.txt file which is placed on $user Desktop"
+fi
+
+exit
