@@ -60,12 +60,6 @@ python setup.py install --root=$PKG
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-# Compress man pages
-# If the man pages are installed to /usr/share/man instead, you'll need to 
-# move them manually.
-find $PKG/usr/man -type f -exec gzip -9 {} \;
-for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
-
 # Copy program documentation into the package
 # The included documentation varies from one application to another, so be sure
 # to adjust your script as needed
