@@ -17,9 +17,7 @@ conf = _utils.Config()
 logging = _utils.get_logging()
 
 def get_local_services_list():
-    '''
-    Get the list of services running on this node from the databases.
-    '''
+    '''Get the list of services running on this node from the databases.'''
     # Define the location of the service database.
     servicedb = conf.servicedb
     service_list = []
@@ -54,9 +52,7 @@ def get_local_services_list():
     return service_list
 
 def get_remote_services_list():
-    '''
-    Get list of services advertised by Byzantium nodes found by avahi.
-    '''
+    '''Get list of services advertised by Byzantium nodes found by avahi.'''
     import re
     service_list = []
     srvcdict = file2json(conf.services_cache)

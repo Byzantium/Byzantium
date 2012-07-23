@@ -26,16 +26,15 @@ from gateways import Gateways
 
 
 # Query the node's uptime (in seconds) from the OS.
-def get_uptime():
+def get_uptime(injected_open=open):
     # Open /proc/uptime.
-    uptime = open("/proc/uptime", "r")
-
-    # Read the first vlaue from the file.  If it can't be opened, return
-    # nothing and let the default values take care of it.
-    system_uptime = uptime.readline()
-    if not system_uptime:
-        uptime.close()
+    try:
+        uptime = injected_open("/proc/uptime", "r")
+    except IOError:
+        # Can't find file
         return False
+
+    system_uptime = uptime.readline()
 
     # Separate the uptime from the idle time.
     node_uptime = system_uptime.split()[0]
@@ -45,22 +44,19 @@ def get_uptime():
 
     # Return the system uptime (in seconds).
     return node_uptime
-    
-    
-# Queries the OS to get the system load stats.
-def get_load():
-    # Open /proc/loadavg.
-    loadavg = open("/proc/loadavg", "r")
 
-    # Read first three values from /proc/loadavg.  If it can't be opened,
-    # return nothing and let the default values take care of it.
-    loadstring = loadavg.readline()
-    if not loadstring:
-        loadavg.close()
+
+# Queries the OS to get the system load stats.
+def get_load(injected_open=open):
+    # Open /proc/loadavg.
+    try:
+        loadavg = injected_open("/proc/loadavg", "r")
+    except IOError:
         return False
 
+    loadstring = loadavg.readline()
     # Extract the load averages from the string.
-    averages = loadstring.split()
+    averages = loadstring.split(' ')
     loadavg.close()
     # check to avoid errors
     if len(averages) < 3:
@@ -69,12 +65,17 @@ def get_load():
 
     # Return the load average values.
     return (averages[:3])
-    
-    
+
+
 # Queries the OS to get the system memory usage stats.
-def get_memory():
+def get_memory(injected_open=open):
+    memtotal = 0
+    memused = 0
     # Open /proc/meminfo.
-    meminfo = open("/proc/meminfo", "r")
+    try:
+        meminfo = injected_open("/proc/meminfo", "r")
+    except IOError:
+        return False
 
     # Read in the contents of that virtual file.  Put them into a dictionary
     # to make it easy to pick out what we want.  If this can't be done,
@@ -85,18 +86,37 @@ def get_memory():
         # Figure out how much RAM and swap are in use right now
         try:
             if line.startswith('memtotal'):
-                memtotal = line.split()[1]
+                memtotal = int(line.split()[1])
             elif line.startswith('memfree'):
-                memfree = line.split()[1]
-        except KeyError as e:
-            print(e)
+                memfree = int(line.split()[1])
+            # break out early
+            if bool(memtotal) and bool(memused):
+                break
+        except KeyError as ex:
+            print(ex)
             print('WARNING: /proc/meminfo is not formatted as expected')
             return False
-    memused = int(memtotal) - int(memfree)
+    memused = memtotal - memfree
 
     # Return total RAM, RAM used, total swap space, swap space used.
     return (memtotal, memused)
 
+
+def get_ip_address(interface):
+    ip_address = ''
+    command = ['/sbin/ifconfig', interface]
+    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
+    configuration = output.readlines()
+    logging.debug("Output of ifconfig:")
+    logging.debug(configuration)
+
+    # Parse the output of ifconfig.
+    for line in configuration:
+        if 'inet addr' in line:
+            line = line.strip()
+            ip_address = line.split(' ')[1].split(':')[1]
+            logging.debug("IP address is %s", ip_address)
+    return ip_address
 
 # The Status class implements the system status report page that makes up
 # /index.html.
@@ -124,29 +144,18 @@ class Status(object):
     # Pretends to be index.html.
     def index(self):
         logging.debug("Entered Status.index().")
-
-        # Set the variables that'll eventually be displayed to the user to
-        # known values.  If nothing else, we'll know if something is going wrong
-        # someplace if they don't change.
-        uptime = 0
-        ram = 0
-        ram_used = 0
-
+        
         # Get the node's uptime from the OS.
-        sysuptime = get_uptime()
-        if sysuptime:
-            uptime = sysuptime
+        uptime = get_uptime() or 0
 
         # Convert the uptime in seconds into something human readable.
         (minutes, seconds) = divmod(float(uptime), 60)
         (hours, minutes) = divmod(minutes, 60)
         uptime = "%i hours, %i minutes, %i seconds" % (hours, minutes, seconds)
-        logging.debug("System uptime: %s", str(uptime))
+        logging.debug("System uptime: %s", uptime)
 
         # Get the amount of RAM in and in use by the system.
-        sysmem = get_memory()
-        if sysmem:
-            (ram, ram_used) = sysmem
+        ram, ram_used = get_memory()
         logging.debug("Total RAM: %s", ram)
         logging.debug("RAM in use: %s", ram_used)
 
@@ -193,21 +202,11 @@ class Status(object):
                 command = ['/sbin/ifconfig', mesh_interface]
                 if self.test:
                     print "TEST: Status.index() command to pull the configuration of a mesh interface:"
-                    print command
+                    print '/sbin/ifconfig' + mesh_interface
                 else:
                     logging.debug("Running ifconfig to collect configuration of interface %s.", mesh_interface)
 
-                    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
-                    configuration = output.readlines()
-                    logging.debug("Output of ifconfig:")
-                    logging.debug(configuration)
-
-                    # Parse the output of ifconfig.
-                    for line in configuration:
-                        if 'inet addr' in line:
-                            line = line.strip()
-                            ip_address = line.split(' ')[1].split(':')[1]
-                            logging.debug("IP address is %s", ip_address)
+                    ip_address = get_ip_address(mesh_interface)
 
                 # Assemble the HTML for the status page using the mesh
                 # interface configuration data.
@@ -231,24 +230,12 @@ class Status(object):
             for client_interface in result:
                 # For every client interface found, run ifconfig and pull
                 # its configuration information.
-                command = ['/sbin/ifconfig', client_interface[0]]
                 if self.test:
                     print "TEST: Status.index() command to pull the configuration of a client interface:"
-                    print command
+                    print '/sbin/ifconfig' + client_interface[0]
                 else:
                     logging.debug("Running ifconfig to collect configuration of interface %s.", client_interface)
-
-                    output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
-                    configuration = output.readlines()
-                    logging.debug("Output of ifconfig:")
-                    logging.debug(configuration)
-
-                    # Parse the output of ifconfig.
-                    for line in configuration:
-                        if 'inet addr' in line:
-                            line = line.strip()
-                            ip_address = line.split(' ')[1].split(':')[1]
-                            logging.debug("IP address is %s", ip_address)
+                    ip_address = get_ip_address(client_interface[0])
 
                 # For each client interface, count the number of rows in its
                 # associated arp table to count the number of clients currently

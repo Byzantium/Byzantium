@@ -323,7 +323,6 @@ def setup_iptables(args):
     iptables = 0
     if args.test:
         logging.debug("Command that would be executed:\n%s", ' '.join(initialize_iptables))
-        print str(initialize_iptables)
     else:
         iptables = subprocess.call(initialize_iptables)
     return iptables
