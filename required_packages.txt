@@ -49,6 +49,7 @@ php-5.3.10-i486-1_slack13.37.xzm
 pyOpenSSL-0.13-i486-1_SBo.xzm
 pybonjour-1.1.1-i486-1_SBo.xzm
 pysetuptools-0.6c11-i486-1_SBo.xzm
+python-modules.xzm
 python-twisted-11.0.0-i486-1_SBo.xzm
 qwebirc.xzm
 rrdtool-1.4.5-i486-1_dw.xzm
