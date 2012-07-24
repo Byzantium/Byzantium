@@ -24,7 +24,7 @@ class NetworkTraffic(object):
         graphdir = os.path.join(self.filedir,"graphs")
         try:
           images = os.listdir(graphdir)
-      except OSError as ex:
+        except OSError as ex:
           logging.error("Couldn't find images: %s" % ex)
           images = []
 
