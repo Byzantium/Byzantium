@@ -1,5 +1,7 @@
 from mako.exceptions import RichTraceback
 
+import logging
+
 def debug(message,level = '1'):
     import os
     _debug = ('BYZ_DEBUG' in os.environ)
