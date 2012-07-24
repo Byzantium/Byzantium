@@ -238,14 +238,16 @@ def check_args(args):
         logging.debug("Setting ssl port to %d/TCP", args.sslport)
 
     if not os.path.exists(args.certificate):
-        logging.error("Specified SSL cert not found: %s", args.certificate)
-        exit(2)
+        if not args.test:
+            logging.error("Specified SSL cert not found: %s", args.certificate)
+            exit(2)
     else:
         logging.debug("Using SSL cert at: %s", args.certificate)
 
     if not os.path.exists(args.key):
-        logging.error("Specified SSL private key not found: %s", args.key)
-        exit(2)
+        if not args.test:
+            logging.error("Specified SSL private key not found: %s", args.key)
+            exit(2)
     else:
         logging.debug("Using SSL private key at: %s", args.key)
 
@@ -306,14 +308,14 @@ def build_templatelookup(args):
     return TemplateLookup(directories=[args.filedir], module_directory=args.cachedir, collection_size=100)
 
 
-def setup_url_tree(appconfig):
+def setup_url_tree(args):
     # Attach the captive portal object to the URL tree.
-    root = CaptivePortal()
+    root = CaptivePortal(args)
     
     # Mount the object for the root of the URL tree, which happens to be the
     # system status page.  Use the application config file to set it up.
-    logging.debug("Mounting web app in %s to /.", appconfig)
-    cherrypy.tree.mount(root, "/", appconfig)
+    logging.debug("Mounting web app in %s to /.", args.appconfig)
+    cherrypy.tree.mount(root, "/", args.appconfig)
 
 
 def setup_iptables(args):
@@ -390,7 +392,7 @@ def main():
     create_pidfile(args)
     update_cherrypy_config(args.port)
     start_ssl_listener(args)
-    setup_url_tree(args.appconfig)
+    setup_url_tree(args)
     iptables = setup_iptables(args)
     setup_reaper(args.test)
     setup_hijacker(args)
