@@ -5,6 +5,7 @@
 # License: GPLv3
 
 # Import modules.
+import logging
 import os
 
 
@@ -21,7 +22,11 @@ class NetworkTraffic(object):
         # Enumerate the list of PNG files in the graphs/ directory and generate
         # a sequence of IMG SRCs to insert into the HTML template.
         graphdir = os.path.join(self.filedir,"graphs")
-        images = os.listdir(graphdir)
+        try:
+          images = os.listdir(graphdir)
+      except OSError as ex:
+          logging.error("Couldn't find images: %s" % ex)
+          images = []
 
         # Pack the string of IMG SRCs into a string.
         graphs = ""
