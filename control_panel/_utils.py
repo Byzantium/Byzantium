@@ -1,6 +1,7 @@
 from mako.exceptions import RichTraceback
 
 import logging
+import sqlite3
 
 def debug(message,level = '1'):
     import os
