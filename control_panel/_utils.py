@@ -37,7 +37,7 @@ def execute_query(db, query, template=None):
     connection = sqlite3.connect(db)
     cursor = connection.cursor()
     if template:
-        cursor.execute(query % template)
+        cursor.execute(query, template)
     else:
         cursor.execute(query)
     return connection, cursor
