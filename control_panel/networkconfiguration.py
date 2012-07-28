@@ -511,7 +511,8 @@ class NetworkConfiguration(object):
                       "channel": ("channel", self.channel)}
             for chunk in chunks:
                 logging.debug("Configuring wireless interface: %s = %s", chunk, chunks[chunk])
-                command = ['/sbin/iwconfig', self.mesh_interface].extend(chunks[chunk])
+                command = ['/sbin/iwconfig', self.mesh_interface]
+                command.extend(chunks[chunk])
                 if self.test:
                     logging.debug("NetworkConfiguration.set_ip() command to set the %s: %s", chunk, ' '.join(command))
                 else:
