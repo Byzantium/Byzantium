@@ -509,12 +509,12 @@ class NetworkConfiguration(object):
                       "ESSID": ("essid", self.essid),
                       "BSSID": ("ap", self.bssid),
                       "channel": ("channel", self.channel)}
-            for chunk in chunks:
-                logging.debug("Configuring wireless interface: %s = %s", chunk, chunks[chunk])
+            for k, v in chunks:
+                logging.debug("Configuring wireless interface: %s = %s", k, v)
                 command = ['/sbin/iwconfig', self.mesh_interface]
-                command.extend(chunks[chunk])
+                command.extend(v)
                 if self.test:
-                    logging.debug("NetworkConfiguration.set_ip() command to set the %s: %s", chunk, ' '.join(command))
+                    logging.debug("NetworkConfiguration.set_ip() command to set the %s: %s", k, ' '.join(command))
                 else:
                     subprocess.Popen(command)
                     time.sleep(1)
