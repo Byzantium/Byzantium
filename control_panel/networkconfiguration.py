@@ -359,7 +359,7 @@ class NetworkConfiguration(object):
             _utils.output_error_data()
     wireless.exposed = True
 
-    def get_raw_interface(self, interface)
+    def get_raw_interface(self, interface):
         return interface.rsplit(":",1)[0]
 
     def get_unused_ip(self, interface, addr, kind):
