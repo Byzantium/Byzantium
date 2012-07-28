@@ -46,7 +46,7 @@ class Services(object):
         self.status = ''
         self.initscript = ''
 
-    def generate_rows(self, results):
+    def generate_rows(self, results, kind):
         # Set up the opening tag of the table.
         row = '<tr>'
 
@@ -64,10 +64,10 @@ class Services(object):
             # turn the web app off or on.
             if status == 'active':
                 # Give the option to deactivate the app.
-                row += "<td><button type='submit' name='service' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % name
+                row += "<td><button type='submit' name='%s' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % (kind, name)
             else:
                 # Give the option to activate the app.
-                row += "<td><button type='submit' name='service' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % name
+                row += "<td><button type='submit' name='%s' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % (kind, name)
 
             # Set the closing tag of the row.
             row += "</tr>\n"
@@ -97,7 +97,7 @@ class Services(object):
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database %s, table webapps.  SELECT query failed.</p>" % self.servicedb
         else:
-            webapps = self.generate_rows(results)
+            webapps = self.generate_rows(results, 'app')
 
         # Do the same thing for system services.
         cursor.execute("SELECT name, status FROM daemons;")
@@ -106,7 +106,7 @@ class Services(object):
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database %s, table daemons.  SELECT query failed.</p>" % self.servicedb
         else:
-            systemservices = self.generate_rows(results)
+            systemservices = self.generate_rows(results, 'service')
 
         # Gracefully detach the system services database.
         cursor.close()
