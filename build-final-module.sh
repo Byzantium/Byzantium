@@ -124,10 +124,10 @@ cp -rv $BUILD_HOME/Byzantium/porteus/etc/xdg/autostart/wicd-tray.desktop ${FAKE_
 cp -rv $BUILD_HOME/Byzantium/porteus/usr/share/autostart/wicd-tray.desktop ${FAKE_ROOT}/usr/share/autostart
 
 # Install our custom udev automount rules.
-echo "Installing udev media-by-label rule patch."
-cd $BUILD_HOME/Byzantium/scripts
-mkdir -p ${FAKE_ROOT}/etc/udev/rules.d
-cp 11-media-by-label-auto-mount.rules ${FAKE_ROOT}/etc/udev/rules.d
+#echo "Installing udev media-by-label rule patch."
+#cd $BUILD_HOME/Byzantium/scripts
+#mkdir -p ${FAKE_ROOT}/etc/udev/rules.d
+#cp 11-media-by-label-auto-mount.rules ${FAKE_ROOT}/etc/udev/rules.d
 
 # Could these be placed in a module?
 echo "Installing custom initscripts."
