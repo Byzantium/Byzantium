@@ -5,6 +5,7 @@ MODULES= \
 		 nginx.xzm \
 		 batman.xzm \
 		 erlang.xzm \
+		 python-modules.xzm \
 		 avahi.xzm
 
 all: $(MODULES)

@@ -18,6 +18,7 @@ erlang-otp-14B02-i486-1_SBo.xzm
 etherpad-lite.xzm
 flex-2.5.35-i486-1.xzm
 gd-2.0.35-i486-4.xzm
+git-1.7.4.4-i486-1.xzm
 httpd-2.2.22-i486-1_slack13.37.xzm
 icu4c-4.6.1-i486-1_SBo.xzm
 iproute2-2.6.37-i486-1_slack13.37.xzm
@@ -49,6 +50,7 @@ php-5.3.10-i486-1_slack13.37.xzm
 pyOpenSSL-0.13-i486-1_SBo.xzm
 pybonjour-1.1.1-i486-1_SBo.xzm
 pysetuptools-0.6c11-i486-1_SBo.xzm
+python-modules.xzm
 python-twisted-11.0.0-i486-1_SBo.xzm
 qwebirc.xzm
 rrdtool-1.4.5-i486-1_dw.xzm
@@ -56,6 +58,8 @@ rt2860-firmware-26-fw-1.xzm
 rt2870-firmware-22-fw-1.xzm
 rt61-firmware-1.2-fw-1.xzm
 rt71w-firmware-1.8-fw-1.xzm
+sqlitebrowser-2.0b1-i486-2_dw.xzm
+subversion-1.6.16-i486-1.xzm
 sudo-1.7.4p6-i486-1.xzm
 t1lib-5.1.2-i486-2.xzm
 truecrypt-7.1-i486-1_SBo.xzm

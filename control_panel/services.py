@@ -16,8 +16,11 @@
 # Import external modules.
 from mako import exceptions
 
+import logging
 import sqlite3
 import subprocess
+
+import _utils
 
 
 # Classes.
@@ -46,6 +49,35 @@ class Services(object):
         self.status = ''
         self.initscript = ''
 
+    def generate_rows(self, results, kind):
+        # Set up the opening tag of the table.
+        row = '<tr>'
+
+        # Roll through the list returned by the SQL query.
+        for (name, status) in results:
+            # Set up the first cell in the row, the name of the webapp.
+            if status == 'active':
+                # White on green means that it's active.
+                row += "<td style='background-color:green; color:white;' >%s</td>" % name
+            else:
+                # White on red means that it's not active.
+                row += "<td style='background-color:red; color:white;' >%s</td>" % name
+
+            # Set up the second cell in the row, the toggle that will either
+            # turn the web app off or on.
+            if status == 'active':
+                # Give the option to deactivate the app.
+                row += "<td><button type='submit' name='%s' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % (kind, name)
+            else:
+                # Give the option to activate the app.
+                row += "<td><button type='submit' name='%s' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % (kind, name)
+
+            # Set the closing tag of the row.
+            row += "</tr>\n"
+
+        # Add that row to the buffer of HTML for the webapp table.
+        return row
+
     # Pretends to be index.html.
     def index(self):
         # Set up the strings that will hold the HTML for the tables on this
@@ -66,70 +98,18 @@ class Services(object):
         results = cursor.fetchall()
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table webapps.  SELECT query failed.</p>"
+            error = "<p>ERROR: Something went wrong in database %s, table webapps.  SELECT query failed.</p>" % self.servicedb
         else:
-            # Set up the opening tag of the table.
-            webapp_row = '<tr>'
-
-            # Roll through the list returned by the SQL query.
-            for (name, status) in results:
-                # Set up the first cell in the row, the name of the webapp.
-                if status == 'active':
-                    # White on green means that it's active.
-                    webapp_row = webapp_row + "<td style='background-color:green; color:white;' >" + name + "</td>"
-                else:
-                    # White on red means that it's not active.
-                    webapp_row = webapp_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
-
-                # Set up the second cell in the row, the toggle that will either
-                # turn the web app off or on.
-                if status == 'active':
-                    # Give the option to deactivate the app.
-                    webapp_row = webapp_row + "<td><button type='submit' name='app' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
-                else:
-                    # Give the option to activate the app.
-                    webapp_row = webapp_row + "<td><button type='submit' name='app' value='" + name + "' style='background-color:green; color:white;' title='activate' >Activate</button></td>"
-
-                # Set the closing tag of the row.
-                webapp_row = webapp_row + "</tr>\n"
-
-            # Add that row to the buffer of HTML for the webapp table.
-            webapps = webapps + webapp_row
+            webapps = self.generate_rows(results, 'app')
 
         # Do the same thing for system services.
         cursor.execute("SELECT name, status FROM daemons;")
         results = cursor.fetchall()
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database " + self.servicedb + ", table daemons.  SELECT query failed.</p>"
+            error = "<p>ERROR: Something went wrong in database %s, table daemons.  SELECT query failed.</p>" % self.servicedb
         else:
-            # Set up the opening tag of the table.
-            services_row = '<tr>'
-
-            # Roll through the list returned by the SQL query.
-            for (name, status) in results:
-                # Set up the first cell in the row, the name of the webapp.
-                if status == 'active':
-                    # White on green means that it's active.
-                    services_row = services_row + "<td style='background-color:green; color:white;' >" + name + "</td>"
-                else:
-                    # White on red means that it's not active.
-                    services_row = services_row + "<td style='background-color:red; color:white;' >" + name + "</td>"
-
-                # Set up the second cell in the row, the toggle that will either
-                # turn the web app off or on.
-                if status == 'active':
-                    # Give the option to deactivate the app.
-                    services_row = services_row + "<td><button type='submit' name='service' value='" + name + "' style='background-color:red; color:white;' >Deactivate</button></td>"
-                else:
-                    # Give the option to activate the app.
-                    services_row = services_row + "<td><button type='submit' name='service' value='" + name + "' style='background-color:green; color:white;' >Activate</button></td>"
-
-                # Set the closing tag of the row.
-                services_row = services_row + "</tr>\n"
-
-            # Add that row to the buffer of HTML for the webapp table.
-            systemservices = systemservices + services_row
+            systemservices = self.generate_rows(results, 'service')
 
         # Gracefully detach the system services database.
         cursor.close()
@@ -157,16 +137,9 @@ class Services(object):
         # Save the name of the app in a class attribute to save effort later.
         self.app = app
 
-        # Set up a connection to the services.sqlite database.
-        database = sqlite3.connect(self.servicedb)
-        cursor = database.cursor()
-
-        # Search the webapps table of the services.sqlite database for the name
-        # of the app that was passed to this method.  Note the status attached
-        # to the name.
+        query = "SELECT name, status FROM webapps WHERE name=?;"
         template = (self.app, )
-        cursor.execute("SELECT name, status FROM webapps WHERE name=?;",
-                       template)
+        _, cursor = _utils.execute_query(self.servicedb, query, template=template)
         result = cursor.fetchall()
         status = result[0][1]
 
@@ -202,10 +175,6 @@ class Services(object):
         # Set up a generic error catching variable for this page.
         error = ''
 
-        # Set up a connection to the services.sqlite database.
-        database = sqlite3.connect(self.servicedb)
-        cursor = database.cursor()
-
         if action == 'activate':
             status = 'active'
             action = 'activated'
@@ -213,9 +182,9 @@ class Services(object):
             status = 'disabled'
             action = 'deactivated'
 
-        # Update the database with the new status.
-        template = (status, self.app, )
-        cursor.execute("UPDATE webapps SET status=? WHERE name=?;", template)
+        query = "UPDATE webapps SET status=? WHERE name=?;"
+        template = template = (status, self.app, )
+        database, cursor = _utils.execute_query(self.servicedb, query, template=template)
         database.commit()
         cursor.close()
 
@@ -238,17 +207,10 @@ class Services(object):
         # Save the name of the app in a class attribute to save effort later.
         self.app = service
 
-        # Set up a connection to the services.sqlite database.
-        database = sqlite3.connect(self.servicedb)
-        cursor = database.cursor()
-
-        # Search the daemons table of the services.sqlite database for the name
-        # of the app passed to this method.  Note the status and name of the
-        # initscript attached to the name.
+        query = "SELECT name, status, initscript FROM daemons WHERE name=?;"
         template = (service, )
-        cursor.execute("SELECT name, status, initscript FROM daemons WHERE name=?;", template)
+        _, cursor = _utils.execute_query(self.servicedb, query, template=template)
         result = cursor.fetchall()
-        name = result[0][0]
         status = result[0][1]
         initscript = result[0][2]
 
@@ -286,15 +248,9 @@ class Services(object):
     def toggle_service(self, action=None):
         # Set up an error handling variable just in case.
         error = ''
-
-        # Set up a connection to the services.sqlite database.
-        database = sqlite3.connect(self.servicedb)
-        cursor = database.cursor()
-
-        # Query the database to extract the name of the initscript.
-        template = (self.app, )
-        cursor.execute("SELECT name, initscript FROM daemons WHERE name=?;",
-                       template)
+        query = "SELECT name, initscript FROM daemons WHERE name=?;"
+        template = template = (self.app, )
+        database, cursor = _utils.execute_query(self.servicedb, query, template=template)
         results = cursor.fetchall()
         self.initscript = results[0][1]
 
@@ -307,9 +263,15 @@ class Services(object):
         # simpler in the long run.
         initscript = '/etc/rc.d/' + self.initscript
         if self.status == 'active':
-            subprocess.Popen([initscript, 'stop'])
+            if self.test:
+                logging.debug('Would run "%s stop" here.' % initscript)
+            else:
+                subprocess.Popen([initscript, 'stop'])
         else:
-            subprocess.Popen([initscript, 'start'])
+            if self.test:
+                logging.debug('Would run "%s start" here.' % initscript)
+            else:
+                subprocess.Popen([initscript, 'start'])
 
         # Update the status of the service in the database.
         template = (status, self.app, )
