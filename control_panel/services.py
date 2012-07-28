@@ -13,6 +13,7 @@
 # Import external modules.
 from mako import exceptions
 
+import logging
 import sqlite3
 import subprocess
 
@@ -259,9 +260,15 @@ class Services(object):
         # simpler in the long run.
         initscript = '/etc/rc.d/' + self.initscript
         if self.status == 'active':
-            subprocess.Popen([initscript, 'stop'])
+            if self.test:
+                logging.debug('Would run "%s stop" here.' % initscript)
+            else:
+                subprocess.Popen([initscript, 'stop'])
         else:
-            subprocess.Popen([initscript, 'start'])
+            if self.test:
+                logging.debug('Would run "%s start" here.' % initscript)
+            else:
+                subprocess.Popen([initscript, 'start'])
 
         # Update the status of the service in the database.
         template = (status, self.app, )

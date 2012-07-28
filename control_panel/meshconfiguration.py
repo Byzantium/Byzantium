@@ -77,6 +77,7 @@ class MeshConfiguration(object):
         interfaces = []
         netconfcursor.execute("SELECT mesh_interface, enabled FROM wireless;")
         results = netconfcursor.fetchall()
+        active_interfaces = []
         if not results:
             # Display an error page which says that no wireless interfaces have
             # been configured yet.
@@ -87,7 +88,6 @@ class MeshConfiguration(object):
             meshconfcursor = meshconfconn.cursor()
 
             # Walk through the list of results.
-            active_interfaces = []
             for i in results:
                 # Is the network interface already configured?
                 if i[1] == 'yes':
