@@ -359,6 +359,8 @@ class NetworkConfiguration(object):
     def get_unused_ip(self, interface, addr, kind):
         """docstring for get_unused_ip"""
         ip_in_use = 1
+        # Strip off virtual-ness
+        interface = interface.split(':')[0]
         while ip_in_use:
             # Run arping to see if any node in range has claimed that IP address
             # and capture the return code.
