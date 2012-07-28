@@ -509,7 +509,7 @@ class NetworkConfiguration(object):
                       "ESSID": ("essid", self.essid),
                       "BSSID": ("ap", self.bssid),
                       "channel": ("channel", self.channel)}
-            for k, v in chunks:
+            for k, v in chunks.iteritems():
                 logging.debug("Configuring wireless interface: %s = %s", k, v)
                 command = ['/sbin/iwconfig', self.mesh_interface]
                 command.extend(v)
