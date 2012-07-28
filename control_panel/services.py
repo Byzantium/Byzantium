@@ -16,6 +16,7 @@
 # Import external modules.
 from mako import exceptions
 
+import logging
 import sqlite3
 import subprocess
 
@@ -48,7 +49,7 @@ class Services(object):
         self.status = ''
         self.initscript = ''
 
-    def generate_rows(self, results):
+    def generate_rows(self, results, kind):
         # Set up the opening tag of the table.
         row = '<tr>'
 
@@ -66,10 +67,10 @@ class Services(object):
             # turn the web app off or on.
             if status == 'active':
                 # Give the option to deactivate the app.
-                row += "<td><button type='submit' name='service' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % name
+                row += "<td><button type='submit' name='%s' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % (kind, name)
             else:
                 # Give the option to activate the app.
-                row += "<td><button type='submit' name='service' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % name
+                row += "<td><button type='submit' name='%s' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % (kind, name)
 
             # Set the closing tag of the row.
             row += "</tr>\n"
@@ -99,7 +100,7 @@ class Services(object):
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database %s, table webapps.  SELECT query failed.</p>" % self.servicedb
         else:
-            webapps = self.generate_rows(results)
+            webapps = self.generate_rows(results, 'app')
 
         # Do the same thing for system services.
         cursor.execute("SELECT name, status FROM daemons;")
@@ -108,7 +109,7 @@ class Services(object):
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database %s, table daemons.  SELECT query failed.</p>" % self.servicedb
         else:
-            systemservices = self.generate_rows(results)
+            systemservices = self.generate_rows(results, 'service')
 
         # Gracefully detach the system services database.
         cursor.close()
@@ -262,9 +263,15 @@ class Services(object):
         # simpler in the long run.
         initscript = '/etc/rc.d/' + self.initscript
         if self.status == 'active':
-            subprocess.Popen([initscript, 'stop'])
+            if self.test:
+                logging.debug('Would run "%s stop" here.' % initscript)
+            else:
+                subprocess.Popen([initscript, 'stop'])
         else:
-            subprocess.Popen([initscript, 'start'])
+            if self.test:
+                logging.debug('Would run "%s start" here.' % initscript)
+            else:
+                subprocess.Popen([initscript, 'start'])
 
         # Update the status of the service in the database.
         template = (status, self.app, )

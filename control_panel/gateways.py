@@ -306,8 +306,8 @@ class Gateways(object):
         
     def _update_netconfdb(self, interface):
         query = "SELECT interface FROM wired WHERE interface=?;"
+        connection, cursor = _utils.execute_query(self.netconfdb, query, template=(interface, ))
         template = ('yes', interface, )
-        connection, cursor = _utils.execute_query(self.netconfdb, query, template=template)
         results = cursor.fetchall()
         if results:
             cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
