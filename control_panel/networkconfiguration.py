@@ -365,7 +365,7 @@ class NetworkConfiguration(object):
     def get_unused_ip(self, interface, addr, kind):
         """docstring for get_unused_ip"""
         ip_in_use = 1
-        interface = get_raw_interface(interface)
+        interface = self.get_raw_interface(interface)
         while ip_in_use:
             # Run arping to see if any node in range has claimed that IP address
             # and capture the return code.
