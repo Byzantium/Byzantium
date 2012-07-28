@@ -500,7 +500,7 @@ class NetworkConfiguration(object):
         while True:
             logging.debug("At top of wireless configuration loop.")
 
-            chunks = {"mode": ("ad-hoc"),
+            chunks = {"mode": ("mode", "ad-hoc"),
                       "ESSID": ("essid", self.essid),
                       "BSSID": ("ap", self.bssid),
                       "channel": ("channel", self.channel)}
