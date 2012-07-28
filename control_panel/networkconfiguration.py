@@ -578,7 +578,7 @@ class NetworkConfiguration(object):
 
             # "Victory is mine!"
             #     --Stewie, _Family Guy_
-            if break_flag:
+            if not(break_flag):
                 break
 
         logging.debug("Wireless interface configured successfully.")
