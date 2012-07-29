@@ -14,7 +14,7 @@ class Model(object):
         self.persistance = persistance
         if not testing:
             if not self.persistance.exists(self.kind, self._trimmed()):
-              self.persistance.create(self._trimmed())
+                self.persistance.create(self._trimmed())
 
     def _trimmed(self):
         out = {}
@@ -24,6 +24,9 @@ class Model(object):
             elif k == 'kind':
               out[k] = v
         return out
+
+    def find(self, attrs):
+        return self.persistance.exists(self.kind, attrs)
     
     def list(self):
         return self.persistance.list(self.kind, self.__class__)
