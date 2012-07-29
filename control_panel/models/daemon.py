@@ -10,7 +10,9 @@ import model
 
 class Daemon(model.Model):
 
-    def __init__(self, name=None, show_to_user=None, port=None, init_script=None, status=None, persistance=None, testing=False):
+    def __init__(self, name=None, show_to_user=None, port=None,
+                 init_script=None, status=None, persistance=None,
+                 testing=False):
         self._name = name
         self._status = status
         self._show_to_user = show_to_user
@@ -25,7 +27,7 @@ class Daemon(model.Model):
         return self._name
 
     @name.setter
-    def name(self,value):
+    def name(self, value):
         self._name = value
         self.replace(name=value)
 
@@ -34,7 +36,7 @@ class Daemon(model.Model):
         return self._status
 
     @status.setter
-    def status(self,value):
+    def status(self, value):
         self._status = value
         self.replace(status=value)
 
@@ -43,7 +45,7 @@ class Daemon(model.Model):
         return self._show_to_user
 
     @show_to_user.setter
-    def show_to_user(self,value):
+    def show_to_user(self, value):
         self._show_to_user = value
         self.replace(show_to_user=value)
 
@@ -52,7 +54,7 @@ class Daemon(model.Model):
         return self._port
 
     @port.setter
-    def port(self,value):
+    def port(self, value):
         self._port = value
         self.replace(port=value)
 
@@ -61,7 +63,7 @@ class Daemon(model.Model):
         return self._init_script
 
     @init_script.setter
-    def init_script(self,value):
+    def init_script(self, value):
         self._init_script = value
         self.replace(init_script=value)
 

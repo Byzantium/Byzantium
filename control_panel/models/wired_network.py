@@ -9,7 +9,8 @@ import model
        
 class WiredNetwork(model.Model):
     
-    def __init__(self, interface=None, gateway=None, enabled=None, persistance=None, testing=False):
+    def __init__(self, interface=None, gateway=None, enabled=None,
+                 persistance=None, testing=False):
         self._interface = interface
         self._gateway = gateway
         self._enabled = enabled

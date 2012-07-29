@@ -293,7 +293,8 @@ class MeshState(DBBackedState):
     
     def __init__(self, db_path):
         super(MeshState, self).__init__(db_path)
-        meshes = {'interface': '', 'protocol': '', 'enabled': '', 'kind': 'meshes'}
+        meshes = {'interface': '', 'protocol': '', 'enabled': '',
+                  'kind': 'meshes'}
         self.initialize(meshes)
 
 
@@ -301,7 +302,8 @@ class ServiceState(DBBackedState):
 
     def __init__(self, db_path):
         super(ServiceState, self).__init__(db_path)
-        daemons = {'name': '', 'showtouser': '', 'port': 0, 'initscript': '', 'status': '', 'kind': 'daemons'}
+        daemons = {'name': '', 'showtouser': '', 'port': 0, 'initscript': '',
+                   'status': '', 'kind': 'daemons'}
         webapps = {'name': '', 'status': '', 'kind': 'webapps'}
         self.initialize(daemons)
         self.initialize(webapps)
