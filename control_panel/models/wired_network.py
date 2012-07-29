@@ -7,7 +7,7 @@
 import model
 
        
-class WiredNetwork(Model):
+class WiredNetwork(model.Model):
     
     def __init__(self, interface=None, gateway=None, enabled=None, persistance=None, testing=False):
         self._interface = interface

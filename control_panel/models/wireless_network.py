@@ -8,7 +8,7 @@
 import model
 
 
-class WirelessNetwork(Model):
+class WirelessNetwork(model.Model):
 
     def __init__(self, client_interface=None, mesh_interface=None, gateway=None, enabled=None, channel=None, essid=None, persistance=None, testing=False):
         self._client_interface = client_interface

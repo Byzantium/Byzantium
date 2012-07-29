@@ -8,7 +8,7 @@
 import model
 
 
-class Daemon(Model):
+class Daemon(model.Model):
 
     def __init__(self, name=None, show_to_user=None, port=None, init_script=None, status=None, persistance=None, testing=False):
         self._name = name

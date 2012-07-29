@@ -8,7 +8,7 @@
 import model
 
 
-class Mesh(Model):
+class Mesh(model.Model):
 
     def __init__(self, interface=None, protocol=None, enabled=None, persistance=None, testing=False):
         self._interface = interface

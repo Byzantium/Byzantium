@@ -7,7 +7,7 @@
 import model
 
 
-class WebApp(Model):
+class WebApp(model.Model):
 
     def __init__(self, name=None, status=None, persistance=None, testing=False):
         self._name = name
