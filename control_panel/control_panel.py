@@ -18,15 +18,13 @@
 # v0.1  - Initial release.
 
 # Import modules.
-import cherrypy
-from mako.lookup import TemplateLookup
 
+from status import Status
+from mako.lookup import TemplateLookup
+import cherrypy
 import argparse
 import logging
 import os
-
-from status import Status
-
 
 def parse_args():
     parser = argparse.ArgumentParser(conflict_handler='resolve',

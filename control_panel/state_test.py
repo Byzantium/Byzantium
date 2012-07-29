@@ -23,7 +23,7 @@ class Simple(object):
 
 class DBBackedStateTest(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self):    # Hook or initial def? Should be set_up if it belongs to us.
         self.connection = flexmock()
         flexmock(sqlite3).should_receive('connect').and_return(self.connection)
         self.state = state.DBBackedState('/no/real/path')

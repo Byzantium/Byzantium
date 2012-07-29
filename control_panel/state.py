@@ -314,7 +314,7 @@ class ServiceState(DBBackedState):
 
 
 class Model(object):
-    
+    ''' Comment here'''
     def __init__(self, kind=None, persistance=None, testing=False):
         self.kind = kind
         self.persistance = persistance
