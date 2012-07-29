@@ -26,7 +26,8 @@ class Daemon(Model):
 
     @name.setter
     def name(self,value):
-        self.replace('name',value)
+        self._name = value
+        self.replace(name=value)
 
     @propery
     def status(self):
@@ -34,7 +35,8 @@ class Daemon(Model):
 
     @status.setter
     def status(self,value):
-        self.replace('status',value)
+        self._status = value
+        self.replace(status=value)
 
     @propery
     def show_to_user(self):
@@ -42,7 +44,8 @@ class Daemon(Model):
 
     @show_to_user.setter
     def show_to_user(self,value):
-        self.replace('show_to_user',value)
+        self._show_to_user = value
+        self.replace(show_to_user=value)
 
     @propery
     def port(self):
@@ -50,7 +53,8 @@ class Daemon(Model):
 
     @port.setter
     def port(self,value):
-        self.replace('port',value)
+        self._port = value
+        self.replace(port=value)
 
     @propery
     def init_script(self):
@@ -58,5 +62,6 @@ class Daemon(Model):
 
     @init_script.setter
     def init_script(self,value):
-        self.replace('init_script',value)
+        self._init_script = value
+        self.replace(init_script=value)
 
