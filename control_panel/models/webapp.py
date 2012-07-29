@@ -3,6 +3,10 @@
 # Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
 # License: GPLv3
 
+
+import model
+
+
 class WebApp(Model):
 
     def __init__(self, name=None, status=None, persistance=None, testing=False):

@@ -3,6 +3,11 @@
 
 # Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
 # License: GPLv3
+
+
+import model
+
+
 class Mesh(Model):
 
     def __init__(self, interface=None, protocol=None, enabled=None, persistance=None, testing=False):

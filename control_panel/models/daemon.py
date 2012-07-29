@@ -4,6 +4,10 @@
 # Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
 # License: GPLv3
 
+
+import model
+
+
 class Daemon(Model):
 
     def __init__(self, name=None, showtouser=None, port=None, initscript=None, status=None, persistance=None, testing=False):

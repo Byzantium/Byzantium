@@ -2,7 +2,11 @@
 #     of backend store
 
 # Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
-# License: GPLv3                
+# License: GPLv3         
+
+import model
+
+       
 class WiredNetwork(Model):
     
     def __init__(self, interface=None, gateway=None, enabled=None, persistance=None, testing=False):
