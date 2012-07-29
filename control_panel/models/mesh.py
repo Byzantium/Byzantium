@@ -13,7 +13,6 @@ class Mesh(Model):
     
     # probably going to want some method to update_babeld in here
 
-
     @property
     def interface(self):
         """I'm the 'interface' property."""
@@ -22,6 +21,7 @@ class Mesh(Model):
     @interface.setter
     def interface(self, value):
         self._interface = value
+        self.replace(interface=value)
         
     @property
     def protocol(self):
@@ -31,6 +31,7 @@ class Mesh(Model):
     @protocol.setter
     def protocol(self, value):
         self._protocol = value
+        self.replace(protocol=value)
             
     @property
     def enabled(self):
@@ -40,3 +41,4 @@ class Mesh(Model):
     @enabled.setter
     def enabled(self, value):
         self._enabled = value
+        self.replace(enabled=value)

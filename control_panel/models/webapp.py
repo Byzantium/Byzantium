@@ -20,6 +20,7 @@ class WebApp(Model):
     @name.setter
     def name(self, value):
         self._name = value
+        self.replace(name=value)
         
     @property
     def status(self):
@@ -29,3 +30,4 @@ class WebApp(Model):
     @status.setter
     def status(self, value):
         self._status = value
+        self.replace(status=value)

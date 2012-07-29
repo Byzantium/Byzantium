@@ -23,6 +23,7 @@ class WirelessNetwork(Model):
     @client_interface.setter
     def client_interface(self, value):
         self._client_interface = value
+        self.replace(client_interface=value)
         
     @property
     def mesh_interface(self):
@@ -32,6 +33,7 @@ class WirelessNetwork(Model):
     @mesh_interface.setter
     def mesh_interface(self, value):
         self._mesh_interface = value
+        self.replace(mesh_interface=value)
             
     @property
     def gateway(self):
@@ -41,15 +43,17 @@ class WirelessNetwork(Model):
     @gateway.setter
     def gateway(self, value):
         self._gateway = value
+        self.replace(gateway=value)
         
     @property
-    def enables(self):
-        """I'm the 'enables' property."""
-        return self._enables
+    def enabled(self):
+        """I'm the 'enabled' property."""
+        return self._enabled
 
     @enables.setter
-    def enables(self, value):
-        self._enables = value
+    def enabled(self, value):
+        self._enabled = value
+        self.replace(enabled=value)
         
     @property
     def channel(self):
@@ -59,6 +63,7 @@ class WirelessNetwork(Model):
     @channel.setter
     def channel(self, value):
         self._channel = value
+        self.replace(channel=value)
                         
     @property
     def essid(self):
@@ -68,6 +73,7 @@ class WirelessNetwork(Model):
     @essid.setter
     def essid(self, value):
         self._essid = value
+        self.replace(essid=value)
         
     # probably going to want something like the activate/set_ip/tcip functionality here
 

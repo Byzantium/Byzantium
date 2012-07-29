@@ -22,6 +22,7 @@ class WiredNetwork(Model):
     @interface.setter
     def interface(self, value):
         self._interface = value
+        self.replace(interface=value)
         
     @property
     def gateway(self):
@@ -31,6 +32,7 @@ class WiredNetwork(Model):
     @gateway.setter
     def gateway(self, value):
         self._gateway = value
+        self.replace(gateway=value)
             
     @property
     def enabled(self):
@@ -40,6 +42,7 @@ class WiredNetwork(Model):
     @enabled.setter
     def enabled(self, value):
         self._enabled = value
+        self.replace(enabled=value)
                 
                 
                 
