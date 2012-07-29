@@ -6,8 +6,26 @@
 class WebApp(Model):
 
     def __init__(self, name=None, status=None, persistance=None, testing=False):
-        self.name = name
-        self.status = status
+        self._name = name
+        self._status = status
         super(WebApp, self).__init__('webapps', persistance, testing)
         
     # probably going to want something like toggle_service in here
+
+    @property
+    def name(self):
+        """I'm the 'name' property."""
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+        
+    @property
+    def status(self):
+        """I'm the 'status' property."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        self._status = value
