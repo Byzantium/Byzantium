@@ -336,5 +336,4 @@ class Model(object):
             if k not in ('kind', 'persistance'):
                 setattr(self, k, v)
         self.persistance.replace(old, self.__dict__)
-                
-                
+
