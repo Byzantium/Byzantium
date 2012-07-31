@@ -94,6 +94,9 @@ class State(object):
 class DBBackedState(State):
     """A State object who's backend store is an SQLite3 DB.
     
+    Note: To deal with threading silliness between SQLite3 and CherryPy each
+          action needs open and close its own connection to the db :/
+    
     Attributes:
         db_path: str, the path to the SQLite3 DB file
         connection: sqlite3.connection, a connection object for working with the
@@ -105,15 +108,16 @@ class DBBackedState(State):
     def __init__(self, db_path):
         super(DBBackedState, self).__init__()
         self.db_path = db_path
-        self.connection = sqlite3.connect(self.db_path)
 
     def _execute_and_commit(self, query, values=None):
+        self.connection = sqlite3.connect(self.db_path)
         cursor = self.connection.cursor()
         if values:
             cursor.execute(query, values)
         else:
             cursor.execute(query)
         self.connection.commit()
+        self.connection.close()
 
     def _create_initialization_fragment_from_prototype(self, prototype):
         """Take an instance of a class and make a table based on its attributes.
@@ -222,10 +226,12 @@ class DBBackedState(State):
          Returns:
              A list of matching entries
         """
+        self.connection = sqlite3.connect(self.db_path)
         cursor = self.connection.cursor()
         template, vals = self._create_update_query_fragment_from_item(attrs)
         to_execute = 'SELECT * FROM %s WHERE %s' % (kind, template)
         cursor.execute(to_execute, vals)
+        self.connection.close()
         return cursor.fetchall()
 
     def list(self, kind, klass, attrs=None):
@@ -239,6 +245,7 @@ class DBBackedState(State):
          Returns:
              a list of klass objects based on results from the backend call
         """
+        self.connection = sqlite3.connect(self.db_path)
         cursor = self.connection.cursor()
         if attrs:
             results = self.exists(kind, attrs)
@@ -259,6 +266,7 @@ class DBBackedState(State):
             attrs['persistance'] = self
             obj = klass(**attrs)
             objects.append(obj)
+        self.connection.close()
         return objects
 
     def replace(self, old, new):

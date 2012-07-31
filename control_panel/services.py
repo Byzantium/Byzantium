@@ -76,8 +76,6 @@ class Services(object):
         self.status = ''
         self.initscript = ''
         
-    def _set_service_state(self):
-        # Database used to store states of services and webapps.
         if self.test:
             self.service_state = models.state.ServiceState('var/db/controlpanel/services.sqlite')
         else:
@@ -85,9 +83,6 @@ class Services(object):
 
     # Pretends to be index.html.
     def index(self):
-        # SQLite doesn't like being initialized in a separate thread
-        self._set_service_state()
-        
         # Set up the strings that will hold the HTML for the tables on this
         # page.
         webapps = ''
@@ -145,8 +140,6 @@ class Services(object):
     # configuration database and switches 'enabled' to 'disabled' or vice versa
     # depending on what it finds.
     def webapps(self, app=None):
-        # SQLite doesn't like being initialized in a separate thread
-        self._set_service_state()
         warning = ''
         try:
             result = self._fetch_webapp(app)
@@ -183,8 +176,6 @@ class Services(object):
     # application as accessible to mesh users or not.  Takes one argument, the
     # name of the app.
     def toggle_webapp(self, action=None):
-        # SQLite doesn't like being initialized in a separate thread
-        self._set_service_state()
         # Set up a generic error catching variable for this page.
         error = ''
 
@@ -218,8 +209,6 @@ class Services(object):
     # looks in the configuration database and switches 'enabled' to 'disabled'
     # or vice versa depending on what it finds.
     def services(self, service=None):
-        # SQLite doesn't like being initialized in a separate thread
-        self._set_service_state()
         # Save the name of the app in a class attribute to save effort later.
         self.app = service
 
@@ -260,8 +249,6 @@ class Services(object):
     # the name of the app.  This should never be called from anywhere other than
     # Services.services().
     def toggle_service(self, action=None):
-        # SQLite doesn't like being initialized in a separate thread
-        self._set_service_state()
         error = ''
         try:
             result = self._fetch_daemon(self.app)
