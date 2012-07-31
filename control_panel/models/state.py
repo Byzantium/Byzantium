@@ -311,7 +311,7 @@ class ServiceState(DBBackedState):
 
     def __init__(self, db_path):
         super(ServiceState, self).__init__(db_path)
-        daemons = {'name': '', 'show_to_user': '', 'port': 0, 'initscript': '',
+        daemons = {'name': '', 'show_to_user': '', 'port': 0, 'init_script': '',
                    'status': '', 'kind': 'daemons'}
         webapps = {'name': '', 'status': '', 'kind': 'webapps'}
         self.initialize(daemons)
