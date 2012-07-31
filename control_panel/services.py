@@ -74,7 +74,7 @@ class Services(object):
         # the same SQL queries over and over again.
         self.app = ''
         self.status = ''
-        self.initscript = ''
+        self.init_script = ''
         
         if self.test:
             self.service_state = models.state.ServiceState('var/db/controlpanel/services.sqlite')
@@ -216,12 +216,12 @@ class Services(object):
         try:
             result = self._fetch_daemon(self.app)
             status = result.status
-            initscript = result.initscript
+            init_script = result.init_script
 
             # Save the status of the app and the initscript in class attributes for
             # later use.
             self.status = status
-            self.initscript = initscript
+            self.init_script = init_script
 
             # Figure out what to do.
             if status == 'active':
@@ -252,7 +252,7 @@ class Services(object):
         error = ''
         try:
             result = self._fetch_daemon(self.app)
-            self.initscript = result.initscript
+            self.init_script = result.init_script
 
             if action == 'activate':
                 status = 'active'
@@ -261,17 +261,17 @@ class Services(object):
 
             # Construct the command line ahead of time to make the code a bit
             # simpler in the long run.
-            initscript = '/etc/rc.d/' + self.initscript
+            init_script = '/etc/rc.d/' + self.init_script
             if self.status == 'active':
                 if self.test:
-                    logging.debug('Would run "%s stop" here.', initscript)
+                    logging.debug('Would run "%s stop" here.', init_script)
                 else:
-                    subprocess.Popen([initscript, 'stop'])
+                    subprocess.Popen([init_script, 'stop'])
             else:
                 if self.test:
-                    logging.debug('Would run "%s start" here.', initscript)
+                    logging.debug('Would run "%s start" here.', init_script)
                 else:
-                    subprocess.Popen([initscript, 'start'])
+                    subprocess.Popen([init_script, 'start'])
 
             # Update the status of the service in the database.
             result.status = status
