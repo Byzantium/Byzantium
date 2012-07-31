@@ -21,6 +21,13 @@ import sqlite3
 import subprocess
 
 import _utils
+import models.daemon
+import models.state
+import models.webapp
+
+
+class Error(Exception):
+    pass
 
 
 # Classes.
@@ -35,10 +42,9 @@ class Services(object):
         # Database used to store states of services and webapps.
         
         if self.test:
-            self.servicedb = 'var/db/controlpanel/services.sqlite'
+            self.service_state = models.state.ServiceState('var/db/controlpanel/services.sqlite')
         else:
-            self.servicedb = '/var/db/controlpanel/services.sqlite'
-            # self.servicedb = '/home/drwho/services.sqlite'
+            self.service_state = models.state.ServiceState('/var/db/controlpanel/services.sqlite')
 
         # Static class attributes.
         self.pid = '/var/run/httpd/httpd.pid'
@@ -54,23 +60,23 @@ class Services(object):
         row = '<tr>'
 
         # Roll through the list returned by the SQL query.
-        for (name, status) in results:
+        for result in results:
             # Set up the first cell in the row, the name of the webapp.
             if status == 'active':
                 # White on green means that it's active.
-                row += "<td style='background-color:green; color:white;' >%s</td>" % name
+                row += "<td style='background-color:green; color:white;' >%s</td>" % result.name
             else:
                 # White on red means that it's not active.
-                row += "<td style='background-color:red; color:white;' >%s</td>" % name
+                row += "<td style='background-color:red; color:white;' >%s</td>" % result.name
 
             # Set up the second cell in the row, the toggle that will either
             # turn the web app off or on.
-            if status == 'active':
+            if result.status == 'active':
                 # Give the option to deactivate the app.
-                row += "<td><button type='submit' name='%s' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % (kind, name)
+                row += "<td><button type='submit' name='%s' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % (kind, result.name)
             else:
                 # Give the option to activate the app.
-                row += "<td><button type='submit' name='%s' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % (kind, name)
+                row += "<td><button type='submit' name='%s' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % (kind, result.name)
 
             # Set the closing tag of the row.
             row += "</tr>\n"
@@ -85,34 +91,19 @@ class Services(object):
         webapps = ''
         systemservices = ''
 
-        # Set up access to the system services database.  We're going to need
-        # to read successive lines from it to build the HTML tables.
-        error = ''
-        connection = sqlite3.connect(self.servicedb)
-        cursor = connection.cursor()
-
-        # Use the contents of the services.webapps table to build an HTML table
-        # of buttons that are either go/no-go indicators.  It's a bit
-        # complicated, so I'll break it into smaller pieces.
-        cursor.execute("SELECT name, status FROM webapps;")
-        results = cursor.fetchall()
+        results = self.service_state.list('webapps', models.webapp.WebApp)
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database %s, table webapps.  SELECT query failed.</p>" % self.servicedb
+            error = "<p>ERROR: Something went wrong in database %s, table webapps.  SELECT query failed.</p>" % self.service_state.db_path
         else:
             webapps = self.generate_rows(results, 'app')
 
-        # Do the same thing for system services.
-        cursor.execute("SELECT name, status FROM daemons;")
-        results = cursor.fetchall()
+        results = self.service_state.list('daemons', models.daemon.Daemon)
         if not results:
             # Display an error page that says that something went wrong.
-            error = "<p>ERROR: Something went wrong in database %s, table daemons.  SELECT query failed.</p>" % self.servicedb
+            error = "<p>ERROR: Something went wrong in database %s, table daemons.  SELECT query failed.</p>" % self.service_state.db_path
         else:
             systemservices = self.generate_rows(results, 'service')
-
-        # Gracefully detach the system services database.
-        cursor.close()
 
         # Render the HTML page.
         try:
@@ -129,19 +120,34 @@ class Services(object):
             return exceptions.html_error_template().render()
     index.exposed = True
 
+    def _fetch_webapp(name):
+        results = self.service_state.list('webapps', models.webapp.WebApp, {'name': name})
+        if len(results) == 0:
+            raise Error("Found no webapps with name: %s" % app)
+        elif len(results) > 1:
+            raise Error("Found too many webapps with name: %s" % app)
+        else:
+            return results[0]
+            
+    def _fetch_daemon(name):
+        results = self.service_state.list('daemons', models.daemon.Daemon, {'name': name})
+        if len(results) == 0:
+            raise Error("Found no daemons with name: %s" % app)
+        elif len(results) > 1:
+            raise Error("Found too many daemons with name: %s" % app)
+        else:
+            return results[0]
+
     # Handler for changing the state of a web app.  This method is only called
     # when the user wants to toggle the state of the app, so it looks in the
     # configuration database and switches 'enabled' to 'disabled' or vice versa
     # depending on what it finds.
     def webapps(self, app=None):
+        result = self._fetch_webapp(app)
         # Save the name of the app in a class attribute to save effort later.
         self.app = app
 
-        query = "SELECT name, status FROM webapps WHERE name=?;"
-        template = (self.app, )
-        _, cursor = _utils.execute_query(self.servicedb, query, template=template)
-        result = cursor.fetchall()
-        status = result[0][1]
+        status = result.status
 
         # Save the status of the app in another class attribute for later.
         self.status = status
@@ -153,9 +159,6 @@ class Services(object):
         else:
             action = 'activate'
             warning = 'This will activate the application!'
-
-        # Close the connection to the database.
-        cursor.close()
 
         # Display to the user the page that asks them if they really want to
         # shut down that app.
@@ -182,11 +185,8 @@ class Services(object):
             status = 'disabled'
             action = 'deactivated'
 
-        query = "UPDATE webapps SET status=? WHERE name=?;"
-        template = template = (status, self.app, )
-        database, cursor = _utils.execute_query(self.servicedb, query, template=template)
-        database.commit()
-        cursor.close()
+        result = self._fetch_webapp(self.app)
+        result.status = status
 
         # Render the HTML page and send it to the browser.
         try:
@@ -207,13 +207,10 @@ class Services(object):
         # Save the name of the app in a class attribute to save effort later.
         self.app = service
 
-        query = "SELECT name, status, initscript FROM daemons WHERE name=?;"
-        template = (service, )
-        _, cursor = _utils.execute_query(self.servicedb, query, template=template)
-        result = cursor.fetchall()
-        status = result[0][1]
-        initscript = result[0][2]
-
+        result = self._fetch_daemon(self.app)
+        status = result.status
+        initscript = result.initscript
+        
         # Save the status of the app and the initscript in class attributes for
         # later use.
         self.status = status
@@ -226,9 +223,6 @@ class Services(object):
         else:
             action = 'activate'
             warning = 'This will activate the application!'
-
-        # Close the connection to the database.
-        cursor.close()
 
         # Display to the user the page that asks them if they really want to
         # shut down that app.
@@ -246,13 +240,8 @@ class Services(object):
     # the name of the app.  This should never be called from anywhere other than
     # Services.services().
     def toggle_service(self, action=None):
-        # Set up an error handling variable just in case.
-        error = ''
-        query = "SELECT name, initscript FROM daemons WHERE name=?;"
-        template = template = (self.app, )
-        database, cursor = _utils.execute_query(self.servicedb, query, template=template)
-        results = cursor.fetchall()
-        self.initscript = results[0][1]
+        result = self._fetch_daemon(self.app)
+        self.initscript = result.initscript
 
         if action == 'activate':
             status = 'active'
@@ -274,10 +263,7 @@ class Services(object):
                 subprocess.Popen([initscript, 'start'])
 
         # Update the status of the service in the database.
-        template = (status, self.app, )
-        cursor.execute("UPDATE daemons SET status=? WHERE name=?;", template)
-        database.commit()
-        cursor.close()
+        result.status = status
 
         # Render the HTML page and send it to the browser.
         try:
