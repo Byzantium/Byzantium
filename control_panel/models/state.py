@@ -231,8 +231,9 @@ class DBBackedState(State):
         template, vals = self._create_update_query_fragment_from_item(attrs)
         to_execute = 'SELECT * FROM %s WHERE %s' % (kind, template)
         cursor.execute(to_execute, vals)
+        results = cursor.fetchall()
         self.connection.close()
-        return cursor.fetchall()
+        return results
 
     def list(self, kind, klass, attrs=None):
         """List all entries for a given kind, returning them as klass objects.
