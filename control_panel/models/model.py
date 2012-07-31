@@ -37,5 +37,5 @@ class Model(object):
         for k, v in kwargs.iteritems():
             if k not in ('kind', 'persistance'):
                 new[k] = v
-        self.persistance.replace(old, self._trimmed())
+        self.persistance.replace(old, new)
 
