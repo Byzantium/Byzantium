@@ -14,7 +14,7 @@ class Model(object):
         self.persistance = persistance
         if not testing:
             results, _ = self.persistance.exists(self.kind, self._trimmed())
-            if results:
+            if not results:
                 self.persistance.create(self._trimmed())
 
     def _trimmed(self):
