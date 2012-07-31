@@ -87,6 +87,7 @@ class Services(object):
         # page.
         webapps = ''
         systemservices = ''
+        error = ''
 
         results = self.service_state.list('webapps', models.webapp.WebApp)
         if not results:
