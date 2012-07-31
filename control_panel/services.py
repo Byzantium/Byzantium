@@ -28,6 +28,36 @@ class Error(Exception):
     pass
 
 
+def generate_rows(results, kind):
+    # Set up the opening tag of the table.
+    row = '<tr>'
+
+    # Roll through the list returned by the SQL query.
+    for result in results:
+        # Set up the first cell in the row, the name of the webapp.
+        if result.status == 'active':
+            # White on green means that it's active.
+            row += "<td style='background-color:green; color:white;' >%s</td>" % result.name
+        else:
+            # White on red means that it's not active.
+            row += "<td style='background-color:red; color:white;' >%s</td>" % result.name
+
+        # Set up the second cell in the row, the toggle that will either
+        # turn the web app off or on.
+        if result.status == 'active':
+            # Give the option to deactivate the app.
+            row += "<td><button type='submit' name='%s' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % (kind, result.name)
+        else:
+            # Give the option to activate the app.
+            row += "<td><button type='submit' name='%s' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % (kind, result.name)
+
+        # Set the closing tag of the row.
+        row += "</tr>\n"
+
+    # Add that row to the buffer of HTML for the webapp table.
+    return row
+
+
 # Classes.
 # Allows the user to configure to configure mesh networking on wireless network
 # interfaces.
@@ -52,35 +82,6 @@ class Services(object):
         self.status = ''
         self.initscript = ''
 
-    def generate_rows(self, results, kind):
-        # Set up the opening tag of the table.
-        row = '<tr>'
-
-        # Roll through the list returned by the SQL query.
-        for result in results:
-            # Set up the first cell in the row, the name of the webapp.
-            if result.status == 'active':
-                # White on green means that it's active.
-                row += "<td style='background-color:green; color:white;' >%s</td>" % result.name
-            else:
-                # White on red means that it's not active.
-                row += "<td style='background-color:red; color:white;' >%s</td>" % result.name
-
-            # Set up the second cell in the row, the toggle that will either
-            # turn the web app off or on.
-            if result.status == 'active':
-                # Give the option to deactivate the app.
-                row += "<td><button type='submit' name='%s' value='%s' style='background-color:red; color:white;' >Deactivate</button></td>" % (kind, result.name)
-            else:
-                # Give the option to activate the app.
-                row += "<td><button type='submit' name='%s' value='%s' style='background-color:green; color:white;' >Activate</button></td>" % (kind, result.name)
-
-            # Set the closing tag of the row.
-            row += "</tr>\n"
-
-        # Add that row to the buffer of HTML for the webapp table.
-        return row
-
     # Pretends to be index.html.
     def index(self):
         # Set up the strings that will hold the HTML for the tables on this
@@ -93,14 +94,14 @@ class Services(object):
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database %s, table webapps.  SELECT query failed.</p>" % self.service_state.db_path
         else:
-            webapps = self.generate_rows(results, 'app')
+            webapps = generate_rows(results, 'app')
 
         results = self.service_state.list('daemons', models.daemon.Daemon)
         if not results:
             # Display an error page that says that something went wrong.
             error = "<p>ERROR: Something went wrong in database %s, table daemons.  SELECT query failed.</p>" % self.service_state.db_path
         else:
-            systemservices = self.generate_rows(results, 'service')
+            systemservices = generate_rows(results, 'service')
 
         # Render the HTML page.
         try:
@@ -264,12 +265,12 @@ class Services(object):
             initscript = '/etc/rc.d/' + self.initscript
             if self.status == 'active':
                 if self.test:
-                    logging.debug('Would run "%s stop" here.' % initscript)
+                    logging.debug('Would run "%s stop" here.', initscript)
                 else:
                     subprocess.Popen([initscript, 'stop'])
             else:
                 if self.test:
-                    logging.debug('Would run "%s start" here.' % initscript)
+                    logging.debug('Would run "%s start" here.', initscript)
                 else:
                     subprocess.Popen([initscript, 'start'])
 
