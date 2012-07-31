@@ -123,18 +123,18 @@ class Services(object):
     def _fetch_webapp(self, name):
         results = self.service_state.list('webapps', models.webapp.WebApp, {'name': name})
         if len(results) == 0:
-            raise Error("Found no webapps with name: %s" % app)
+            raise Error("Found no webapps with name: %s" % name)
         elif len(results) > 1:
-            raise Error("Found too many webapps with name: %s" % app)
+            raise Error("Found too many webapps with name: %s" % name)
         else:
             return results[0]
             
     def _fetch_daemon(self, name):
         results = self.service_state.list('daemons', models.daemon.Daemon, {'name': name})
         if len(results) == 0:
-            raise Error("Found no daemons with name: %s" % app)
+            raise Error("Found no daemons with name: %s" % name)
         elif len(results) > 1:
-            raise Error("Found too many daemons with name: %s" % app)
+            raise Error("Found too many daemons with name: %s" % name)
         else:
             return results[0]
 
