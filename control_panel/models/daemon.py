@@ -22,7 +22,7 @@ class Daemon(model.Model):
         
     # probably going to want something like toggle_service in here
 
-    @propery
+    @property
     def name(self):
         return self._name
 
@@ -31,7 +31,7 @@ class Daemon(model.Model):
         self._name = value
         self.replace(name=value)
 
-    @propery
+    @property
     def status(self):
         return self._status
 
@@ -40,7 +40,7 @@ class Daemon(model.Model):
         self._status = value
         self.replace(status=value)
 
-    @propery
+    @property
     def show_to_user(self):
         return self._show_to_user
 
@@ -49,7 +49,7 @@ class Daemon(model.Model):
         self._show_to_user = value
         self.replace(show_to_user=value)
 
-    @propery
+    @property
     def port(self):
         return self._port
 
@@ -58,7 +58,7 @@ class Daemon(model.Model):
         self._port = value
         self.replace(port=value)
 
-    @propery
+    @property
     def init_script(self):
         return self._init_script
 
