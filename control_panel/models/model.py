@@ -18,7 +18,7 @@ class Model(object):
 
     def _trimmed(self):
         out = {}
-        for k, v in self.__dict__.iteritems():
+        for k, v in self.__dict__.copy().iteritems():
             if k.startswith('_'):
               out[k[1:]] = v
             elif k == 'kind':

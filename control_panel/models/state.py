@@ -14,9 +14,10 @@ def Error(Exception):
 
 
 def _sanitize(tainted):
-    if 'persistance' in tainted:
-        tainted.pop('persistance')
-    return tainted
+    copy = tainted.copy()
+    if 'persistance' in copy:
+        copy.pop('persistance')
+    return copy
 
 
 def get_matching(pattern, objects):
@@ -200,8 +201,9 @@ class DBBackedState(State):
         Args:
             prototype: dict, a dict to base column names off
         """
-        kind = prototype.pop('kind')
-        frag, columns = self._create_initialization_fragment_from_prototype(prototype)
+        proto_copy = prototype.copy()
+        kind = proto_copy.pop('kind')
+        frag, columns = self._create_initialization_fragment_from_prototype(proto_copy)
         to_execute = 'CREATE TABLE IF NOT EXISTS %s (%s);' % (kind, frag % columns)
         self._execute_and_commit(to_execute)
 
@@ -211,8 +213,9 @@ class DBBackedState(State):
         Args:
             item: dict, a dict who's attributes we'll insert/replace
         """
-        kind = item.pop('kind')
-        frag, values = self._create_query_fragment_from_item(item)
+        item_copy = item.copy()
+        kind = item_copy.pop('kind')
+        frag, values = self._create_query_fragment_from_item(item_copy)
         to_execute = 'INSERT OR REPLACE INTO %s VALUES (%s);' % (kind, frag)
         self._execute_and_commit(to_execute, values)
 
@@ -279,9 +282,11 @@ class DBBackedState(State):
             old: dict, a dict of the old data (what we search for)
             new: dict, a dict of the replacement data
         """
-        kind = old.pop('kind')
-        query_frag, query_values = self._create_update_query_fragment_from_item(old)
-        setting_frag, setting_values = self._create_update_setting_fragment_from_item(new)
+        old_copy = old.copy()
+        new_copy = new.copy()
+        kind = old_copy.pop('kind')
+        query_frag, query_values = self._create_update_query_fragment_from_item(old_copy)
+        setting_frag, setting_values = self._create_update_setting_fragment_from_item(new_copy)
         # Again, not the most efficient, but it works in all cases and doesn't
         # need any fancy logic
         to_execute = 'UPDATE OR REPLACE %s SET %s WHERE %s;' % (kind, setting_frag, query_frag)
