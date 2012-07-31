@@ -120,7 +120,7 @@ class Services(object):
             return exceptions.html_error_template().render()
     index.exposed = True
 
-    def _fetch_webapp(name):
+    def _fetch_webapp(self, name):
         results = self.service_state.list('webapps', models.webapp.WebApp, {'name': name})
         if len(results) == 0:
             raise Error("Found no webapps with name: %s" % app)
@@ -129,7 +129,7 @@ class Services(object):
         else:
             return results[0]
             
-    def _fetch_daemon(name):
+    def _fetch_daemon(self, name):
         results = self.service_state.list('daemons', models.daemon.Daemon, {'name': name})
         if len(results) == 0:
             raise Error("Found no daemons with name: %s" % app)
