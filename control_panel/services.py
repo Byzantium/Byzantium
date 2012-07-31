@@ -17,10 +17,8 @@
 from mako import exceptions
 
 import logging
-import sqlite3
 import subprocess
 
-import _utils
 import models.daemon
 import models.state
 import models.webapp
@@ -40,7 +38,6 @@ class Services(object):
         self.test = test
     
         # Database used to store states of services and webapps.
-        
         if self.test:
             self.service_state = models.state.ServiceState('var/db/controlpanel/services.sqlite')
         else:
@@ -143,23 +140,27 @@ class Services(object):
     # configuration database and switches 'enabled' to 'disabled' or vice versa
     # depending on what it finds.
     def webapps(self, app=None):
-        result = self._fetch_webapp(app)
-        # Save the name of the app in a class attribute to save effort later.
-        self.app = app
+        warning = ''
+        try:
+            result = self._fetch_webapp(app)
+            # Save the name of the app in a class attribute to save effort later.
+            self.app = app
 
-        status = result.status
+            status = result.status
 
-        # Save the status of the app in another class attribute for later.
-        self.status = status
+            # Save the status of the app in another class attribute for later.
+            self.status = status
 
-        # Determine what to do.
-        if status == 'active':
-            action = 'deactivate'
-            warning = 'This will deactivate the application!'
-        else:
-            action = 'activate'
-            warning = 'This will activate the application!'
-
+            # Determine what to do.
+            if status == 'active':
+                action = 'deactivate'
+                warning = 'This will deactivate the application!'
+            else:
+                action = 'activate'
+                warning = 'This will activate the application!'
+        except Error as ex:
+            warning = str(ex)
+        
         # Display to the user the page that asks them if they really want to
         # shut down that app.
         try:
@@ -185,8 +186,12 @@ class Services(object):
             status = 'disabled'
             action = 'deactivated'
 
-        result = self._fetch_webapp(self.app)
-        result.status = status
+        try:
+            result = self._fetch_webapp(self.app)
+            result.status = status
+            
+        except Error as ex:
+            error = str(ex)
 
         # Render the HTML page and send it to the browser.
         try:
@@ -207,23 +212,27 @@ class Services(object):
         # Save the name of the app in a class attribute to save effort later.
         self.app = service
 
-        result = self._fetch_daemon(self.app)
-        status = result.status
-        initscript = result.initscript
+        warning = ''
+        try:
+            result = self._fetch_daemon(self.app)
+            status = result.status
+            initscript = result.initscript
+
+            # Save the status of the app and the initscript in class attributes for
+            # later use.
+            self.status = status
+            self.initscript = initscript
+
+            # Figure out what to do.
+            if status == 'active':
+                action = 'deactivate'
+                warning = 'This will deactivate the application!'
+            else:
+                action = 'activate'
+                warning = 'This will activate the application!'
+        except Error as ex:
+            warning = str(ex)
         
-        # Save the status of the app and the initscript in class attributes for
-        # later use.
-        self.status = status
-        self.initscript = initscript
-
-        # Figure out what to do.
-        if status == 'active':
-            action = 'deactivate'
-            warning = 'This will deactivate the application!'
-        else:
-            action = 'activate'
-            warning = 'This will activate the application!'
-
         # Display to the user the page that asks them if they really want to
         # shut down that app.
         try:
@@ -240,31 +249,35 @@ class Services(object):
     # the name of the app.  This should never be called from anywhere other than
     # Services.services().
     def toggle_service(self, action=None):
-        result = self._fetch_daemon(self.app)
-        self.initscript = result.initscript
+        error = ''
+        try:
+            result = self._fetch_daemon(self.app)
+            self.initscript = result.initscript
 
-        if action == 'activate':
-            status = 'active'
-        else:
-            status = 'disabled'
-
-        # Construct the command line ahead of time to make the code a bit
-        # simpler in the long run.
-        initscript = '/etc/rc.d/' + self.initscript
-        if self.status == 'active':
-            if self.test:
-                logging.debug('Would run "%s stop" here.' % initscript)
+            if action == 'activate':
+                status = 'active'
             else:
-                subprocess.Popen([initscript, 'stop'])
-        else:
-            if self.test:
-                logging.debug('Would run "%s start" here.' % initscript)
+                status = 'disabled'
+
+            # Construct the command line ahead of time to make the code a bit
+            # simpler in the long run.
+            initscript = '/etc/rc.d/' + self.initscript
+            if self.status == 'active':
+                if self.test:
+                    logging.debug('Would run "%s stop" here.' % initscript)
+                else:
+                    subprocess.Popen([initscript, 'stop'])
             else:
-                subprocess.Popen([initscript, 'start'])
+                if self.test:
+                    logging.debug('Would run "%s start" here.' % initscript)
+                else:
+                    subprocess.Popen([initscript, 'start'])
 
-        # Update the status of the service in the database.
-        result.status = status
-
+            # Update the status of the service in the database.
+            result.status = status
+        except Error as ex:
+            error = str(ex)
+        
         # Render the HTML page and send it to the browser.
         try:
             page = self.templatelookup.get_template("/services/toggled.html")
