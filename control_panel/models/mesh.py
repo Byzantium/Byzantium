@@ -26,8 +26,8 @@ class Mesh(model.Model):
 
     @interface.setter
     def interface(self, value):
-        self._interface = value
         self.replace(interface=value)
+        self._interface = value
         
     @property
     def protocol(self):
@@ -36,8 +36,8 @@ class Mesh(model.Model):
 
     @protocol.setter
     def protocol(self, value):
-        self._protocol = value
         self.replace(protocol=value)
+        self._protocol = value
             
     @property
     def enabled(self):
@@ -46,5 +46,5 @@ class Mesh(model.Model):
 
     @enabled.setter
     def enabled(self, value):
-        self._enabled = value
         self.replace(enabled=value)
+        self._enabled = value
