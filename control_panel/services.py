@@ -62,7 +62,7 @@ class Services(object):
         # Roll through the list returned by the SQL query.
         for result in results:
             # Set up the first cell in the row, the name of the webapp.
-            if status == 'active':
+            if result.status == 'active':
                 # White on green means that it's active.
                 row += "<td style='background-color:green; color:white;' >%s</td>" % result.name
             else:
