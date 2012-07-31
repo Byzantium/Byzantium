@@ -224,7 +224,7 @@ class DBBackedState(State):
             attrs: dict, a dict of attributes
           
          Returns:
-             A list of matching entries
+             A list of matching entries and the cursor.description
         """
         self.connection = sqlite3.connect(self.db_path)
         cursor = self.connection.cursor()
@@ -232,8 +232,9 @@ class DBBackedState(State):
         to_execute = 'SELECT * FROM %s WHERE %s' % (kind, template)
         cursor.execute(to_execute, vals)
         results = cursor.fetchall()
+        desc = cursor.description
         self.connection.close()
-        return results
+        return results, desc
 
     def list(self, kind, klass, attrs=None):
         """List all entries for a given kind, returning them as klass objects.
@@ -249,16 +250,17 @@ class DBBackedState(State):
         self.connection = sqlite3.connect(self.db_path)
         cursor = self.connection.cursor()
         if attrs:
-            results = self.exists(kind, attrs)
+            results, description = self.exists(kind, attrs)
+            col_name_list = [desc[0] for desc in description]
         else:
-          to_execute = 'SELECT * FROM %s;' % kind
-          cursor.execute(to_execute)
-          # Not the most efficient way of doing things, but the db will always
-          # be small enough that it won't matter
-          results = cursor.fetchall()
-        # We need to know what the attribute names are of the class we are
-        # building
-        col_name_list = [desc[0] for desc in cursor.description]
+            to_execute = 'SELECT * FROM %s;' % kind
+            cursor.execute(to_execute)
+            # Not the most efficient way of doing things, but the db will always
+            # be small enough that it won't matter
+            results = cursor.fetchall()
+            # We need to know what the attribute names are of the class we are
+            # building
+            col_name_list = [desc[0] for desc in cursor.description]
         objects = []
         for result in results:
             attrs = {}
