@@ -284,7 +284,7 @@ class Gateways(object):
         
     def _update_netconfdb(self, interface):
         
-        results = self.network_state.list('wired', WiredNetwork, {'interface': interface})
+        results = self.network_state.list('wired', models.wired_network.WiredNetwork, {'interface': interface})
         if results:
             for result in results:
                 result.gateway = 'yes'
