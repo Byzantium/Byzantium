@@ -142,7 +142,7 @@ class Gateways(object):
         # the node.
         self.update_network_interfaces()
 
-        results, _ = self.network_state.list('wired', models.wired_network.WiredNetwork, {'gateway': 'no'})
+        results = self.network_state.list('wired', models.wired_network.WiredNetwork, {'gateway': 'no'})
         if results:
             for interface in results:
                 ethernet_buttons = ethernet_buttons + "<td><input type='submit' name='interface' value='" + interface.interface + "' /></td>\n"
@@ -150,7 +150,7 @@ class Gateways(object):
         # Generate a list of wireless interfaces on the node that are not
         # enabled but are known.  As before, each button gets is own button
         # in a table.
-        results, _ = self.network_state.list('wireless', models.wireless_network.WirelessNetwork, {'gateway': 'no'})
+        results = self.network_state.list('wireless', models.wireless_network.WirelessNetwork, {'gateway': 'no'})
         if results:
             for interface in results:
                 wireless_buttons = wireless_buttons + "<td><input type='submit' name='interface' value='" + interface.interface + "' /></td>\n"
@@ -181,7 +181,7 @@ class Gateways(object):
         # the interfaces.
         interfaces = []
         if self.test:
-            logging.debug("Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback.", self.netconfdb)
+            logging.debug("Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback.", self.network_state.db_path)
             return
         else:
             interfaces = build_interfaces(interfaces, procnetdev)
@@ -264,7 +264,7 @@ class Gateways(object):
         channel = 0
         essid = ''
 
-        channel, essid, warning = _utils.check_for_configured_interface(self.netconfdb, interface, channel, essid)
+        channel, essid, warning = _utils.check_for_configured_interface(self.network_state, interface, channel, essid)
 
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
@@ -279,12 +279,12 @@ class Gateways(object):
     wireless.exposed = True
 
     def _get_mesh_interfaces(self, interface):
-        results, _ = self.mesh_state.list('meshes', models.mesh.Mesh, {'enabled': 'yes', 'protocol': 'babel'})
+        results = self.mesh_state.list('meshes', models.mesh.Mesh, {'enabled': 'yes', 'protocol': 'babel'})
         return [result.interface for result in results]
         
     def _update_netconfdb(self, interface):
         
-        results, _ = self.network_state.list('wired', WiredNetwork, {'interface': interface})
+        results = self.network_state.list('wired', WiredNetwork, {'interface': interface})
         if results:
             for result in results:
                 result.gateway = 'yes'
@@ -419,7 +419,9 @@ class Gateways(object):
         output = subprocess.Popen(command)
 
         template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface)
-        _utils.set_wireless_db_entry(self.netconfdb, template)
+        new = dict(enabled='yes, channel=self.channel, essid=self.essid, mesh_interface=self.mesh_interface, client_interface=self.client_interface)
+        old = dict(mesh_interface=self.mesh_interface)
+        _utils.set_wireless_db_entry(self.network_state, old, new)
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.

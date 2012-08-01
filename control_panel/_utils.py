@@ -2,6 +2,7 @@ from mako.exceptions import RichTraceback
 
 import logging
 import sqlite3
+import models.wireless_network
 
 def debug(message,level = '1'):
     import os
@@ -38,22 +39,17 @@ def execute_query(db, query, template=None):
         cursor.execute(query)
     return connection, cursor
 
-def check_for_configured_interface(netconfdb, interface, channel, essid):
+def check_for_configured_interface(persistance, interface, channel, essid):
     """docstring for check_for_configured_interface"""
     warning = ""
-
     # If a network interface is marked as configured in the database, pull
     # its settings and insert them into the page rather than displaying the
     # defaults.
-    query = "SELECT enabled, channel, essid FROM wireless WHERE mesh_interface=?;"
-    template = (interface, )
-    connection, cursor = execute_query(netconfdb, query, template)
-    result = cursor.fetchall()
-    if result and (result[0][0] == 'yes'):
-        channel = result[0][1]
-        essid = result[0][2]
+    results = persistance.list('wireless', models.wireless_network.WirelessNetwork, {'mesh_interface': interface})
+    if results and (results[0].enabled == 'yes'):
+        channel = result[0].channel
+        essid = result[0].essid
         warning = '<p>WARNING: This interface is already configured!  Changing it now will break the local mesh!  You can hit cancel now without changing anything!</p>'
-    connection.close()
     return (channel, essid, warning)
 
 def set_confdbs(test):
@@ -69,15 +65,10 @@ def set_confdbs(test):
         meshconfdb = '/var/db/controlpanel/mesh.sqlite'
     return netconfdb, meshconfdb
 
-def set_wireless_db_entry(netconfdb, template):
+def set_wireless_db_entry(persistance, old, new):
     """docstring for set_wireless_db_entry"""
     # Commit the interface's configuration to the database.
-    connection = sqlite3.connect(netconfdb)
-    cursor = connection.cursor()
-    # Update the wireless table.
-    cursor.execute("UPDATE wireless SET enabled=?, channel=?, essid=?, mesh_interface=?, client_interface=? WHERE mesh_interface=?;", template)
-    connection.commit()
-    cursor.close()
+    persistance.replace(old, new)
 
 def output_error_data():
     traceback = RichTraceback()
