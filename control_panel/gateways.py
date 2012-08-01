@@ -419,7 +419,7 @@ class Gateways(object):
         output = subprocess.Popen(command)
 
         template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface)
-        new = dict(enabled='yes, channel=self.channel, essid=self.essid, mesh_interface=self.mesh_interface, client_interface=self.client_interface)
+        new = dict(enabled='yes', channel=self.channel, essid=self.essid, mesh_interface=self.mesh_interface, client_interface=self.client_interface)
         old = dict(mesh_interface=self.mesh_interface)
         _utils.set_wireless_db_entry(self.network_state, old, new)
 
