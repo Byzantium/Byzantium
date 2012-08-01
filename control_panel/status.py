@@ -13,7 +13,6 @@
 import logging
 import os
 import os.path
-import sqlite3
 import subprocess
 
 # Import control panel modules.
@@ -271,7 +270,6 @@ class Status(object):
                 client_interfaces = client_interfaces + "<tr><td>" + client_interface + "</td>\n<td>" + ip_address + "</td>\n<td>" + str(number_of_clients) + "</td></tr>\n"
 
         # Render the HTML page and return to the client.
-        cursor.close()
         page = self.templatelookup.get_template("index.html")
         return page.render(ram_used = ram_used, ram = ram, uptime = uptime,
                            mesh_interfaces = mesh_interfaces,
