@@ -25,6 +25,9 @@ import subprocess
 import time
 
 import _utils
+import models.state
+import models.wired_network
+import models.wireless_network
         
 
 # Utility method to enumerate all of the network interfaces on a node.
@@ -175,10 +178,11 @@ class NetworkConfiguration(object):
         # of every network interface in the node.
         if self.test:
             # self.netconfdb = '/home/drwho/network.sqlite'
-            self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            logging.debug("Location of NetworkConfiguration.netconfdb: %s", self.netconfdb)
+            netconfdb = 'var/db/controlpanel/network.sqlite'
+            logging.debug("Location of NetworkConfiguration.netconfdb: %s", netconfdb)
         else:
-            self.netconfdb = '/var/db/controlpanel/network.sqlite'
+            netconfdb = '/var/db/controlpanel/network.sqlite'
+        self.network_state = models.state.NetworkState(netconfdb)
 
         # Class attributes which make up a network interface.  By default they are
         # blank, but will be populated from the network.sqlite database if the
@@ -239,25 +243,23 @@ class NetworkConfiguration(object):
         # Start with wireless interfaces.
         for i in wireless:
             logging.debug("Checking to see if %s is in the database.", i)
-            cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=?", (i, ))
-            result = cursor.fetchall()
+            # cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=?", (i, ))
+            # result = cursor.fetchall()
+            result = self.network_state.list('wireless', models.wireless_network.WirelessNetwork, {'mesh_interface': i})
 
             # If the interface is not found in database, add it.
             if not result:
                 logging.debug("Adding %s to table 'wireless'.", i)
 
-                # gateway, client_interface, enabled, channel, essid,
-                # mesh_interface
-                template = ('no', (i + ':1'), 'no', '0', '', i, )
+                models.wireless_network.WirelessNetwork(client_interface=i + ':1', mesh_interface=i, gateway='no',
+                             enabled='no', channel=0, essid='', persistance=self.network_state)
 
-                cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?);", template)
-                connection.commit()
                 wireless_buttons += "%s%s' />\n" % (interface_tag_start, i)
                 continue
 
             # If it is there test to see if it's been configured or not.  If it
             # has, use a CSS hack to make its button a different color.
-            if result[0][1] == "yes":
+            if result[0].enabled == "yes":
                 wireless_buttons += "%s%s' style='background-color:red' />\n" % (interface_tag_start, i)
                 continue
 
@@ -267,24 +269,24 @@ class NetworkConfiguration(object):
 
         # Wired interfaces.
         for i in wired:
-            logging.debug("Checking to see if %s is in the database.", i)
-            cursor.execute("SELECT interface, enabled FROM wired WHERE interface=?", (i, ))
-            result = cursor.fetchall()
+            # logging.debug("Checking to see if %s is in the database.", i)
+            # cursor.execute("SELECT interface, enabled FROM wired WHERE interface=?", (i, ))
+            # result = cursor.fetchall()
+            result = self.network_state.list('wired', models.wired_network.WiredNetwork, {'interface': i})
 
             # If the interface is not found in database, add it.
             if not result:
                 logging.debug("Adding %s to table 'wired'.", i)
 
                 # enabled, gateway, interface
-                template = ('no', 'no', i, )
-                cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
-                connection.commit()
+                models.wired_network.WiredNetwork(interface=i, gateway='no', enabled='no',
+                             persistance=self.network_state)
                 ethernet_buttons += "%s%s' />\n" % (interface_tag_start, i)
                 continue
 
             # If it is found test to see if it's been configured or not.  If it
             # has, use a CSS hack to make its button a different color.
-            if result[0][1] == "yes":
+            if result[0].enabled == "yes":
                 ethernet_buttons += "%s%s' style='background-color:red' />\n" % (interface_tag_start, i)
                 continue
 
@@ -293,7 +295,6 @@ class NetworkConfiguration(object):
             ethernet_buttons += "%s%s' />\n" % (interface_tag_start, i)
 
         # Render the HTML page.
-        cursor.close()
         try:
             page = self.templatelookup.get_template("/network/index.html")
             return page.render(title = "Byzantium Node Network Interfaces",
@@ -345,7 +346,7 @@ class NetworkConfiguration(object):
         # later in the configuration process.
         self.frequency = frequencies[channel - 1]
 
-        channel, essid, warning = _utils.check_for_configured_interface(self.netconfdb, interface, channel, essid)
+        channel, essid, warning = _utils.check_for_configured_interface(self.network_state, interface, channel, essid)
 
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
@@ -418,15 +419,12 @@ class NetworkConfiguration(object):
         # Initialize the Python environment's randomizer.
         random.seed()
 
-        # Connect to the network configuration database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-
         # To run arping, the interface has to be up.  Check the database to
         # see if it's up, and if not flip it on for a few seconds to test.
-        template = (self.mesh_interface, 'yes', )
-        cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=? AND enabled=?;", template)
-        result = cursor.fetchall()
+        result = self.network_state.list('wireless', models,wireless_network.WirelessNetwork, {'mesh_interface': self.mesh_interface, 'enabled': 'yes'})
+        # template = (self.mesh_interface, 'yes', )
+        # cursor.execute("SELECT mesh_interface, enabled FROM wireless WHERE mesh_interface=? AND enabled=?;", template)
+        # result = cursor.fetchall()
         if not result:
             self.update_mesh_interface_status('up')
 
@@ -601,8 +599,9 @@ class NetworkConfiguration(object):
         else:
             subprocess.Popen(command)
 
-        template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface)
-        _utils.set_wireless_db_entry(self.netconfdb, template)
+        new = dict(enabled='yes', channel=self.channel, essid=self.essid, mesh_interface=self.mesh_interface, client_interface=self.client_interface)
+        old = dict(mesh_interface=self.mesh_interface)
+        _utils.set_wireless_db_entry(self.network_state, old, new)
 
         # Start the captive portal daemon.  This will also initialize the IP
         # tables ruleset for the client interface.
