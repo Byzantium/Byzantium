@@ -56,7 +56,7 @@ class WirelessNetwork(model.Model):
         """I'm the 'enabled' property."""
         return self._enabled
 
-    @enables.setter
+    @enabled.setter
     def enabled(self, value):
         self.replace(enabled=value)
         self._enabled = value
