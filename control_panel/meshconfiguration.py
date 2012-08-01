@@ -345,7 +345,7 @@ class MeshConfiguration(object):
             # There are no mesh interfaces left, so update the database to
             # deconfigure self.interface.
             self.mesh_state.replace({'kind': 'meshes', 'interface': self.interface},
-                                    {'kind': 'meshes', 'interface': self.interface}, 'enabled': 'no')
+                                    {'kind': 'meshes', 'interface': self.interface, 'enabled': 'no'})
 
         # Render the HTML page.
         try:
