@@ -23,6 +23,8 @@ from networkconfiguration import NetworkConfiguration
 from meshconfiguration import MeshConfiguration
 from services import Services
 from gateways import Gateways
+import models.state
+import models.wireless_network
 
 
 # Query the node's uptime (in seconds) from the OS.
@@ -136,10 +138,11 @@ class Status(object):
         # of every network interface in the node.
         if test:
             # self.netconfdb = '/home/drwho/network.sqlite'
-            self.netconfdb = 'var/db/controlpanel/network.sqlite'
-            logging.debug("Location of NetworkConfiguration.netconfdb: %s", self.netconfdb)
+            netconfdb = 'var/db/controlpanel/network.sqlite'
+            logging.debug("Location of NetworkConfiguration.netconfdb: %s", netconfdb)
         else:
-            self.netconfdb = '/var/db/controlpanel/network.sqlite'
+            netconfdb = '/var/db/controlpanel/network.sqlite'
+        self.network_state = models.state.NetworkState(netconfdb)
 
     # Pretends to be index.html.
     def index(self):
@@ -162,27 +165,30 @@ class Status(object):
         # For the purposes of debugging, test to see if the network
         # configuration database file exists and print a tell to the console.
         logging.debug("Checking for existence of network configuration database.")
-        if os.path.exists(self.netconfdb):
-            logging.debug("Network configuration database %s found.", self.netconfdb)
+        if os.path.exists(self.network_state.db_path):
+            logging.debug("Network configuration database %s found.", self.network_state.db_path)
         else:
-            logging.debug("DEBUG: Network configuration database %s NOT found!", self.netconfdb)
+            logging.debug("DEBUG: Network configuration database %s NOT found!", self.network_state.db_path)
 
         # Pull a list of the mesh interfaces on this system out of the network
         # configuration database.  If none are found, report none.
         mesh_interfaces = ''
         ip_address = ''
 
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
-        query = "SELECT mesh_interface, essid, channel FROM wireless;"
-        cursor.execute(query)
-        result = cursor.fetchall()
+        result = self.network_state.list('wireless', models.wireless_network.WirelessNetwork)
+
+        # connection = sqlite3.connect(self.netconfdb)
+        # cursor = connection.cursor()
+        # query = "SELECT mesh_interface, essid, channel FROM wireless;"
+        # cursor.execute(query)
+        # result = cursor.fetchall()
 
         if not result:
             # Fields:
             #    interface, IP, ESSID, channel
             mesh_interfaces = "<tr><td>n/a</td>\n<td>n/a</td>\n<td>n/a</td>\n<td>n/a</td></tr>\n"
         else:
+            result = [(i.mesh_interface, i.essid, i.channel) for i in result]
             for (mesh_interface, essid, channel) in result:
                 # Test to see if any of the variables retrieved from the
                 # database are empty, and if they are set them to obviously
@@ -218,30 +224,33 @@ class Status(object):
         ip_address = ''
         number_of_clients = 0
 
-        query = "SELECT client_interface FROM wireless;"
-        cursor.execute(query)
-        result = cursor.fetchall()
+        result = self.network_state.list('wireless', models.wireless_network.WirelessNetwork)
+
+        # query = "SELECT client_interface FROM wireless;"
+        # cursor.execute(query)
+        # result = cursor.fetchall()
 
         if not result:
             # Fields:
             #    interface, IP, active clients
             client_interfaces = "<tr><td>n/a</td>\n<td>n/a</td>\n<td>0</td></tr>\n"
         else:
+            result = [i.client_interface for i in result]
             for client_interface in result:
                 # For every client interface found, run ifconfig and pull
                 # its configuration information.
                 if self.test:
                     print "TEST: Status.index() command to pull the configuration of a client interface:"
-                    print '/sbin/ifconfig' + client_interface[0]
+                    print '/sbin/ifconfig' + client_interface
                 else:
                     logging.debug("Running ifconfig to collect configuration of interface %s.", client_interface)
-                    ip_address = get_ip_address(client_interface[0])
+                    ip_address = get_ip_address(client_interface)
 
                 # For each client interface, count the number of rows in its
                 # associated arp table to count the number of clients currently
                 # associated.  Note that one has to be subtracted from the
                 # count of rows to account for the line of column headers.
-                command = ['/sbin/arp', '-n', '-i', client_interface[0]]
+                command = ['/sbin/arp', '-n', '-i', client_interface]
                 if self.test:
                     print "TEST: Status.index() command to dump the ARP table of interface %s: " % client_interface
                     print command
@@ -259,7 +268,7 @@ class Status(object):
 
                 # Assemble the HTML for the status page using the mesh
                 # interface configuration data.
-                client_interfaces = client_interfaces + "<tr><td>" + client_interface[0] + "</td>\n<td>" + ip_address + "</td>\n<td>" + str(number_of_clients) + "</td></tr>\n"
+                client_interfaces = client_interfaces + "<tr><td>" + client_interface + "</td>\n<td>" + ip_address + "</td>\n<td>" + str(number_of_clients) + "</td></tr>\n"
 
         # Render the HTML page and return to the client.
         cursor.close()
