@@ -20,7 +20,6 @@ import os
 import os.path
 import random
 import re
-import sqlite3
 import subprocess
 import time
 
@@ -233,8 +232,7 @@ class NetworkConfiguration(object):
         # search the network configuration databases for interfaces that are
         # already configured and give them a different color.  If they're up
         # and running give them yet another color.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
+
         wireless_buttons = ""
         ethernet_buttons = ""
 
