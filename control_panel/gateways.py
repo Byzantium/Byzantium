@@ -18,7 +18,6 @@
 #   database if they don't exist anymore.
 
 import logging
-import sqlite3
 import subprocess
 import time
 
@@ -177,10 +176,6 @@ class Gateways(object):
         procnetdev = open("/proc/net/dev", "r")
         if not audit_procnetdev(procnetdev):
             return
-
-        # Open the network configuration database.
-        connection = sqlite3.connect(self.netconfdb)
-        cursor = connection.cursor()
 
         # Begin parsing the contents of /proc/net/dev to extract the names of
         # the interfaces.
