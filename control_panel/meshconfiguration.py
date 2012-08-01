@@ -182,7 +182,7 @@ class MeshConfiguration(object):
             # the presence of the new interface.
             if commit:
                 self.mesh_state.replace({'kind': 'meshes', 'interface': self.interface},
-                                        {'kind': 'meshes', 'interface': self.interface}, 'enabled': 'yes')
+                                        {'kind': 'meshes', 'interface': self.interface, 'enabled': 'yes')
         return error, output
 
     def update_babeld(self, common_babeld_opts, unique_babeld_opts, interfaces):
