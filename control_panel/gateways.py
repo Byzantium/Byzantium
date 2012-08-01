@@ -24,6 +24,10 @@ import time
 
 import _utils
 import networkconfiguration
+import models.mesh
+import models.state
+import models.wired_network
+import models.wireless_network
 
 
 def audit_procnetdev(procnetdev):
@@ -55,12 +59,9 @@ def build_interfaces(interfaces, procnetdev):
     return interfaces
 
 
-def check_for_wired_interface(interface, cursor):
-    template = (interface,)
-    logging.debug("Checking to see if interface %s is a known wired interface...", interface)
-    cursor.execute("SELECT interface FROM wired WHERE interface=?;", template)
-    result = cursor.fetchall()
-    if not result:
+def check_for_wired_interface(interface, persistance):
+    results, _ = persistance.exists('wired', {'interface': interface})
+    if not results:
         logging.debug("Interface %s isn't a known wired interface.  Checking wireless interfaces...",
                       interface)
         return ''
@@ -69,14 +70,11 @@ def check_for_wired_interface(interface, cursor):
         return 'wired'
 
 
-def check_for_wireless_interface(interface, cursor):
-    template = (interface,)
-    cursor.execute("SELECT mesh_interface FROM wireless WHERE mesh_interface=?;", template)
-    result = cursor.fetchall()
-
+def check_for_wireless_interface(interface, persistance):
+    results, _ = persistance.exists('wireless', {'mesh_interface': interface})
     # If it's not in there, either, figure out which table it
     # has to go in.
-    if not result:
+    if not results:
         logging.debug("%s isn't a known wireless interface, either.  Figuring out where it has to go...", 
                       interface)
     else:
@@ -106,7 +104,9 @@ class Gateways(object):
         self.templatelookup = templatelookup
         self.test = test
 
-        self.netconfdb, self.meshconfdb = _utils.set_confdbs(self.test)
+        netconfdb, meshconfdb = _utils.set_confdbs(self.test)
+        self.network_state = models.state.NetworkState(netconfdb)
+        self.mesh_state = models.state.MeshState(meshconfdb)
 
         # Configuration information for the network device chosen by the user to
         # act as the uplink.
@@ -143,24 +143,18 @@ class Gateways(object):
         # the node.
         self.update_network_interfaces()
 
-        query = "SELECT interface FROM wired WHERE gateway='no';"
-        _, cursor = _utils.execute_query(self.netconfdb, query)
-        results = cursor.fetchall()
+        results, _ = self.network_state.list('wired', models.wired_network.WiredNetwork, {'gateway': 'no'})
         if results:
             for interface in results:
-                ethernet_buttons = ethernet_buttons + "<td><input type='submit' name='interface' value='" + interface[0] + "' /></td>\n"
+                ethernet_buttons = ethernet_buttons + "<td><input type='submit' name='interface' value='" + interface.interface + "' /></td>\n"
 
         # Generate a list of wireless interfaces on the node that are not
         # enabled but are known.  As before, each button gets is own button
         # in a table.
-        cursor.execute("SELECT mesh_interface FROM wireless WHERE gateway='no';")
-        results = cursor.fetchall()
+        results, _ = self.network_state.list('wireless', models.wireless_network.WirelessNetwork, {'gateway': 'no'})
         if results:
             for interface in results:
-                wireless_buttons = wireless_buttons + "<td><input type='submit' name='interface' value='" + interface[0] + "' /></td>\n"
-
-        # Close the connection to the database.
-        cursor.close()
+                wireless_buttons = wireless_buttons + "<td><input type='submit' name='interface' value='" + interface.interface + "' /></td>\n"
 
         # Render the HTML page.
         try:
@@ -202,11 +196,11 @@ class Gateways(object):
             for interface in interfaces:
 
                 # See if it's in the table of wired interfaces.
-                found = check_for_wired_interface(interface, cursor)
+                found = check_for_wired_interface(interface, self.network_state)
 
                 # If it's not in the wired table, check the wireless table.
                 if not found:
-                    found = check_for_wireless_interface(interface, cursor)
+                    found = check_for_wireless_interface(interface, self.network_state)
 
                 # If it still hasn't been found, figure out where it has to go.
                 if not found:
@@ -216,17 +210,13 @@ class Gateways(object):
                     # goes in the wireless table.  Otherwise it goes in
                     # the wired table.
                     if check_wireless_table(interface):
-                        template = ('no', interface + ':1', 'no', 0, '', interface , )
-                        cursor.execute("INSERT INTO wireless VALUES (?,?,?,?,?,?);", template)
+                        models.wireless_network.WirelessNetwork(client_interface=interface + ':1', mesh_interface=interface, gateway='no',
+                                     enabled='no', channel=0, essid='', persistance=self.network_state)
                     else:
                         logging.debug("Goes in wired table.")
-                        template = ('no', 'no', interface, )
-                        cursor.execute("INSERT INTO wired VALUES (?,?,?);", template)
+                        models.wired_network.WiredNetwork(interface=interface, gateway='no', enabled='no',
+                                     persistance=self.network_state)
 
-                    connection.commit()
-
-        # Close the network configuration database and return.
-        cursor.close()
         logging.debug("Leaving Gateways.enumerate_network_interfaces().")
 
     # Implements step two of the wired gateway configuration process: turning
@@ -294,31 +284,19 @@ class Gateways(object):
     wireless.exposed = True
 
     def _get_mesh_interfaces(self, interface):
-        interfaces = []
-        query = "SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';"
-        _, cursor = _utils.execute_query(self.meshconfdb, query)
-        results = cursor.fetchall()
-        for i in results:
-            interfaces.append(i[0])
-        interfaces.append(interface)
-        cursor.close()
-        return interfaces
+        results, _ = self.mesh_state.list('meshes', models.mesh.Mesh, {'enabled': 'yes', 'protocol': 'babel'})
+        return [result.interface for result in results]
         
     def _update_netconfdb(self, interface):
-        query = "SELECT interface FROM wired WHERE interface=?;"
-        connection, cursor = _utils.execute_query(self.netconfdb, query, template=(interface, ))
-        template = ('yes', interface, )
-        results = cursor.fetchall()
+        
+        results, _ = self.network_state.list('wired', WiredNetwork, {'interface': interface})
         if results:
-            cursor.execute("UPDATE wired SET gateway=? WHERE interface=?;",
-                            template)
+            for result in results:
+                result.gateway = 'yes'
         # Otherwise, it's a wireless interface.
         else:
-            cursor.execute("UPDATE wireless SET gateway=? WHERE mesh_interface=?;", template)
-
-        # Clean up.
-        connection.commit()
-        cursor.close()
+            self.network_state.replace({'kind': 'wireless', 'mesh_interface': interface},
+                                       {'kind': 'wireless', 'mesh_interface': interface, 'gateway': 'yes'})
 
     # Method that does the deed of turning an interface into a gateway.  This
     def activate(self, interface=None):
