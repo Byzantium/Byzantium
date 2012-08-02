@@ -15,13 +15,6 @@ import os
 import os.path
 import subprocess
 
-# Import control panel modules.
-# from control_panel import *
-from networktraffic import NetworkTraffic
-from networkconfiguration import NetworkConfiguration
-from meshconfiguration import MeshConfiguration
-from services import Services
-from gateways import Gateways
 import models.state
 import models.wireless_network
 
@@ -126,12 +119,6 @@ class Status(object):
     def __init__(self, templatelookup, test, filedir):
         self.templatelookup = templatelookup
         self.test = test
-        # # Allocate objects for all of the control panel's main features.
-        # self.traffic = NetworkTraffic(filedir, templatelookup)
-        # self.network = NetworkConfiguration(templatelookup, test)
-        # self.mesh = MeshConfiguration(templatelookup, test)
-        # self.services = Services(templatelookup, test)
-        # self.gateways = Gateways(templatelookup, test)
 
         # Location of the network.sqlite database, which holds the configuration
         # of every network interface in the node.
