@@ -26,6 +26,12 @@ import argparse
 import logging
 import os
 
+from networktraffic import NetworkTraffic
+from networkconfiguration import NetworkConfiguration
+from meshconfiguration import MeshConfiguration
+from services import Services
+from gateways import Gateways
+
 def parse_args():
     parser = argparse.ArgumentParser(conflict_handler='resolve',
                                      description="This daemon implements the "
@@ -82,6 +88,12 @@ def main():
 
     # Allocate the objects representing the URL tree.
     root = Status(templatelookup, args.test, args.filedir)
+    # Allocate objects for all of the control panel's main features.
+    root.traffic = NetworkTraffic(filedir, templatelookup)
+    root.network = NetworkConfiguration(templatelookup, args.test)
+    root.mesh = MeshConfiguration(templatelookup, args.test)
+    root.services = Services(templatelookup, args.test)
+    root.gateways = Gateways(templatelookup, args.test)
 
     # Mount the object for the root of the URL tree, which happens to be the
     # system status page.  Use the application config file to set it up.

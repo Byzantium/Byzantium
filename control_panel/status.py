@@ -126,12 +126,12 @@ class Status(object):
     def __init__(self, templatelookup, test, filedir):
         self.templatelookup = templatelookup
         self.test = test
-        # Allocate objects for all of the control panel's main features.
-        self.traffic = NetworkTraffic(filedir, templatelookup)
-        self.network = NetworkConfiguration(templatelookup, test)
-        self.mesh = MeshConfiguration(templatelookup, test)
-        self.services = Services(templatelookup, test)
-        self.gateways = Gateways(templatelookup, test)
+        # # Allocate objects for all of the control panel's main features.
+        # self.traffic = NetworkTraffic(filedir, templatelookup)
+        # self.network = NetworkConfiguration(templatelookup, test)
+        # self.mesh = MeshConfiguration(templatelookup, test)
+        # self.services = Services(templatelookup, test)
+        # self.gateways = Gateways(templatelookup, test)
 
         # Location of the network.sqlite database, which holds the configuration
         # of every network interface in the node.
