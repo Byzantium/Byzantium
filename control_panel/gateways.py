@@ -533,11 +533,10 @@ class Gateways(object):
         time.sleep(5)
 
         # Add the client interface.
-        command = ['/sbin/ifconfig', self.client_interface, self.client_ip, 'up']
+        command = ['/sbin/ifconfig', self.client_interface, self.client_ip,
+                   'up']
         output = subprocess.Popen(command)
 
-        template = ('yes', self.channel, self.essid, self.mesh_interface,
-                    self.client_interface, self.mesh_interface)
         new = dict(enabled='yes', channel=self.channel, essid=self.essid,
                    mesh_interface=self.mesh_interface,
                    client_interface=self.client_interface)

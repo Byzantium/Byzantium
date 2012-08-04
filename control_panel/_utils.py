@@ -10,7 +10,6 @@
 from mako.exceptions import RichTraceback
 
 import logging
-import sqlite3
 import models.wireless_network
 
 

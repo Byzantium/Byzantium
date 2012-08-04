@@ -84,12 +84,15 @@ class MeshConfiguration(object):
         interfaces = []
         # netconfcursor.execute("SELECT mesh_interface, enabled FROM wireless;")
         #         results = netconfcursor.fetchall()
-        results = self.network_state.list('wireless', models.wireless_network.WirelessNetwork)
+        results = self.network_state.list('wireless',
+                                          models.wireless_network.WirelessNetwork)
         active_interfaces = []
         if not results:
             # Display an error page which says that no wireless interfaces have
             # been configured yet.
-            error.append("<p>ERROR: No wireless network interfaces have been configured yet.  <a href='/network'>You need to do that first!</a></p>")
+            error.append("<p>ERROR: No wireless network interfaces have been "
+                         "configured yet.  <a href='/network'>You need to do "
+                         "that first!</a></p>")
         else:
 
             # Walk through the list of results.
@@ -99,27 +102,38 @@ class MeshConfiguration(object):
                     # See if the interface is already in the mesh configuration
                     # database, and if it's not insert it.
                     
-                    interface_found = self.mesh_state.list('meshes', models.mesh.Mesh, {'interface': i.mesh_interface})
+                    interface_found = self.mesh_state.list(
+                        'meshes',
+                        models.mesh.Mesh,
+                        {'interface': i.mesh_interface})
                     
-                    # template = (i[0], )
-                    # meshconfcursor.execute("SELECT interface, enabled FROM meshes WHERE interface=?;", template)
-                    # interface_found = meshconfcursor.fetchall()
-                    interface_tag = "<input type='submit' name='interface' value='"
+                    interface_tag = ("<input type='submit' name='interface' "
+                                     "value='")
                     if not interface_found:
-                        models.mesh.Mesh(interface=i.mesh_interface, protocol='babel', enabled='no',
-                                     persistance=self.mesh_state)
+                        models.mesh.Mesh(
+                            interface=i.mesh_interface,
+                            protocol='babel',
+                            enabled='no',
+                            persistance=self.mesh_state)
 
-                        # This is a network interface that's ready to configure,
-                        # so add it to the HTML template as a button.
-                        interfaces.append("%s%s' style='background-color:white;' />\n" % (interface_tag, i.mesh_interface))
+                        # This is a network interface that's ready to
+                        # configure, so add it to the HTML template as a
+                        # button.
+                        interfaces.append(
+                            "%s%s' style='background-color:white;' />\n" %
+                            (interface_tag, i.mesh_interface))
                     else:
                         # If the interface is enabled, add it to the row of
                         # active interfaces with a different color.
                         if interface_found[0].enabled == 'yes':
-                            active_interfaces.append("%s%s' style='background-color:green;' />\n" % (interface_tag, i.mesh_interface))
+                            active_interfaces.append(
+                                "%s%s' style='background-color:green;' />\n" %
+                                (interface_tag, i.mesh_interface))
                         else:
                             # The mesh interface hasn't been configured.
-                            interfaces.append("%s%s' />\n" % (interface_tag, i.mesh_interface))
+                            interfaces.append("%s%s' />\n" % 
+                                              (interface_tag,
+                                               i.mesh_interface))
 
                 else:
                     # This interface isn't configured but it's in the database,
@@ -127,14 +141,17 @@ class MeshConfiguration(object):
                     # While it might not be a good idea to put unusable buttons
                     # into the page, it would tell the user that the interfaces
                     # were detected.
-                    interfaces.append("%s%s' style='background-color:orange;' />\n" % (interface_tag, i.mesh_interface))
+                    interfaces.append(
+                        "%s%s' style='background-color:orange;' />\n" %
+                        (interface_tag, i.mesh_interface))
 
         # Render the HTML page.
         try:
             page = self.templatelookup.get_template("/mesh/index.html")
             return page.render(title = "Byzantium Node Mesh Configuration",
                                purpose_of_page = "Configure Mesh Interfaces",
-                               error = ''.join(error), interfaces = ''.join(interfaces),
+                               error = ''.join(error),
+                               interfaces = ''.join(interfaces),
                                active_interfaces = ''.join(active_interfaces))
         except:
             _utils.output_error_data()
@@ -143,7 +160,8 @@ class MeshConfiguration(object):
     # Reinitialize the attributes of an instance of this class to a known
     # state.
     def reinitialize_attributes(self):
-        logging.debug("Reinitializing class attributes of MeshConfiguration().")
+        logging.debug("Reinitializing class attributes of "
+                      "MeshConfiguration().")
         self.interface = ''
         self.protocol = ''
         self.enabled = ''
@@ -174,24 +192,30 @@ class MeshConfiguration(object):
     
     def _pid_helper(self, pid, error, output, commit=False):
         if not os.path.isdir('/proc/' + pid):
-            error = "ERROR: babeld is not running!  Did it crash during or after startup?"
+            error = ("ERROR: babeld is not running!  Did it crash during or "
+                     "after startup?")
         else:
-            output = "%s has been successfully started with PID %s." % (self.babeld, pid)
+            output = ("%s has been successfully started with PID %s." %
+                      (self.babeld, pid))
             
             # Update the mesh configuration database to take into account
             # the presence of the new interface.
             if commit:
-                self.mesh_state.replace({'kind': 'meshes', 'interface': self.interface},
-                                        {'kind': 'meshes', 'interface': self.interface, 'enabled': 'yes'})
+                self.mesh_state.replace(
+                    {'kind': 'meshes', 'interface': self.interface},
+                    {'kind': 'meshes', 'interface': self.interface,
+                     'enabled': 'yes'})
         return error, output
 
-    def update_babeld(self, common_babeld_opts, unique_babeld_opts, interfaces):
+    def update_babeld(self, common_babeld_opts, unique_babeld_opts,
+                      interfaces):
         # Assemble the invocation of babeld.
         babeld_command = []
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
         babeld_command = babeld_command + unique_babeld_opts + interfaces
-        logging.debug("babeld command to be executed: %s", ' '.join(babeld_command))
+        logging.debug("babeld command to be executed: %s",
+                      ' '.join(babeld_command))
 
         # Test to see if babeld is running.  If it is, it's routing for at
         # least one interface, in which case we add the one the user just
@@ -232,11 +256,11 @@ class MeshConfiguration(object):
         unique_babeld_opts = []
 
         # Set up a list of mesh interfaces for which babeld is already running.
-        results = self.mesh_state.list('meshes', models.mesh.Mesh, {'enabled': 'yes', 'protocol': 'babel'})
+        results = self.mesh_state.list(
+            'meshes',
+            models.mesh.Mesh,
+            {'enabled': 'yes', 'protocol': 'babel'})
         interfaces = []
-        # query = "SELECT interface, enabled, protocol FROM meshes WHERE enabled='yes' AND protocol='babel';"
-        # connection, cursor = _utils.execute_query(self.meshconfdb, query)
-        # results = cursor.fetchall()
         for i in results:
             logging.debug("Adding interface: %s", i.interface)
             interfaces.append(i.interface)
@@ -280,7 +304,8 @@ class MeshConfiguration(object):
 
         # Render the HTML page.
         try:
-            page = self.templatelookup.get_template("/mesh/removefrommesh.html")
+            page = self.templatelookup.get_template(
+                "/mesh/removefrommesh.html")
             return page.render(title = "Byzantium Node Mesh Configuration",
                                purpose_of_page = "Disable Mesh Interface",
                                interface = interface)
@@ -309,11 +334,11 @@ class MeshConfiguration(object):
 
         # Set up a list of mesh interfaces for which babeld is already running
         # but omit self.interface.
-        results = self.mesh_state.list('meshes', models.mesh.Mesh, {'enabled': 'yes', 'protocol': 'babel'})
+        results = self.mesh_state.list(
+            'meshes',
+            models.mesh.Mesh,
+            {'enabled': 'yes', 'protocol': 'babel'})
         interfaces = []
-        # query = "SELECT interface FROM meshes WHERE enabled='yes' AND protocol='babel';"
-        # connection, cursor = _utils.execute_query(self.meshconfdb, query)
-        # results = cursor.fetchall()
         for i in results:
             if i.interface != self.interface:
                 interfaces.append(i.interface)
@@ -323,7 +348,9 @@ class MeshConfiguration(object):
         if not interfaces:
             output = 'Byzantium node offline.'
 
-        babeld_command = self.update_babeld(common_babeld_opts, unique_babeld_opts, interfaces)
+        babeld_command = self.update_babeld(common_babeld_opts,
+                                            unique_babeld_opts,
+                                            interfaces)
 
         # If there is at least one wireless network interface still configured,
         # then re-run babeld.
@@ -344,8 +371,10 @@ class MeshConfiguration(object):
         else:
             # There are no mesh interfaces left, so update the database to
             # deconfigure self.interface.
-            self.mesh_state.replace({'kind': 'meshes', 'interface': self.interface},
-                                    {'kind': 'meshes', 'interface': self.interface, 'enabled': 'no'})
+            self.mesh_state.replace(
+                {'kind': 'meshes', 'interface': self.interface},
+                {'kind': 'meshes', 'interface': self.interface,
+                 'enabled': 'no'})
 
         # Render the HTML page.
         try:
