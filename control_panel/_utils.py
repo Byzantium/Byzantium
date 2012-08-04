@@ -107,8 +107,8 @@ def output_error_data():
     traceback = RichTraceback()
     for filename, lineno, function, line in traceback.traceback:
         print '\n'
-        print ('Error in file %s\n\tline %s\n\tfunction %s') %
-               ((filename, lineno, function))
-        print ('Execution died on line %s\n') % (line)
-        print ('%s: %s') % ((str(traceback.error.__class__.__name__),
-                            traceback.error))
+        print ('Error in file %s\n\tline %s\n\tfunction %s' %
+               (filename, lineno, function))
+        print 'Execution died on line %s\n' % line
+        print '%s: %s' % (str(traceback.error.__class__.__name__),
+                          traceback.error)
