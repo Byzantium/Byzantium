@@ -63,6 +63,11 @@ class MeshConfiguration(object):
         self.pid = ''
 
     def pid_check(self):
+        """Get the pid of babeld.
+        
+        Returns:
+            A string with the pid if found, empty string if not.
+        """
         pid = ''
         if os.path.exists(self.babeld_pid):
             logging.debug("Reading PID of babeld.")
@@ -72,8 +77,8 @@ class MeshConfiguration(object):
             logging.debug("PID of babeld: %s", str(pid))
         return pid
 
-    # Pretends to be index.html.
     def index(self):
+        """Method that generates /meshconfiguration page."""
         # This is technically irrelevant because the class' attributes are blank
         # when instantiated, but it's useful for setting up the HTML fields.
         self.reinitialize_attributes()
@@ -157,9 +162,8 @@ class MeshConfiguration(object):
             _utils.output_error_data()
     index.exposed = True
 
-    # Reinitialize the attributes of an instance of this class to a known
-    # state.
     def reinitialize_attributes(self):
+        """Reset attributes to the empty string."""
         logging.debug("Reinitializing class attributes of "
                       "MeshConfiguration().")
         self.interface = ''
@@ -167,10 +171,17 @@ class MeshConfiguration(object):
         self.enabled = ''
         self.pid = ''
 
-    # Allows the user to add a wireless interface to the mesh.  Assumes that
-    # the interface is already configured (we wouldn't get this far if it
-    # wasn't.
     def addtomesh(self, interface=None):
+        """Allows the user to add a wireless interface to the mesh.
+        
+         Assumes that the interface is already configured (we wouldn't get this
+         far if it wasn't).
+        
+        Args:
+            interface: str, interface to add
+            
+        Accesible at /meshconfiguration/addtomesh
+        """
         # Store the name of the network interface and whether or not it's
         # enabled in the object's attributes.  Right now only the Babel
         # protocol is supported, so that's hardcoded for the moment (but it
