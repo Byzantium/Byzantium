@@ -5,19 +5,19 @@
 # Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
 # License: GPLv3
 
-# control_panel.py
-# This application runs in the background and implements a (relatively) simple
-# HTTP server using CherryPy (http://www.cherrypy.org/) that controls the
-# major functions of the Byzantium node, such as configuring, starting, and
-# stopping the mesh networking subsystem.  CherryPy is hardcoded to listen on
-# the loopback interface (127.0.0.1) on port 8080/TCP unless told otherwise.
-# For security reasons I see no reason to change this; if you want to admin a
-# Byzantium node remotely you'll have to use SSH port forwarding.
+""""Main code for running the control panel app.
 
-# v0.2  - Split the network traffic graphs from the system status report.
-# v0.1  - Initial release.
+This application runs in the background and implements a (relatively) simple
+HTTP server using CherryPy (http://www.cherrypy.org/) that controls the
+major functions of the Byzantium node, such as configuring, starting, and
+stopping the mesh networking subsystem.  CherryPy is hardcoded to listen on
+the loopback interface (127.0.0.1) on port 8080/TCP unless told otherwise.
+For security reasons I see no reason to change this; if you want to admin a
+Byzantium node remotely you'll have to use SSH port forwarding.
 
-# Import modules.
+v0.2  - Split the network traffic graphs from the system status report.
+v0.1  - Initial release.
+"""
 
 from status import Status
 from mako.lookup import TemplateLookup
@@ -32,7 +32,9 @@ from meshconfiguration import MeshConfiguration
 from services import Services
 from gateways import Gateways
 
+
 def parse_args():
+    """Argument parser."""
     parser = argparse.ArgumentParser(conflict_handler='resolve',
                                      description="This daemon implements the "
                                      "control panel functionality of Byzantium "
@@ -53,6 +55,7 @@ def parse_args():
 
 
 def check_args(args):
+    """Audits the args."""
     if args.debug:
         print "Control panel debugging mode is on."
     if args.test:
@@ -67,6 +70,7 @@ def check_args(args):
 
 
 def main():
+    """Yel olde main function."""
     args = check_args(parse_args())
     if args.debug or args.test:
         logging.basicConfig(level=logging.DEBUG)
@@ -89,7 +93,7 @@ def main():
     # Allocate the objects representing the URL tree.
     root = Status(templatelookup, args.test, args.filedir)
     # Allocate objects for all of the control panel's main features.
-    root.traffic = NetworkTraffic(filedir, templatelookup)
+    root.traffic = NetworkTraffic(args.filedir, templatelookup)
     root.network = NetworkConfiguration(templatelookup, args.test)
     root.mesh = MeshConfiguration(templatelookup, args.test)
     root.services = Services(templatelookup, args.test)

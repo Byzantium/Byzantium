@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: set expandtab tabstop=4 shiftwidth=4 :
 
@@ -599,7 +600,7 @@ class NetworkConfiguration(object):
 
         new = dict(enabled='yes', channel=self.channel, essid=self.essid, mesh_interface=self.mesh_interface, client_interface=self.client_interface)
         old = dict(mesh_interface=self.mesh_interface)
-        _utils.set_wireless_db_entry(self.network_state, old, new)
+        self.network_state.replace(old, new)
 
         # Start the captive portal daemon.  This will also initialize the IP
         # tables ruleset for the client interface.

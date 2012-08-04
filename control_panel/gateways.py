@@ -1,11 +1,11 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: set expandtab tabstop=4 shiftwidth=4 :
 
-# gateways.py - Implements the network gateway configuration subsystem of the
-#    Byzantium control panel.
-
 # Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
 # License: GPLv3
+
+"""Implements the network gateway config subsystem of the control panel."""
 
 # TODO:
 # - In Gateways.activate(), add some code before running iptables to make sure
@@ -30,6 +30,14 @@ import models.wireless_network
 
 
 def audit_procnetdev(procnetdev):
+    """Check if we can access and read from /proc/net/device.
+    
+    Args:
+        procnetdev: str, path to the device
+        
+    Returns:
+        True if accessible, False if not
+    """
     if procnetdev:
         logging.debug("Successfully opened /proc/net/dev.")
     else:
@@ -50,6 +58,15 @@ def audit_procnetdev(procnetdev):
     
     
 def build_interfaces(interfaces, procnetdev):
+    """Build list of interfaces found in procnetdev.
+    
+    Args:
+        interfaces: list, list of the interfaces to be filled (usually [])
+        procnetdev: list, lines from the procnetdev file
+        
+    Returns:
+        An updated interfaces list
+    """
     for line in procnetdev:
         interface = line.split()[0]
         interface = interface.strip()
@@ -59,10 +76,19 @@ def build_interfaces(interfaces, procnetdev):
 
 
 def check_for_wired_interface(interface, persistance):
+    """Check if an interface exists in persistant storage.
+    
+    Args:
+        interface: str, the interface being searched for
+        persistance: obj, the State object to access persistant storage through
+    
+    Returns:
+        'wired' if found, '' otherwise
+    """
     results, _ = persistance.exists('wired', {'interface': interface})
     if not results:
-        logging.debug("Interface %s isn't a known wired interface.  Checking wireless interfaces...",
-                      interface)
+        logging.debug("Interface %s isn't a known wired interface.  Checking "
+                      "wireless interfaces...", interface)
         return ''
     else:
         logging.debug("Interface %s is a known wired interface.", interface)
@@ -70,18 +96,36 @@ def check_for_wired_interface(interface, persistance):
 
 
 def check_for_wireless_interface(interface, persistance):
+    """Check if an interface exists in persistant storage.
+    
+    Args:
+        interface: str, the interface being searched for
+        persistance: obj, the State object to access persistant storage through
+    
+    Returns:
+        'wireless' if found, '' otherwise
+    """
     results, _ = persistance.exists('wireless', {'mesh_interface': interface})
     # If it's not in there, either, figure out which table it
     # has to go in.
     if not results:
-        logging.debug("%s isn't a known wireless interface, either.  Figuring out where it has to go...", 
-                      interface)
+        logging.debug("%s isn't a known wireless interface, either.  Figuring "
+                      "out where it has to go...", interface)
+        return ''
     else:
         logging.debug("%s is a known wireless interface.", interface)
         return 'wireless'
 
 
 def check_wireless_table(interface):
+    """Check whether interface exists in /proc/net/wireless.
+    
+    Args:
+        interface: str, the interface being searched for
+        
+    Returns:
+        True if found, False otherwise.
+    """
     table = False
     procnetwireless = open('/proc/net/wireless', 'r')
     procnetwireless.readline()
@@ -94,10 +138,13 @@ def check_wireless_table(interface):
     return table
 
 
-# Classes.
-# This class allows the user to turn a configured network interface on their
-# node into a gateway from the mesh to another network (usually the global Net).
 class Gateways(object):
+    """Controller for the gateways page.
+    
+    This class allows the user to turn a configured network interface on their
+    node into a gateway from the mesh to another network (usually the global
+    Net).
+    """
 
     def __init__(self, templatelookup, test):
         self.templatelookup = templatelookup
@@ -107,8 +154,8 @@ class Gateways(object):
         self.network_state = models.state.NetworkState(netconfdb)
         self.mesh_state = models.state.MeshState(meshconfdb)
 
-        # Configuration information for the network device chosen by the user to
-        # act as the uplink.
+        # Configuration information for the network device chosen by the user
+        # to act as the uplink.
         self.interface = ''
         self.channel = 0
         self.essid = ''
@@ -116,9 +163,9 @@ class Gateways(object):
         # Used for sanity checking user input.
         self.frequency = 0
         
-        # Class attributes which make up a network interface.  By default they are
-        # blank, but will be populated from the network.sqlite database if the
-        # user picks an already-configured interface.
+        # Class attributes which make up a network interface.  By default they
+        # are blank, but will be populated from the network.sqlite database if
+        # the user picks an already-configured interface.
         self.mesh_interface = ''
         self.mesh_ip = ''
         self.client_interface = ''
@@ -128,13 +175,13 @@ class Gateways(object):
         self.mesh_netmask = '255.255.0.0'
         self.client_netmask = '255.255.255.0'
 
-        # Attributes for flat files that this object maintains for the client side
-        # of the network subsystem.
+        # Attributes for flat files that this object maintains for the client
+        # side of the network subsystem.
         self.hosts_file = '/etc/hosts.mesh'
         self.dnsmasq_include_file = '/etc/dnsmasq.conf.include'
 
-    # Pretends to be index.html.
     def index(self):
+        """Generate the /gateways index page."""
         ethernet_buttons = ""
         wireless_buttons = ""
 
@@ -142,18 +189,27 @@ class Gateways(object):
         # the node.
         self.update_network_interfaces()
 
-        results = self.network_state.list('wired', models.wired_network.WiredNetwork, {'gateway': 'no'})
+        results = self.network_state.list('wired',
+                                          models.wired_network.WiredNetwork,
+                                          {'gateway': 'no'})
         if results:
             for interface in results:
-                ethernet_buttons = ethernet_buttons + "<td><input type='submit' name='interface' value='" + interface.interface + "' /></td>\n"
+                ethernet_buttons = ("%s<td><input type='submit' "
+                                    "name='interface' value='%s' /></td>\n" %
+                                    (ethernet_buttons, interface.interface))
 
         # Generate a list of wireless interfaces on the node that are not
         # enabled but are known.  As before, each button gets is own button
         # in a table.
-        results = self.network_state.list('wireless', models.wireless_network.WirelessNetwork, {'gateway': 'no'})
+        results = self.network_state.list(
+            'wireless',
+             models.wireless_network.WirelessNetwork,
+             {'gateway': 'no'})
         if results:
             for interface in results:
-                wireless_buttons = wireless_buttons + "<td><input type='submit' name='interface' value='" + interface.interface + "' /></td>\n"
+                wireless_buttons = ("%s<td><input type='submit' "
+                                    "name='interface' value='%s' /></td>\n" %
+                                    (wireless_buttons, interface.interface))
 
         # Render the HTML page.
         try:
@@ -166,10 +222,11 @@ class Gateways(object):
             _utils.output_error_data()
     index.exposed = True
 
-    # Utility method to update the list of all network interfaces on a node.
-    # New ones detected are added to the network.sqlite database.  Takes no
-    # arguments; returns nothing (but alters the database).
     def update_network_interfaces(self):
+        """Update the list of all network interfaces on a node.
+        
+        New ones detected are added to the persistant storage.
+        """
         logging.debug("Entered Gateways.update_network_interfaces().")
 
         # Open the kernel's canonical list of network interfaces.
@@ -181,7 +238,9 @@ class Gateways(object):
         # the interfaces.
         interfaces = []
         if self.test:
-            logging.debug("Pretending to harvest /proc/net/dev for network interfaces.  Actually using the contents of %s and loopback.", self.network_state.db_path)
+            logging.debug("Pretending to harvest /proc/net/dev for network "
+                          "interfaces.  Actually using the contents of %s and "
+                          "loopback.", self.network_state.db_path)
             return
         else:
             interfaces = build_interfaces(interfaces, procnetdev)
@@ -191,33 +250,54 @@ class Gateways(object):
             for interface in interfaces:
 
                 # See if it's in the table of wired interfaces.
-                found = check_for_wired_interface(interface, self.network_state)
+                found = check_for_wired_interface(interface,
+                                                  self.network_state)
 
                 # If it's not in the wired table, check the wireless table.
                 if not found:
-                    found = check_for_wireless_interface(interface, self.network_state)
+                    found = check_for_wireless_interface(interface,
+                                                         self.network_state)
 
                 # If it still hasn't been found, figure out where it has to go.
                 if not found:
-                    logging.debug("Interface %s really is new.  Figuring out where it should go.", interface)
+                    logging.debug("Interface %s really is new.  Figuring out "
+                                  "where it should go.", interface)
 
                     # Look in /proc/net/wireless.  If it's in there, it
                     # goes in the wireless table.  Otherwise it goes in
                     # the wired table.
                     if check_wireless_table(interface):
-                        models.wireless_network.WirelessNetwork(client_interface=interface + ':1', mesh_interface=interface, gateway='no',
-                                     enabled='no', channel=0, essid='', persistance=self.network_state)
+                        models.wireless_network.WirelessNetwork(
+                            client_interface=interface + ':1',
+                            mesh_interface=interface,
+                            gateway='no',
+                            enabled='no',
+                            channel=0,
+                            essid='',
+                            persistance=self.network_state)
                     else:
                         logging.debug("Goes in wired table.")
-                        models.wired_network.WiredNetwork(interface=interface, gateway='no', enabled='no',
-                                     persistance=self.network_state)
+                        models.wired_network.WiredNetwork(
+                            interface=interface,
+                            gateway='no',
+                            enabled='no',
+                            persistance=self.network_state)
 
         logging.debug("Leaving Gateways.enumerate_network_interfaces().")
 
-    # Implements step two of the wired gateway configuration process: turning
-    # the gateway on.  This method assumes that whichever Ethernet interface
-    # chosen is already configured via DHCP through ifplugd.
     def tcpip(self, interface=None, essid=None, channel=None):
+        """Turns on the gateway.
+        
+        Note: This method assumes that whichever Ethernet interface chosen is
+        already configured via DHCP through ifplugd.
+        
+        Accessible through /gateways/tcpip
+        
+        Args:
+            interface: str, interface to activate
+            essid: str, essid to set
+            channel: str, channel to set
+        """
         logging.debug("Entered Gateways.tcpip().")
 
         # Define this variable in case wireless configuration information is
@@ -255,6 +335,15 @@ class Gateways(object):
     # mesh.  Takes as an argument the value of the 'interface' variable passed
     # from the form on /gateways/index.html.
     def wireless(self, interface=None):
+        """Allow user to enter essid/channel for network interface.
+        
+        The interface will act as an uplink to another Network for the mesh.
+        
+        Accessible through /gateways/wireless
+        
+        Args:
+            interface: str, the interface to use
+        """
         # Store the name of the interface in question in a class attribute for
         # use later.
         self.interface = interface
@@ -264,7 +353,8 @@ class Gateways(object):
         channel = 0
         essid = ''
 
-        channel, essid, warning = _utils.check_for_configured_interface(self.network_state, interface, channel, essid)
+        channel, essid, warning = _utils.check_for_configured_interface(
+            self.network_state, interface, channel, essid)
 
         # The forms in the HTML template do everything here, as well.  This
         # method only accepts input for use later.
@@ -278,23 +368,43 @@ class Gateways(object):
             _utils.output_error_data()
     wireless.exposed = True
 
-    def _get_mesh_interfaces(self, interface):
-        results = self.mesh_state.list('meshes', models.mesh.Mesh, {'enabled': 'yes', 'protocol': 'babel'})
+    def _get_mesh_interfaces(self):
+        """Get enabled babel mesh interfaces from persistant storage.
+        
+        Returns:
+            A list of enabled babel interfaces"""
+        results = self.mesh_state.list('meshes', models.mesh.Mesh,
+                                       {'enabled': 'yes', 'protocol': 'babel'})
         return [result.interface for result in results]
         
     def _update_netconfdb(self, interface):
+        """Sets gateway status to 'yes' for the interface.
         
-        results = self.network_state.list('wired', models.wired_network.WiredNetwork, {'interface': interface})
+        Args:
+            interface: str, theinterface to activate
+        """
+        results = self.network_state.list(
+            'wired',
+            models.wired_network.WiredNetwork,
+            {'interface': interface})
         if results:
             for result in results:
                 result.gateway = 'yes'
         # Otherwise, it's a wireless interface.
         else:
-            self.network_state.replace({'kind': 'wireless', 'mesh_interface': interface},
-                                       {'kind': 'wireless', 'mesh_interface': interface, 'gateway': 'yes'})
+            self.network_state.replace(
+                {'kind': 'wireless', 'mesh_interface': interface},
+                {'kind': 'wireless', 'mesh_interface': interface,
+                 'gateway': 'yes'})
 
-    # Method that does the deed of turning an interface into a gateway.  This
     def activate(self, interface=None):
+        """Method that does the deed of turning an interface into a gateway.
+        
+        Accessible through /gateways/activate
+        
+        Args:
+            interface: str, interface to turn into a gateway
+        """
         logging.debug("Entered Gateways.activate().")
 
         # Test to see if wireless configuration attributes are set, and if they
@@ -322,7 +432,8 @@ class Gateways(object):
         command = ['/usr/local/sbin/gateway.sh', interface]
         logging.debug("Preparing to configure interface %s.", interface)
         if self.test:
-            logging.debug("Pretending to run gateway.sh on interface %s.", interface)
+            logging.debug("Pretending to run gateway.sh on interface %s.",
+                          interface)
             logging.debug("Command that would be run:\n%s", ' '.join(command))
         else:
             subprocess.Popen(command)
@@ -331,9 +442,10 @@ class Gateways(object):
 
         # Set up a list of mesh interfaces for which babeld is already running.
         #
-        # NOTE: the interfaces variable doesn't seem to ever get used anywhere :/
+        # TODO(shanel): the interfaces variable doesn't seem to ever get used
+        #               anywhere
         #
-        interfaces = self._get_mesh_interfaces(interface)
+        interfaces = self._get_mesh_interfaces()
 
         # Update the network configuration database to reflect the fact that
         # the interface is now a gateway.  Search the table of Ethernet
@@ -350,8 +462,11 @@ class Gateways(object):
             _utils.output_error_data()
     activate.exposed = True
 
-    # Configure the network interface.
     def set_ip(self):
+        """Configure the network interface.
+        
+        Accessible through /gateways/set_ip
+        """
         # If we've made it this far, the user's decided to (re)configure a
         # network interface.  Full steam ahead, damn the torpedoes!
 
@@ -368,12 +483,15 @@ class Gateways(object):
             # Set the mode, ESSID and channel.
             command = ['/sbin/iwconfig', self.mesh_interface, 'mode ad-hoc']
             output = subprocess.Popen(command)
-            command = ['/sbin/iwconfig', self.mesh_interface, 'essid', self.essid]
+            command = ['/sbin/iwconfig', self.mesh_interface, 'essid',
+                       self.essid]
             output = subprocess.Popen(command)
-            command = ['/sbin/iwconfig', self.mesh_interface, 'channel',  self.channel]
+            command = ['/sbin/iwconfig', self.mesh_interface, 'channel',
+                       self.channel]
             output = subprocess.Popen(command)
 
-            # Run iwconfig again and capture the current wireless configuration.
+            # Run iwconfig again and capture the current wireless
+            # configuration.
             command = ['/sbin/iwconfig', self.mesh_interface]
             output = subprocess.Popen(command).stdout
             configuration = output.readlines()
@@ -418,15 +536,21 @@ class Gateways(object):
         command = ['/sbin/ifconfig', self.client_interface, self.client_ip, 'up']
         output = subprocess.Popen(command)
 
-        template = ('yes', self.channel, self.essid, self.mesh_interface, self.client_interface, self.mesh_interface)
-        new = dict(enabled='yes', channel=self.channel, essid=self.essid, mesh_interface=self.mesh_interface, client_interface=self.client_interface)
+        template = ('yes', self.channel, self.essid, self.mesh_interface,
+                    self.client_interface, self.mesh_interface)
+        new = dict(enabled='yes', channel=self.channel, essid=self.essid,
+                   mesh_interface=self.mesh_interface,
+                   client_interface=self.client_interface)
         old = dict(mesh_interface=self.mesh_interface)
-        _utils.set_wireless_db_entry(self.network_state, old, new)
+        self.network_state.replace(old, new)
 
         # Send this information to the methods that write the /etc/hosts and
         # dnsmasq config files.
-        networkconfiguration.make_hosts(self.hosts_file, self.test, starting_ip=self.client_ip)
-        networkconfiguration.configure_dnsmasq(self.dnsmasq_include_file, self.test, starting_ip=self.client_ip)
+        networkconfiguration.make_hosts(self.hosts_file, self.test,
+                                        starting_ip=self.client_ip)
+        networkconfiguration.configure_dnsmasq(self.dnsmasq_include_file,
+                                               self.test,
+                                               starting_ip=self.client_ip)
 
         # Render and display the page.
         try:
