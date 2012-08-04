@@ -1,16 +1,19 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: set expandtab tabstop=4 shiftwidth=4 :
 
-# meshconfiguration.py - Lets the user configure and manipulate mesh-enabled
-#    wireless network interfaces.  Wired interfaces (Ethernet) are reserved for
-#    use as net.gateways and fall under a different web app.
+# Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
+# License: GPLv3
+
+"""Configure and manipulate mesh-enabled wireless network interfaces.
+
+Wired interfaces (Ethernet) are reserved for use as net.gateways and fall
+under a different web app.
+"""
 
 # For the time being this class is designed to operate with the Babel protocol
 # (http://www.pps.jussieu.fr/~jch/software/babel/).  It would have to be
 # rewritten to support a different (or more) protocols.
-
-# Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
-# License: GPLv3
 
 # TODO:
 # - Make network interfaces that don't exist anymore go away.
@@ -25,7 +28,6 @@
 import logging
 import os
 import signal
-import sqlite3
 import subprocess
 import time
 
@@ -36,9 +38,8 @@ import models.wired_network
 import models.wireless_network
 
 
-# Classes.
-# Allows the user to configure mesh networking on wireless network interfaces.
 class MeshConfiguration(object):
+    """Configure mesh networking on wireless network interfaces."""
 
     def __init__(self, templatelookup, test):
         self.templatelookup = templatelookup
@@ -82,10 +83,9 @@ class MeshConfiguration(object):
         # the network configuration database.
         error = []
         interfaces = []
-        # netconfcursor.execute("SELECT mesh_interface, enabled FROM wireless;")
-        #         results = netconfcursor.fetchall()
-        results = self.network_state.list('wireless',
-                                          models.wireless_network.WirelessNetwork)
+        results = self.network_state.list(
+            'wireless',
+            models.wireless_network.WirelessNetwork)
         active_interfaces = []
         if not results:
             # Display an error page which says that no wireless interfaces have
@@ -277,7 +277,6 @@ class MeshConfiguration(object):
         pid = self.pid_check()
         if pid:
             error, output = self._pid_helper(pid, error, output, commit=True)
-        cursor.close()
 
         # Render the HTML page.
         try:
