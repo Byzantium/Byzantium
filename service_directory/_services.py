@@ -19,32 +19,13 @@ logging = _utils.get_logging()
 def get_local_services_list():
     '''Get the list of services running on this node from the databases.'''
     # Define the location of the service database.
-    servicedb = conf.servicedb
-    service_list = []
-
-    # Set up a connection to the database.
-    logging.debug("DEBUG: Opening service database.")
-    connection = sqlite3.connect(servicedb)
-    cursor = connection.cursor()
-
-    # Pull a list of running web apps on the node.
-    logging.debug("DEBUG: Getting list of running webapps from database.")
-    cursor.execute("SELECT name FROM webapps WHERE status='active';")
-    results = cursor.fetchall()
-    for service in results:
-        service_list += [{'name':service[0],'path':'/%s' % service[0],'description':''}]
-
-    # Pull a list of daemons running on the node. This means that most of the web apps users will access will be displayed.
-    logging.debug("DEBUG: Getting list of running servers from database.")
-    cursor.execute("SELECT name FROM daemons WHERE status='active' AND showtouser='yes';")
-    results = cursor.fetchall()
+    service_attrs = {'status':'active','showtouser':'yes'}
+    results = byzantium.ServiceState.list(service_attrs)
     for service in results:
         logging.debug("DEBUG: Value of service: %s" % str(service))
-        if service[0] in conf.service_info:
-            path = conf.service_info[service[0]]
-        else:
-            path = '/%s/' % service[0]
-        service_list += [{'name':service[0],'path':path,'description':''}]
+        path = service['path']
+        description = service['description']
+        service_list += [{'name':service['h_name'],'path':path,'description':}]
 
         # Clean up after ourselves.
         logging.debug("DEBUG: Closing service database.")

@@ -13,7 +13,7 @@ class Model(object):
         self.kind = kind
         self.persistance = persistance
         if not testing:
-            results, _ = self.persistance.exists(self.kind, self._trimmed())
+            results, _ = self.persistance.get(self.kind, self._trimmed())
             if not results:
                 self.persistance.create(self._trimmed())
 
@@ -27,7 +27,7 @@ class Model(object):
         return out
 
     def find(self, attrs):
-        results, _ = self.persistance.exists(self.kind, attrs)
+        results, _ = self.persistance.get(self.kind, attrs)
         return results
     
     def list(self):

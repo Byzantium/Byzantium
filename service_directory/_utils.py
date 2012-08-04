@@ -48,6 +48,7 @@ def json2file(obj, file_name, mode = 'w'):
 class Config(object):
     ''' Make me read from a file and/or environment'''
     def __init__(self):
+        self.avahi_storage_index_field = 'full_name'
         self.services_cache = '/tmp/byz_services.json'
         self.service_template = '/etc/byzantium/services/avahi/template.service'
         self.services_store_dir = '/etc/avahi/inactive'

@@ -219,7 +219,7 @@ class DBBackedState(State):
         to_execute = 'INSERT OR REPLACE INTO %s VALUES (%s);' % (kind, frag)
         self._execute_and_commit(to_execute, values)
 
-    def exists(self, kind, attrs):
+    def get(self, kind, attrs):
         """Find all matching entries that match a dict of attrs.
         
         Args:
@@ -239,6 +239,20 @@ class DBBackedState(State):
         self.connection.close()
         return results, desc
 
+    def exists(self, kind, attrs):
+        '''Determine if any entries match a dict of attrs.
+        
+        Args:
+            kind: str, the kind of thing being searched for
+            attrs: dict, a dict of attributes
+          
+         Returns:
+             Boolean indicating existence of records. True if records exist, False if none are found.
+        '''
+        if len(self.get(kind,attrs)[0]) > 0:
+            return True
+        return False
+
     def list(self, kind, klass, attrs=None):
         """List all entries for a given kind, returning them as klass objects.
         
@@ -253,7 +267,7 @@ class DBBackedState(State):
         self.connection = sqlite3.connect(self.db_path)
         cursor = self.connection.cursor()
         if attrs:
-            results, description = self.exists(kind, attrs)
+            results, description = self.get(kind, attrs)
             col_name_list = [desc[0] for desc in description]
         else:
             to_execute = 'SELECT * FROM %s;' % kind
@@ -292,6 +306,19 @@ class DBBackedState(State):
         to_execute = 'UPDATE OR REPLACE %s SET %s WHERE %s;' % (kind, setting_frag, query_frag)
         self._execute_and_commit(to_execute, setting_values + query_values)
 
+    def remove(self, kind, record=None, record_index=None, record_index_value=None):
+        query_frag = query_values = None
+        if record:
+            if self.exists(record):
+                query_frag, query_values = self._create_update_query_fragment_from_item(record)
+            else:
+                return False
+        elif record_index and record_index_value:
+            query_frag = '%s=?' % record_index
+            query_values = tuple(record_index_value)
+        if query_frag and query_values:
+            to_execute = 'DELETE FROM %s WHERE %s' % (kind, query_frag)
+            self._execute_and_commit(to_execute, query_values)
 
 class NetworkState(DBBackedState):
 
@@ -318,8 +345,13 @@ class ServiceState(DBBackedState):
 
     def __init__(self, db_path):
         super(ServiceState, self).__init__(db_path)
-        daemons = {'name': '', 'show_to_user': '', 'port': 0, 'init_script': '',
-                   'status': '', 'kind': 'daemons'}
-        webapps = {'name': '', 'status': '', 'kind': 'webapps'}
+        daemons = {'h_name': '', 'desc':'', 'path':'', 'port': 0, 'status': 0,
+                'kind':'daemons', 'show_to_user': '', 'init_script': ''}
+        webapps = {'h_name': '', 'desc':'', 'path':'', 'port': 0, 'status': 0,
+                'kind': 'webapps'}
+        remote = {'h_name':'', 'desc':'', 'path':'', 'port':0, 'status':0,
+                'kind':'remote', 'txt_record':'', 'full_name':'', 'host':''}
         self.initialize(daemons)
         self.initialize(webapps)
+        self.initialize(remote)
+
