@@ -97,7 +97,7 @@ if [ ! -e $kdehome/share/config/kdesktoprc ]; then
 cat >$kdehome/share/config/kdesktoprc <<EOF
 [Desktop0]
 Wallpaper=byzantium-appleesc-1920x1080.jpg
-WallpaperMode=Scaled
+WallpaperMode=ScaleAndCrop
 
 [ScreenSaver]
 DPMS-dependent=false
