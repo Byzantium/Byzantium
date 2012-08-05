@@ -202,6 +202,18 @@ class MeshConfiguration(object):
     addtomesh.exposed = True
     
     def _pid_helper(self, pid, error, output, commit=False):
+        """Find babeld pid and update enabled-ness.
+        
+        Args:
+            pid: str, the pid being checked
+            error: str, error string to add errors to
+            output: str, the output strint to add to
+            commit: bool, whether to commit the state change to persistant
+                storage
+        
+        Returns:
+            The error string and the output string
+        """
         if not os.path.isdir('/proc/' + pid):
             error = ("ERROR: babeld is not running!  Did it crash during or "
                      "after startup?")
@@ -220,7 +232,18 @@ class MeshConfiguration(object):
 
     def update_babeld(self, common_babeld_opts, unique_babeld_opts,
                       interfaces):
-        # Assemble the invocation of babeld.
+        """Assemble the invocation of babeld.
+        
+        Args:
+            common_babeld_opts: list, list of common command line flags for
+                babeld
+            unique_babeld_opts: list, list of unique command line flags for
+                babeld
+            interfaces: list, list of interfaces
+            
+        Returns:
+            A list with the complete command line to run
+        """
         babeld_command = []
         babeld_command.append(self.babeld)
         babeld_command = babeld_command + common_babeld_opts
