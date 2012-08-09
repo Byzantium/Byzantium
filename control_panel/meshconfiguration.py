@@ -271,8 +271,11 @@ class MeshConfiguration(object):
         time.sleep(self.babeld_timeout)
         return babeld_command
 
-    # Runs babeld to turn self.interface into a mesh interface.
     def enable(self):
+        """Runs babeld to turn self.interface into a mesh interface.
+        
+        Available at /meshconfiguration/enable
+        """
         # Set up the error and successful output messages.
         error = ''
         output = ''
@@ -324,9 +327,14 @@ class MeshConfiguration(object):
             _utils.output_error_data()
     enable.exposed = True
 
-    # Allows the user to remove a configured interface from the mesh.  Takes
-    # one argument from self.index(), the name of the interface.
     def removefrommesh(self, interface=None):
+        """Allows the user to remove a configured interface from the mesh.
+        
+        Available at /medhconfiguration/removefrommesh
+        
+        Args:
+            interface: str, the interface to remove
+        """
         logging.debug("Entered MeshConfiguration.removefrommesh().")
 
         # Configure this instance of the object for the interface the user
@@ -346,8 +354,11 @@ class MeshConfiguration(object):
             _utils.output_error_data()
     removefrommesh.exposed = True
 
-    # Re-runs babeld without self.interface to drop it out of the mesh.
     def disable(self):
+        """Re-runs babeld without self.interface to drop it out of the mesh.
+        
+        Available at /meshconfiguration/disable
+        """
         logging.debug("Entered MeshConfiguration.disable().")
 
         # Set up the error and successful output messages.
@@ -417,5 +428,4 @@ class MeshConfiguration(object):
                                error = error, output = output)
         except:
             _utils.output_error_data()
-    removefrommesh.exposed = True
     disable.exposed = True
