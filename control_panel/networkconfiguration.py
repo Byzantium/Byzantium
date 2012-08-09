@@ -30,10 +30,12 @@ import models.wired_network
 import models.wireless_network
         
 
-# Utility method to enumerate all of the network interfaces on a node.
-# Returns two lists, one of wired interfaces and one of wireless
-# interfaces.
 def enumerate_network_interfaces():
+    """Utility method to enumerate all of the network interfaces on a node.
+    
+    Returns:
+        Two lists, one of wired interfaces and one of wireless interfaces.
+    """
     logging.debug("Entered NetworkConfiguration.enumerate_network_interfaces().")
     logging.debug("Reading contents of /sys/class/net/.")
     wired = []
@@ -64,10 +66,14 @@ def enumerate_network_interfaces():
     return (wired, wireless)
 
 
-# Method that generates an /etc/hosts.mesh file for the node for dnsmasq.
-# Takes three args, the first and last IP address of the netblock.  Returns
-# nothing.
 def make_hosts(hosts_file, test, starting_ip=None):
+    """Method that generates an /etc/hosts.mesh file for the node for dnsmasq.
+    
+    Args:
+        hosts_file: str, the path to the /etc/hosts.mesh file
+        test: bool, whether we are in test mode or not
+        strating_ip: str, the initial ip
+    """
     logging.debug("Entered NetworkConfiguration.make_hosts().")
 
     # See if the /etc/hosts.mesh backup file exists.  If it does, delete it.
@@ -115,6 +121,13 @@ def make_hosts(hosts_file, test, starting_ip=None):
 # Generates an /etc/dnsmasq.conf.include file for the node.  Takes one arg,
 # the IP address to start from.
 def configure_dnsmasq(dnsmasq_include_file, test, starting_ip=None):
+    """Generates an /etc/dnsmasq.conf.include file for the node.
+    
+    Args:
+        dnsmasq_include_file: str, path to /etc/dnsmasq.conf.include
+        test: bool, whether this is test mode or not
+        starting_ip: str, the initial ip address
+    """
     logging.debug("Entered NetworkConfiguration.configure_dnsmasq().")
 
     # Split the last octet off of the IP address passed into this
@@ -165,10 +178,12 @@ def configure_dnsmasq(dnsmasq_include_file, test, starting_ip=None):
 frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
                2.457, 2.462, 2.467, 2.472, 2.484]
 
-# Classes.
-# This class allows the user to configure the network interfaces of their node.
-# Note that this does not configure mesh functionality.
+
 class NetworkConfiguration(object):
+    """This class allows the user to configure the network interfaces of their node.
+    
+    Note: this does not configure mesh functionality.
+    """
 
     def __init__(self, templatelookup, test):
         self.templatelookup = templatelookup
@@ -208,8 +223,8 @@ class NetworkConfiguration(object):
         self.hosts_file = '/etc/hosts.mesh'
         self.dnsmasq_include_file = '/etc/dnsmasq.conf.include'
 
-    # Pretends to be index.html.
     def index(self):
+        """Generates /networlconfiguration/"""
         logging.debug("Entering NetworkConfiguration.index().")
 
         # Reinitialize this class' attributes in case the user wants to
@@ -304,8 +319,8 @@ class NetworkConfiguration(object):
             _utils.output_error_data()
     index.exposed = True
 
-    # Used to reset this class' attributes to a known state.
     def reinitialize_attributes(self):
+        """Used to reset this class' attributes to a known state."""
         logging.debug("Reinitializing class attributes of NetworkConfiguration().")
         self.mesh_interface = ''
         self.client_interface = ''
@@ -325,10 +340,14 @@ class NetworkConfiguration(object):
     # def prune(self, interfaces=None):
     #    logging.debug("Entered NetworkConfiguration.prune()")
 
-    # Allows the user to enter the ESSID and wireless channel of their node.
-    # Takes as an argument the value of the 'interface' variable defined in
-    # the form on /network/index.html.
     def wireless(self, interface=None):
+        """Allows the user to enter the ESSID and wireless channel of their node.
+        
+        Available at /networkconfiguration/wireless
+        
+        Args:
+            interface: str, interface being used
+        """
         logging.debug("Entered NetworkConfiguration.wireless().")
 
         # Store the name of the network interface chosen by the user in the
@@ -360,10 +379,24 @@ class NetworkConfiguration(object):
     wireless.exposed = True
 
     def get_raw_interface(self, interface):
+        """Helper method to do some string splitting.
+        
+        Args:
+            interface: str, the interface string
+            
+        Returns:
+            The proper chunk of the interface string
+        """
         return interface.rsplit(":",1)[0]
 
     def get_unused_ip(self, interface, addr, kind):
-        """docstring for get_unused_ip"""
+        """Find an unused ip address.
+        
+        Args:
+            interface: str, the interface for the ip
+            addr: str, the address to check
+            kind: str, the kind of interface
+        """
         ip_in_use = 1
         interface = self.get_raw_interface(interface)
         while ip_in_use:
@@ -393,7 +426,11 @@ class NetworkConfiguration(object):
                 break
 
     def update_mesh_interface_status(self, status):
-        """docstring for update_mesh_interface_status"""
+        """Run ifconfig on the mesh interface.
+        
+        Args:
+            status: str, up or down
+        """
         logging.debug("Setting wireless interface status: %s", status)
         command = ['/sbin/ifconfig', self.mesh_interface, status]
         if self.test:
