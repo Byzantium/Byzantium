@@ -16,7 +16,7 @@ class Mesh(model.Model):
         self._protocol = protocol
         self._enabled = enabled
         super(Mesh, self).__init__('meshes', persistance, testing)
-    
+
     # probably going to want some method to update_babeld in here
 
     @property
@@ -28,7 +28,7 @@ class Mesh(model.Model):
     def interface(self, value):
         self.replace(interface=value)
         self._interface = value
-        
+
     @property
     def protocol(self):
         """I'm the 'protocol' property."""
@@ -38,7 +38,7 @@ class Mesh(model.Model):
     def protocol(self, value):
         self.replace(protocol=value)
         self._protocol = value
-            
+
     @property
     def enabled(self):
         """I'm the 'enabled' property."""
