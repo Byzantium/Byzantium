@@ -30,11 +30,11 @@ import models.wireless_network
 
 
 def audit_procnetdev(procnetdev):
-    """Check if we can access and read from /proc/net/device.
-    
+    """Check if we can access and read from /proc/net/dev.
+
     Args:
         procnetdev: str, path to the device
-        
+
     Returns:
         True if accessible, False if not
     """
@@ -55,15 +55,14 @@ def audit_procnetdev(procnetdev):
         procnetdev.close()
         return False
     return True
-    
-    
+
 def build_interfaces(interfaces, procnetdev):
     """Build list of interfaces found in procnetdev.
-    
+
     Args:
         interfaces: list, list of the interfaces to be filled (usually [])
         procnetdev: list, lines from the procnetdev file
-        
+
     Returns:
         An updated interfaces list
     """
@@ -77,11 +76,11 @@ def build_interfaces(interfaces, procnetdev):
 
 def check_for_wired_interface(interface, persistance):
     """Check if an interface exists in persistant storage.
-    
+
     Args:
         interface: str, the interface being searched for
         persistance: obj, the State object to access persistant storage through
-    
+
     Returns:
         'wired' if found, '' otherwise
     """
@@ -97,11 +96,11 @@ def check_for_wired_interface(interface, persistance):
 
 def check_for_wireless_interface(interface, persistance):
     """Check if an interface exists in persistant storage.
-    
+
     Args:
         interface: str, the interface being searched for
         persistance: obj, the State object to access persistant storage through
-    
+
     Returns:
         'wireless' if found, '' otherwise
     """
@@ -119,10 +118,10 @@ def check_for_wireless_interface(interface, persistance):
 
 def check_wireless_table(interface):
     """Check whether interface exists in /proc/net/wireless.
-    
+
     Args:
         interface: str, the interface being searched for
-        
+
     Returns:
         True if found, False otherwise.
     """
@@ -140,7 +139,7 @@ def check_wireless_table(interface):
 
 class Gateways(object):
     """Controller for the gateways page.
-    
+
     This class allows the user to turn a configured network interface on their
     node into a gateway from the mesh to another network (usually the global
     Net).
@@ -162,7 +161,7 @@ class Gateways(object):
 
         # Used for sanity checking user input.
         self.frequency = 0
-        
+
         # Class attributes which make up a network interface.  By default they
         # are blank, but will be populated from the network.sqlite database if
         # the user picks an already-configured interface.
@@ -224,7 +223,7 @@ class Gateways(object):
 
     def update_network_interfaces(self):
         """Update the list of all network interfaces on a node.
-        
+
         New ones detected are added to the persistant storage.
         """
         logging.debug("Entered Gateways.update_network_interfaces().")
@@ -287,12 +286,12 @@ class Gateways(object):
 
     def tcpip(self, interface=None, essid=None, channel=None):
         """Turns on the gateway.
-        
+
         Note: This method assumes that whichever Ethernet interface chosen is
         already configured via DHCP through ifplugd.
-        
+
         Accessible through /gateways/tcpip
-        
+
         Args:
             interface: str, interface to activate
             essid: str, essid to set
@@ -336,11 +335,11 @@ class Gateways(object):
     # from the form on /gateways/index.html.
     def wireless(self, interface=None):
         """Allow user to enter essid/channel for network interface.
-        
+
         The interface will act as an uplink to another Network for the mesh.
-        
+
         Accessible through /gateways/wireless
-        
+
         Args:
             interface: str, the interface to use
         """
@@ -370,16 +369,16 @@ class Gateways(object):
 
     def _get_mesh_interfaces(self):
         """Get enabled babel mesh interfaces from persistant storage.
-        
+
         Returns:
             A list of enabled babel interfaces"""
         results = self.mesh_state.list('meshes', models.mesh.Mesh,
                                        {'enabled': 'yes', 'protocol': 'babel'})
         return [result.interface for result in results]
-        
+
     def _update_netconfdb(self, interface):
         """Sets gateway status to 'yes' for the interface.
-        
+
         Args:
             interface: str, theinterface to activate
         """
@@ -399,9 +398,9 @@ class Gateways(object):
 
     def activate(self, interface=None):
         """Method that does the deed of turning an interface into a gateway.
-        
+
         Accessible through /gateways/activate
-        
+
         Args:
             interface: str, interface to turn into a gateway
         """
@@ -464,7 +463,7 @@ class Gateways(object):
 
     def set_ip(self):
         """Configure the network interface.
-        
+
         Accessible through /gateways/set_ip
         """
         # If we've made it this far, the user's decided to (re)configure a

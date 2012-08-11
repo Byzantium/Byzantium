@@ -92,6 +92,7 @@ def main():
 
     # Allocate the objects representing the URL tree.
     root = Status(templatelookup, args.test, args.filedir)
+
     # Allocate objects for all of the control panel's main features.
     root.traffic = NetworkTraffic(args.filedir, templatelookup)
     root.network = NetworkConfiguration(templatelookup, args.test)
