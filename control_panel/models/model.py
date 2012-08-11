@@ -29,10 +29,10 @@ class Model(object):
     def find(self, attrs):
         results, _ = self.persistance.get(self.kind, attrs)
         return results
-    
+
     def list(self):
         return self.persistance.list(self.kind, self.__class__)
-    
+
     def replace(self, **kwargs):
         old = self._trimmed()
         new = self._trimmed()
