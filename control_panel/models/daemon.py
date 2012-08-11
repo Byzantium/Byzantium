@@ -19,7 +19,7 @@ class Daemon(model.Model):
         self._port = port
         self._init_script = init_script
         super(Daemon, self).__init__('daemons', persistance, testing)
-        
+
     # probably going to want something like toggle_service in here
 
     @property
