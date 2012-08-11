@@ -13,7 +13,7 @@ class WebApp(model.Model):
         self._name = name
         self._status = status
         super(WebApp, self).__init__('webapps', persistance, testing)
-        
+
     # probably going to want something like toggle_service in here
 
     @property
@@ -25,7 +25,7 @@ class WebApp(model.Model):
     def name(self, value):
         self.replace(name=value)
         self._name = value
-        
+
     @property
     def status(self):
         """I'm the 'status' property."""

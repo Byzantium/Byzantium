@@ -20,7 +20,7 @@ class WirelessNetwork(model.Model):
         self._channel = channel
         self._essid = essid
         super(WirelessNetwork, self).__init__('wireless', persistance, testing)
-        
+
     @property
     def client_interface(self):
         """I'm the 'client_interface' property."""
@@ -30,7 +30,7 @@ class WirelessNetwork(model.Model):
     def client_interface(self, value):
         self.replace(client_interface=value)
         self._client_interface = value
-        
+
     @property
     def mesh_interface(self):
         """I'm the 'mesh_interface' property."""
@@ -40,7 +40,7 @@ class WirelessNetwork(model.Model):
     def mesh_interface(self, value):
         self.replace(mesh_interface=value)
         self._mesh_interface = value
-            
+
     @property
     def gateway(self):
         """I'm the 'gateway' property."""
@@ -50,7 +50,7 @@ class WirelessNetwork(model.Model):
     def gateway(self, value):
         self.replace(gateway=value)
         self._gateway = value
-        
+
     @property
     def enabled(self):
         """I'm the 'enabled' property."""
@@ -60,7 +60,7 @@ class WirelessNetwork(model.Model):
     def enabled(self, value):
         self.replace(enabled=value)
         self._enabled = value
-        
+
     @property
     def channel(self):
         """I'm the 'channel' property."""
@@ -70,7 +70,7 @@ class WirelessNetwork(model.Model):
     def channel(self, value):
         self.replace(channel=value)
         self._channel = value
-                        
+
     @property
     def essid(self):
         """I'm the 'essid' property."""
@@ -80,7 +80,7 @@ class WirelessNetwork(model.Model):
     def essid(self, value):
         self.replace(essid=value)
         self._essid = value
-        
+
     # probably going to want something like the activate/set_ip/tcip functionality here
 
 
