@@ -15,11 +15,11 @@ import models.wireless_network
 
 def file2str(file_name, mode = 'r'):
     """Reads in a file and returns it as a string.
-    
+
     Args:
         file_name: str, Path to the file
         mode: str, Mode to open with (defaults to 'r')
-        
+
     Returns:
         A string with the contents of the file.
     """
@@ -31,7 +31,7 @@ def file2str(file_name, mode = 'r'):
 
 def str2file(string, file_name, mode = 'w'):
     """Writes a string to a file.
-    
+
     Args:
         string: str, the string to be written
         file_name: str, the path of the file where contents will be written
@@ -55,20 +55,21 @@ class Config(object):
 
 def check_for_configured_interface(persistance, interface, channel, essid):
     """Checking persistant storage for a configured interface.
-    
+
     Args:
         persistance: obj, The State object to access storage
         interface: str, the interface to look for
         channel: str, channel setting
         essid: str, essid setting
-        
+
     Returns:
         A tuple of the updated channel, essid, and warning arguments """
     warning = ""
+
     # If a network interface is marked as configured in the database, pull
     # its settings and insert them into the page rather than displaying the
     # defaults.
-    results = persistance.list('wireless', 
+    results = persistance.list('wireless',
                                models.wireless_network.WirelessNetwork,
                                {'mesh_interface': interface})
     if results and (results[0].enabled == 'yes'):
@@ -82,10 +83,10 @@ def check_for_configured_interface(persistance, interface, channel, essid):
 
 def set_confdbs(test):
     """Determine the proper paths to net and mesh conf db files.
-    
+
     Args:
         test: bool, If we are running in the test environment
-        
+
     Returns:
         A the path to the netconfdb and meshconfdb files"""
     if test:
