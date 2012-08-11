@@ -22,7 +22,7 @@ def _sanitize(tainted):
 
 def get_matching(pattern, objects):
     """Take a dict and find all objects in list with matching values.
-    
+
     Args:
         pattern: dict, a dict to match off
         objects: list, list of objects to check against
@@ -51,7 +51,7 @@ class State(object):
     @abc.abstractmethod
     def initialize(self, name, prototype):
         """Set up any initial state necessary.
-        
+
         Args:
             name: str, the name of the state you are storing
             prototype: instance, a simple instance of the class who's attributes
@@ -62,7 +62,7 @@ class State(object):
     @abc.abstractmethod
     def create(self, kind, item):
         """Create a new state entry.
-        
+
         Args:
             kind: str, the kind of state you are creating
             item: instance, the instance who's attributes you are adding
@@ -72,10 +72,10 @@ class State(object):
     @abc.abstractmethod
     def list(self, kind):
         """Get a list of state objects.
-        
+
         Args:
             kind: str, the kind of state you are trying to get a listing of
-        
+
         Returns:
             A list of appropriate objects
         """
@@ -84,7 +84,7 @@ class State(object):
     @abc.abstractmethod
     def replace(self, kind, old, new):
         """Replace an old state entry with a new one.
-        
+
         Args:
             kind: str, the kind of state you are trying to update
             old: instance, the instance who's attributes you will be replacing
@@ -94,10 +94,10 @@ class State(object):
 
 class DBBackedState(State):
     """A State object who's backend store is an SQLite3 DB.
-    
+
     Note: To deal with threading silliness between SQLite3 and CherryPy each
           action needs open and close its own connection to the db :/
-    
+
     Attributes:
         db_path: str, the path to the SQLite3 DB file
         connection: sqlite3.connection, a connection object for working with the
@@ -122,11 +122,11 @@ class DBBackedState(State):
 
     def _create_initialization_fragment_from_prototype(self, prototype):
         """Take an instance of a class and make a table based on its attributes.
-        
+
         Args:
             prototype: dict, dict of attributes we will
                 name columns with
-        
+
         Returns:
             A string with '%s NUMERIC/TEXT' entries to be used and the tuple of
                 column names
@@ -143,10 +143,10 @@ class DBBackedState(State):
 
     def _create_query_fragment_from_item(self, item):
         """Take an item and build a query fragment from its attributes.
-        
+
         Args:
             item: instance, an instance of a class who's attributes we will query
-        
+
         Returns:
             A string of '?,' entries and a tuple of values to be used in the query
         """
@@ -161,10 +161,10 @@ class DBBackedState(State):
 
     def _create_update_query_fragment_from_item(self, item):
         """Take an item and build a query template for an update.
-        
+
         Args:
             item: instance, an instance of a class who's attributes we will query
-        
+
         Returns:
             A string of 'attribute=?' entries and a tuple of values to be used in
                 the query
@@ -179,10 +179,10 @@ class DBBackedState(State):
 
     def _create_update_setting_fragment_from_item(self, item):
         """Take an item and build a setting template for an update.
-        
+
         Args:
             item: dict, a dict who's attributes we will use
-        
+
         Returns:
             A string of 'attribute=?' entries and a tuple of values to be used in
                 the setting command
@@ -197,7 +197,7 @@ class DBBackedState(State):
 
     def initialize(self, prototype):
         """Create a table based on a prototype dict.
-        
+
         Args:
             prototype: dict, a dict to base column names off
         """
@@ -209,7 +209,7 @@ class DBBackedState(State):
 
     def create(self, item):
         """Insert or replace an entry in the backend.
-        
+
         Args:
             item: dict, a dict who's attributes we'll insert/replace
         """
@@ -221,11 +221,11 @@ class DBBackedState(State):
 
     def get(self, kind, attrs):
         """Find all matching entries that match a dict of attrs.
-        
+
         Args:
             kind: str, the kind of thing being searched for
             attrs: dict, a dict of attributes
-          
+
          Returns:
              A list of matching entries and the cursor.description
         """
@@ -241,11 +241,11 @@ class DBBackedState(State):
 
     def exists(self, kind, attrs):
         '''Determine if any entries match a dict of attrs.
-        
+
         Args:
             kind: str, the kind of thing being searched for
             attrs: dict, a dict of attributes
-          
+
          Returns:
              Boolean indicating existence of records. True if records exist, False if none are found.
         '''
@@ -255,12 +255,12 @@ class DBBackedState(State):
 
     def list(self, kind, klass, attrs=None):
         """List all entries for a given kind, returning them as klass objects.
-        
+
         Args:
             kind: str, the kind of entry we are looking for
             klass: class, the class type we should build out of each result
             attrs: dict, dict of attrs specifically being checked for
-          
+
          Returns:
              a list of klass objects based on results from the backend call
         """
@@ -272,9 +272,11 @@ class DBBackedState(State):
         else:
             to_execute = 'SELECT * FROM %s;' % kind
             cursor.execute(to_execute)
+
             # Not the most efficient way of doing things, but the db will always
             # be small enough that it won't matter
             results = cursor.fetchall()
+
             # We need to know what the attribute names are of the class we are
             # building
             col_name_list = [desc[0] for desc in cursor.description]
@@ -291,7 +293,7 @@ class DBBackedState(State):
 
     def replace(self, old, new):
         """Replace an old entry with a new one.
-        
+
         Args:
             old: dict, a dict of the old data (what we search for)
             new: dict, a dict of the replacement data
@@ -301,6 +303,7 @@ class DBBackedState(State):
         kind = old_copy.pop('kind')
         query_frag, query_values = self._create_update_query_fragment_from_item(old_copy)
         setting_frag, setting_values = self._create_update_setting_fragment_from_item(new_copy)
+
         # Again, not the most efficient, but it works in all cases and doesn't
         # need any fancy logic
         to_execute = 'UPDATE OR REPLACE %s SET %s WHERE %s;' % (kind, setting_frag, query_frag)
@@ -333,7 +336,7 @@ class NetworkState(DBBackedState):
 
 
 class MeshState(DBBackedState):
-    
+
     def __init__(self, db_path):
         super(MeshState, self).__init__(db_path)
         meshes = {'interface': '', 'protocol': '', 'enabled': '',
