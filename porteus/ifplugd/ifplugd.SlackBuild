@@ -1,0 +1,262 @@
+#!/bin/sh
+# $Id: ifplugd.SlackBuild,v 1.6 2008/05/05 20:07:45 root Exp root $
+# Copyright (c) 2004-2007 Eric Hameleers <alien@slackware.com>
+# All rights reserved.
+#
+#   Permission to use, copy, modify, and distribute this software for
+#   any purpose with or without fee is hereby granted, provided that
+#   the above copyright notice and this permission notice appear in all
+#   copies.
+#
+#   THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+#   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+#   IN NO EVENT SHALL THE AUTHORS AND COPYRIGHT HOLDERS AND THEIR
+#   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+#   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+#   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+#   ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+#   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+#   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+#   SUCH DAMAGE.
+# -----------------------------------------------------------------------------
+#
+# Slackware SlackBuild script 
+# ===========================
+# By:        Eric Hameleers <alien@slackware.com>
+# For:       ifplugd
+# Descr:     automatically configure ethernet interfaces
+# URL:       http://0pointer.de/lennart/projects/ifplugd/
+# Needs:     libdaemon
+# Changelog:
+# 0.23-1:    13/apr/2004 by Eric Hameleers
+#            * Initial build
+# 0.28-1:    07/oct/2005 by Eric Hameleers
+#            * Update.
+# 0.28-2:    07/nov/2006 by Eric Hameleers
+#            * Rebuilt for Slackware 11.0. Patched interface.c to compile when
+#              kernel-headers-2.6.x is installed.
+# 0.28-3:    25/Jul/2007 by Eric Hameleers <alien@slackware.com>
+#            * Polish for Slackware 12.0
+# 
+# Run 'sh ifplugd.SlackBuild --cleanup' to build a Slackware package.
+# The package (.tgz) plus descriptive .txt file are created in /tmp .
+# Install using 'installpkg'. 
+#
+# -----------------------------------------------------------------------------
+
+# Set initial variables:
+
+PRGNAM=ifplugd
+VERSION=${VERSION:-0.28}
+ARCH=${ARCH:-i486}
+BUILD=${BUILD:-3}
+TAG=${TAG:-alien}
+
+DOCS="LICENSE doc/NEWS doc/README doc/README.SuSE doc/README.html \
+      doc/style.css doc/SUPPORTED_DRIVERS"
+
+# Where do we look for sources?
+CWD=`pwd`
+SRCDIR=`dirname $0`
+[ "${SRCDIR:0:1}" == "." ] && SRCDIR=${CWD}/${SRCDIR}
+
+# Place to build (TMP) package (PKG) and output (OUTPUT) the program:
+TMP=${TMP:-/tmp/build}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+# Input URL: http://0pointer.de/lennart/projects/ifplugd/ifplugd-0.28.tar.gz
+SOURCE="$SRCDIR/${PRGNAM}-${VERSION}.tar.gz"
+SRCURL="http://0pointer.de/lennart/projects/${PRGNAM}/${PRGNAM}-${VERSION}.tar.gz"
+
+##
+## --- with a little luck, you won't have to edit below this point --- ##
+##
+
+# Exit the script on errors:
+set -e
+trap 'echo "$0 FAILED at line $LINENO!" | tee $OUTPUT/error-${PRGNAM}.log' ERR
+# Catch unitialized variables:
+set -u
+P1=${1:-1}
+
+# Slackware 11 and up need other option (gcc > 3.3.x)
+if [ `gcc -dumpversion | tr -d  '.' |cut -c 1-2` -gt 33 ]; then
+  MOPT=tune
+else
+  MOPT=cpu
+fi
+
+case "$ARCH" in
+  i386)      SLKCFLAGS="-O2 -march=i386 -m${MOPT}=i686"
+             SLKLDFLAGS=""; LIBDIRSUFFIX=""
+             ;;
+  i486)      SLKCFLAGS="-O2 -march=i486 -m${MOPT}=i686"
+             SLKLDFLAGS=""; LIBDIRSUFFIX=""
+             ;;
+  s390)      SLKCFLAGS="-O2"
+             SLKLDFLAGS=""; LIBDIRSUFFIX=""
+             ;;
+  powerpc)   SLKCFLAGS="-O2"
+             SLKLDFLAGS=""; LIBDIRSUFFIX=""
+             ;;
+  x86_64)    SLKCFLAGS="-O2 -fPIC"
+             SLKLDFLAGS="-L/usr/lib64"; LIBDIRSUFFIX="64"
+             ;;
+  athlon-xp) SLKCFLAGS="-march=athlon-xp -O3 -pipe -fomit-frame-pointer"
+             SLKLDFLAGS=""; LIBDIRSUFFIX=""
+             ;;
+esac
+
+# Create working directories:
+mkdir -p $TMP/tmp-$PRGNAM # location to build the source
+rm -rf $TMP/tmp-$PRGNAM/* # By default we remove the remnants of previous build
+mkdir -p $PKG     # place for the package to be built
+rm -rf $PKG/*     # We always erase old package's contents:
+mkdir -p $OUTPUT  # place for the package to be saved
+
+# Source file availability:
+if ! [ -f ${SOURCE} ]; then
+  if ! [ "x${SRCURL}" == "x" ]; then
+    # Check if the $SRCDIR is writable at all - if not, download to $OUTPUT
+    [ -w "$SRCDIR" ] || SOURCE="$OUTPUT/`basename $SOURCE`"
+    echo "Source '`basename ${SOURCE}`' not available yet..."
+    echo "Will download file to `dirname $SOURCE`"
+    wget -nv --connect-timeout=30 -O "${SOURCE}" "${SRCURL}" || true
+    if [ $? -ne 0 -o ! -s "${SOURCE}" ]; then
+      echo "Downloading '`basename ${SOURCE}`' failed... aborting the build."
+      mv -f "${SOURCE}" "${SOURCE}".FAIL
+      exit 1
+    fi
+  else
+    echo "File '`basename ${SOURCE}`' not available... aborting the build."
+    exit 1
+  fi
+fi
+
+if [ "$P1" == "--download" ]; then
+  echo "Download complete."
+  exit 0
+fi
+
+# --- PACKAGE BUILDING ---
+
+echo "++"
+echo "|| $PRGNAM-$VERSION"
+echo "++"
+
+cd $TMP/tmp-$PRGNAM
+echo "Extracting the source archive(s) for $PRGNAM..."
+if `file ${SOURCE} | grep -q ": bzip2"`; then
+  tar -xjvf ${SOURCE}
+elif `file ${SOURCE} | grep -q ": gzip"`; then
+  tar -xzvf ${SOURCE}
+fi
+cd ${PRGNAM}-${VERSION}
+patch -p1 < $SRCDIR/${PRGNAM}.action.patch
+patch -p0 < $SRCDIR/${PRGNAM}.interface.patch
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
+
+echo Building ...
+LDFLAGS="$SLKLDFLAGS" \
+CFLAGS="$SLKCFLAGS" \
+./configure --with-initdir=/etc/rc.d \
+            --prefix=/usr \
+            --libdir=/usr/lib${LIBDIRSUFFIX} \
+            --localstatedir=/var \
+            --sysconfdir=/etc \
+            --disable-xmltoman \
+            --program-prefix="" \
+            --program-suffix="" \
+            --build=$ARCH-slackware-linux \
+            2>&1 | tee $OUTPUT/configure-${PRGNAM}.log
+make 2>&1 | tee $OUTPUT/make-${PRGNAM}.log
+
+# Install all the needed stuff to the package dir
+# Use installwatch if available, to produce a logfile of the installation
+# process that is more easily readable:
+if `which installwatch  > /dev/null 2>&1`; then
+  installwatch -o $OUTPUT/install-${PRGNAM}.log make DESTDIR=$PKG install
+else
+  make DESTDIR=$PKG install 2>&1 |tee $OUTPUT/install-${PRGNAM}.log
+fi
+
+mv $PKG/etc/rc.d/ifplugd $PKG/etc/rc.d/rc.ifplugd.new
+mv $PKG/etc/ifplugd/ifplugd.action{,.new}
+mv $PKG/etc/ifplugd/ifplugd.conf{,.new}
+chmod -x $PKG/etc/rc.d/rc.ifplugd.new
+
+# Add this to the doinst.sh:
+! [ -d $PKG/install ] && mkdir -p $PKG/install
+cat <<EOINS >> $PKG/install/doinst.sh
+# Handle the incoming configuration files:
+config() {
+  for infile in \$1; do
+    NEW="\$infile"
+    OLD="\`dirname \$NEW\`/\`basename \$NEW .new\`"
+    # If there's no config file by that name, mv it over:
+    if [ ! -r \$OLD ]; then
+      mv \$NEW \$OLD
+    elif [ "\`cat \$OLD | md5sum\`" = "\`cat \$NEW | md5sum\`" ]; then
+      # toss the redundant copy
+      rm \$NEW
+    fi
+    # Otherwise, we leave the .new copy for the admin to consider...
+  done
+}
+
+config etc/rc.d/rc.ifplugd.new
+config etc/ifplugd/ifplugd.action.new
+config etc/ifplugd/ifplugd.conf.new
+
+# Update rc.local so that the ifplugd daemon will be started on boot
+if ! grep "rc.ifplugd" etc/rc.d/rc.local 1>/dev/null 2>&1 ; then
+  cat <<-_EOM_ >> etc/rc.d/rc.local
+	if [ -x /etc/rc.d/rc.ifplugd ]; then
+	  # Start ifplugd
+	  echo "Starting ifplugd:  /etc/rc.d/rc.ifplugd start"
+	  /etc/rc.d/rc.ifplugd start
+	fi
+	_EOM_
+fi
+EOINS
+
+# Add documentation:
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a $DOCS $PKG/usr/doc/$PRGNAM-$VERSION || true
+chmod -R a-w $PKG/usr/doc/$PRGNAM-$VERSION/*
+
+# Compress the man page(s):
+if [ -d $PKG/usr/man ]; then
+  find $PKG/usr/man -type f -name "*.?" -exec gzip -9f {} \;
+  for i in `find $PKG/usr/man -type l -name "*.?"` ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+fi
+
+# Strip binaries:
+cd $PKG
+find . | xargs file | grep "executable" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+find . | xargs file | grep "shared object" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+cd -
+
+# Add a package description:
+mkdir -p $PKG/install
+cat $SRCDIR/${PRGNAM}.slack-desc > $PKG/install/slack-desc
+cat $SRCDIR/${PRGNAM}.slack-required > $PKG/install/slack-required
+
+# Build the package:
+cd $PKG
+makepkg --linkadd y --chown n $OUTPUT/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.tgz 2>&1 | tee $OUTPUT/makepkg-${PRGNAM}.log
+cd $OUTPUT
+md5sum ${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.tgz > ${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.tgz.md5
+cd -
+cat $PKG/install/slack-desc | grep "^${PRGNAM}" > $OUTPUT/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.txt
+cat $PKG/install/slack-required > $OUTPUT/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.dep
+
+# Clean up the extra stuff:
+if [ "$P1" = "--cleanup" ]; then
+  rm -rf $TMP/tmp-$PRGNAM
+  rm -rf $PKG
+fi

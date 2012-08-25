@@ -1,0 +1,13 @@
+diff -urN ifplugd-0.28.orig/conf/ifplugd.action ifplugd-0.28/conf/ifplugd.action
+--- ifplugd-0.28.orig/conf/ifplugd.action	2004-03-03 02:02:18.000000000 +0100
++++ ifplugd-0.28/conf/ifplugd.action	2005-10-07 11:34:50.000000000 +0200
+@@ -24,7 +24,7 @@
+ 	exit 1
+ fi
+ 
+-[ "$2" = "up" ] && exec /sbin/ifup $1
+-[ "$2" = "down" ] && exec /sbin/ifdown $1
++[ "$2" = "up" ] && exec /etc/rc.d/rc.inet1 ${1}_start
++[ "$2" = "down" ] && exec /etc/rc.d/rc.inet1 ${1}_stop
+ 
+ exit 1

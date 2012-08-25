@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+       |-----handy-ruler------------------------------------------------------|
+ifplugd: ifplugd (automatically configuration of ethernet interfaces)
+ifplugd:
+ifplugd: ifplugd is a Linux daemon which will automatically configure your
+ifplugd: ethernet device when a cable is plugged in and automatically
+ifplugd: unconfigure it if the cable is pulled. This is useful on laptops
+ifplugd: with onboard network adapters, since it will only configure the
+ifplugd: interface when a cable is really connected.
+ifplugd: ifplugd interfaces with your distribution's native network
+ifplugd: configuration utilities.
+ifplugd: Author:
+ifplugd: Lennart Poettering <mzqnrzba@0pointer.de>
+
