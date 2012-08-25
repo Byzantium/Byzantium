@@ -28,11 +28,11 @@ import _utils
 import models.state
 import models.wired_network
 import models.wireless_network
-        
+
 
 def enumerate_network_interfaces():
     """Utility method to enumerate all of the network interfaces on a node.
-    
+
     Returns:
         Two lists, one of wired interfaces and one of wireless interfaces.
     """
@@ -67,8 +67,8 @@ def enumerate_network_interfaces():
 
 
 def make_hosts(hosts_file, test, starting_ip=None):
-    """Method that generates an /etc/hosts.mesh file for the node for dnsmasq.
-    
+    """Method that generates an /etc/hosts.mesh file for dnsmasq.
+
     Args:
         hosts_file: str, the path to the /etc/hosts.mesh file
         test: bool, whether we are in test mode or not
@@ -122,7 +122,7 @@ def make_hosts(hosts_file, test, starting_ip=None):
 # the IP address to start from.
 def configure_dnsmasq(dnsmasq_include_file, test, starting_ip=None):
     """Generates an /etc/dnsmasq.conf.include file for the node.
-    
+
     Args:
         dnsmasq_include_file: str, path to /etc/dnsmasq.conf.include
         test: bool, whether this is test mode or not
@@ -180,9 +180,8 @@ frequencies = [2.412, 2.417, 2.422, 2.427, 2.432, 2.437, 2.442, 2.447, 2.452,
 
 
 class NetworkConfiguration(object):
-    """This class allows the user to configure the network interfaces of their node.
-    
-    Note: this does not configure mesh functionality.
+    """This class allows the user to configure the network interfaces of their
+    node.  Note that this does not configure mesh functionality.
     """
 
     def __init__(self, templatelookup, test):
@@ -342,9 +341,9 @@ class NetworkConfiguration(object):
 
     def wireless(self, interface=None):
         """Allows the user to enter the ESSID and wireless channel of their node.
-        
+
         Available at /networkconfiguration/wireless
-        
+
         Args:
             interface: str, interface being used
         """
@@ -380,10 +379,10 @@ class NetworkConfiguration(object):
 
     def get_raw_interface(self, interface):
         """Helper method to do some string splitting.
-        
+
         Args:
             interface: str, the interface string
-            
+
         Returns:
             The proper chunk of the interface string
         """
@@ -391,7 +390,7 @@ class NetworkConfiguration(object):
 
     def get_unused_ip(self, interface, addr, kind):
         """Find an unused ip address.
-        
+
         Args:
             interface: str, the interface for the ip
             addr: str, the address to check
@@ -419,7 +418,7 @@ class NetworkConfiguration(object):
             if not ip_in_use:
                 logging.debug("IP address of %s interface is %s.", kind, addr)
                 return addr
-                
+
             # In test mode, don't let this turn into an endless loop.
             if self.test:
                 logging.debug("Breaking out of this loop to exercise the rest of the code.")
@@ -427,7 +426,7 @@ class NetworkConfiguration(object):
 
     def update_mesh_interface_status(self, status):
         """Run ifconfig on the mesh interface.
-        
+
         Args:
             status: str, up or down
         """
@@ -472,20 +471,22 @@ class NetworkConfiguration(object):
         # tested to see if they have been taken already or not.  Loop until we
         # have a winner.
         logging.debug("Probing for an IP address for the mesh interface.")
+
         # Pick a random IP address in a 192.168/24.
         addr = '192.168.'
-        addr = addr + str(random.randint(0, 254)) + '.'
+        addr = addr + str(random.randint(0, 255)) + '.'
         addr = addr + str(random.randint(1, 254))
         self.mesh_ip = self.get_unused_ip(self.mesh_interface, addr, kind="mesh")
-    
+
         # Next pick a distinct IP address for the client interface and its
         # netblock.  This is potentially trickier depending on how large the
         # mesh gets.
         logging.debug("Probing for an IP address for the client interface.")
+
         # Pick a random IP address in a 10/24.
         addr = '10.'
-        addr = addr + str(random.randint(0, 254)) + '.'
-        addr = addr + str(random.randint(0, 254)) + '.1'
+        addr = addr + str(random.randint(0, 255)) + '.'
+        addr = addr + str(random.randint(0, 255)) + '.1'
         self.mesh_ip = self.get_unused_ip(self.client_interface, addr, kind="client")
 
         # For testing, hardcode some IP addresses so the rest of the code has

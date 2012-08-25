@@ -133,7 +133,7 @@ class Status(object):
     # Pretends to be index.html.
     def index(self):
         logging.debug("Entered Status.index().")
-        
+
         # Get the node's uptime from the OS.
         uptime = get_uptime() or 0
 

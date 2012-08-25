@@ -124,8 +124,7 @@ class DBBackedState(State):
         """Take an instance of a class and make a table based on its attributes.
 
         Args:
-            prototype: dict, dict of attributes we will
-                name columns with
+            prototype: dict of attributes we will name columns with
 
         Returns:
             A string with '%s NUMERIC/TEXT' entries to be used and the tuple of

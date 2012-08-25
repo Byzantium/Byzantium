@@ -16,11 +16,11 @@ import os
 # This class implements the network traffic status report page.
 class NetworkTraffic(object):
     # Pretends to be index.html.
-    
+
     def __init__(self, filedir, templatelookup):
         self.filedir = filedir
         self.templatelookup = templatelookup
-    
+
     def index(self):
         # Enumerate the list of PNG files in the graphs/ directory and generate
         # a sequence of IMG SRCs to insert into the HTML template.
@@ -34,10 +34,10 @@ class NetworkTraffic(object):
         # Pack the string of IMG SRCs into a string.
         graphs = ""
         for image in images:
-            graphs = graphs + '<img src="/graphs/' + image + '" width="75%"' + 'height="75%" alt="' + image + '" /><br />'
+            graphs = graphs + '<img src="/graphs/' + image + '" width="75%"' + 'height="75%" alt="' + image + '" /><br />\n'
 
         page = self.templatelookup.get_template("/traffic/index.html")
         return page.render(graphs = graphs,
-                           title = "Byzantium Network Traffic Report",
-                           purpose_of_page = "Traffic Graphs")
+                           title = "Mesh Network Traffic Report",
+                           purpose_of_page = "Network Traffic Graphs")
     index.exposed = True
