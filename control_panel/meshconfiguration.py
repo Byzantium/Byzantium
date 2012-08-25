@@ -64,7 +64,7 @@ class MeshConfiguration(object):
 
     def pid_check(self):
         """Get the pid of babeld.
-        
+
         Returns:
             A string with the pid if found, empty string if not.
         """
@@ -106,12 +106,12 @@ class MeshConfiguration(object):
                 if i.enabled == 'yes':
                     # See if the interface is already in the mesh configuration
                     # database, and if it's not insert it.
-                    
+
                     interface_found = self.mesh_state.list(
                         'meshes',
                         models.mesh.Mesh,
                         {'interface': i.mesh_interface})
-                    
+
                     interface_tag = ("<input type='submit' name='interface' "
                                      "value='")
                     if not interface_found:
@@ -136,7 +136,7 @@ class MeshConfiguration(object):
                                 (interface_tag, i.mesh_interface))
                         else:
                             # The mesh interface hasn't been configured.
-                            interfaces.append("%s%s' />\n" % 
+                            interfaces.append("%s%s' />\n" %
                                               (interface_tag,
                                                i.mesh_interface))
 
@@ -173,14 +173,14 @@ class MeshConfiguration(object):
 
     def addtomesh(self, interface=None):
         """Allows the user to add a wireless interface to the mesh.
-        
+
          Assumes that the interface is already configured (we wouldn't get this
          far if it wasn't).
-        
+
         Args:
             interface: str, interface to add
-            
-        Accesible at /meshconfiguration/addtomesh
+
+        Accessible at /meshconfiguration/addtomesh.
         """
         # Store the name of the network interface and whether or not it's
         # enabled in the object's attributes.  Right now only the Babel
@@ -200,17 +200,17 @@ class MeshConfiguration(object):
         except:
             _utils.output_error_data()
     addtomesh.exposed = True
-    
+
     def _pid_helper(self, pid, error, output, commit=False):
         """Find babeld pid and update enabled-ness.
-        
+
         Args:
             pid: str, the pid being checked
             error: str, error string to add errors to
             output: str, the output strint to add to
             commit: bool, whether to commit the state change to persistant
                 storage
-        
+
         Returns:
             The error string and the output string
         """
@@ -220,7 +220,7 @@ class MeshConfiguration(object):
         else:
             output = ("%s has been successfully started with PID %s." %
                       (self.babeld, pid))
-            
+
             # Update the mesh configuration database to take into account
             # the presence of the new interface.
             if commit:
@@ -233,14 +233,14 @@ class MeshConfiguration(object):
     def update_babeld(self, common_babeld_opts, unique_babeld_opts,
                       interfaces):
         """Assemble the invocation of babeld.
-        
+
         Args:
             common_babeld_opts: list, list of common command line flags for
                 babeld
             unique_babeld_opts: list, list of unique command line flags for
                 babeld
             interfaces: list, list of interfaces
-            
+
         Returns:
             A list with the complete command line to run
         """
@@ -273,7 +273,7 @@ class MeshConfiguration(object):
 
     def enable(self):
         """Runs babeld to turn self.interface into a mesh interface.
-        
+
         Available at /meshconfiguration/enable
         """
         # Set up the error and successful output messages.
@@ -285,7 +285,7 @@ class MeshConfiguration(object):
         # babeld is used on the node.  See the following file to see why:
         # http://www.pps.jussieu.fr/~jch/software/babel/CHANGES.text
         common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
-			      '-g', '33123' , '-c', '/etc/babeld.conf']
+                              '-g', '33123', '-c', '/etc/babeld.conf']
 
         # Create a set of unique command line options for babeld.  Right now,
         # this variable is empty but it might be used in the future.  Maybe
@@ -329,9 +329,9 @@ class MeshConfiguration(object):
 
     def removefrommesh(self, interface=None):
         """Allows the user to remove a configured interface from the mesh.
-        
-        Available at /medhconfiguration/removefrommesh
-        
+
+        Available at /meshconfiguration/removefrommesh
+
         Args:
             interface: str, the interface to remove
         """
@@ -356,7 +356,7 @@ class MeshConfiguration(object):
 
     def disable(self):
         """Re-runs babeld without self.interface to drop it out of the mesh.
-        
+
         Available at /meshconfiguration/disable
         """
         logging.debug("Entered MeshConfiguration.disable().")
@@ -369,7 +369,8 @@ class MeshConfiguration(object):
         # these are redundant but are present in case an older version of
         # babeld is used on the node.  See the following file to see why:
         # http://www.pps.jussieu.fr/~jch/software/babel/CHANGES.text
-        common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D']
+        common_babeld_opts = ['-m', 'ff02:0:0:0:0:0:1:6', '-p', '6696', '-D',
+                              '-g', '33123', '-c', '/etc/babeld.conf']
 
         # Create a set of unique command line options for babeld.  Right now,
         # this variable is empty but it might be used in the future.  Maybe
