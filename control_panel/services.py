@@ -62,7 +62,7 @@ def generate_rows(results, kind):
 # Allows the user to configure to configure mesh networking on wireless network
 # interfaces.
 class Services(object):
-    
+
     def __init__(self, templatelookup, test):
         self.templatelookup = templatelookup
         self.test = test
@@ -70,12 +70,12 @@ class Services(object):
         # Static class attributes.
         self.pid = '/var/run/httpd/httpd.pid'
 
-        # These attributes will be used as scratch variables to keep from running
-        # the same SQL queries over and over again.
+        # These attributes will be used as scratch variables to keep from
+        # running the same SQL queries over and over again.
         self.app = ''
         self.status = ''
         self.init_script = ''
-        
+
         if self.test:
             self.service_state = models.state.ServiceState('var/db/controlpanel/services.sqlite')
         else:
@@ -126,7 +126,7 @@ class Services(object):
             raise Error("Found too many webapps with name: %s" % name)
         else:
             return results[0]
-            
+
     def _fetch_daemon(self, name):
         results = self.service_state.list('daemons', models.daemon.Daemon, {'name': name})
         if len(results) == 0:
@@ -144,9 +144,10 @@ class Services(object):
         warning = ''
         try:
             result = self._fetch_webapp(app)
-            # Save the name of the app in a class attribute to save effort later.
-            self.app = app
 
+            # Save the name of the app in a class attribute to save effort
+            # later.
+            self.app = app
             status = result.status
 
             # Save the status of the app in another class attribute for later.
@@ -161,7 +162,7 @@ class Services(object):
                 warning = 'This will activate the application!'
         except Error as ex:
             warning = str(ex)
-        
+
         # Display to the user the page that asks them if they really want to
         # shut down that app.
         try:
@@ -190,7 +191,6 @@ class Services(object):
         try:
             result = self._fetch_webapp(self.app)
             result.status = status
-            
         except Error as ex:
             error = str(ex)
 
@@ -219,8 +219,8 @@ class Services(object):
             status = result.status
             init_script = result.init_script
 
-            # Save the status of the app and the initscript in class attributes for
-            # later use.
+            # Save the status of the app and the initscript in class attributes
+            # for later use.
             self.status = status
             self.init_script = init_script
 
@@ -233,7 +233,7 @@ class Services(object):
                 warning = 'This will activate the application!'
         except Error as ex:
             warning = str(ex)
-        
+
         # Display to the user the page that asks them if they really want to
         # shut down that app.
         try:
@@ -278,7 +278,7 @@ class Services(object):
             result.status = status
         except Error as ex:
             error = str(ex)
-        
+
         # Render the HTML page and send it to the browser.
         try:
             page = self.templatelookup.get_template("/services/toggled.html")

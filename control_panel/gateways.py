@@ -29,7 +29,7 @@ import models.wired_network
 import models.wireless_network
 
 
-def audit_procnetdev(procnetdev):
+def test_procnetdev(procnetdev):
     """Check if we can access and read from /proc/net/dev.
 
     Args:
@@ -55,6 +55,7 @@ def audit_procnetdev(procnetdev):
         procnetdev.close()
         return False
     return True
+
 
 def build_interfaces(interfaces, procnetdev):
     """Build list of interfaces found in procnetdev.
@@ -105,6 +106,7 @@ def check_for_wireless_interface(interface, persistance):
         'wireless' if found, '' otherwise
     """
     results, _ = persistance.exists('wireless', {'mesh_interface': interface})
+
     # If it's not in there, either, figure out which table it
     # has to go in.
     if not results:
@@ -230,7 +232,7 @@ class Gateways(object):
 
         # Open the kernel's canonical list of network interfaces.
         procnetdev = open("/proc/net/dev", "r")
-        if not audit_procnetdev(procnetdev):
+        if not test_procnetdev(procnetdev):
             return
 
         # Begin parsing the contents of /proc/net/dev to extract the names of
