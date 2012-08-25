@@ -1,0 +1,13 @@
+The broadcom-sta package includes the kernel module 'wl', which contains
+the Broadcom-provided proprietary kernel driver that supports a number of
+their cards.  Known supported model numbers include the BCM4311, BCM4312,
+BCM4321, and BCM4322 chipsets.
+
+Read the included LICENSE.txt file (placed in /usr/doc) before using this.
+
+You may also want to create /etc/modprobe.d/b43_blacklist.conf and add the 
+following lines to it:
+    blacklist b43
+    blacklist b43legacy
+    blacklist bcma
+    blacklist ssb

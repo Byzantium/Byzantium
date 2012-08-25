@@ -1,0 +1,63 @@
+#!/bin/sh
+# Slackware build script for broadcom-sta proprietary wireless driver
+# Written by David Matthew Jerry Koenig <koenigdavidmj@gmail.com>
+# Public domain.
+
+PRGNAM=broadcom-sta
+VERSION=5.100.82.112
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+KERNEL=${KERNEL:-$(uname -r)}
+PKG_VERSION=${VERSION}_$(echo $KERNEL | tr - _)
+
+case "$( uname -m )" in
+  i?86) ARCH=i486 ;;
+  arm*) ARCH=arm ;;
+     *) ARCH=$( uname -m ) ;;
+esac
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+WORKDIR=$TMP/build-$PRGNAM
+
+# Skipped the usual set of variables since they don't apply here
+# (libdir isn't needed, and custom CFLAGS aren't wanted).
+if [ "$ARCH" = "i486" ]; then
+  MY_ARCH="x86_32"
+elif [ "$ARCH" = "x86_64" ]; then
+  MY_ARCH="x86_64"
+else
+  printf "\n\n$ARCH is not supported...\n"
+  exit 1
+fi
+
+set -e
+
+rm -rf $WORKDIR $PKG
+mkdir -p $TMP $WORKDIR $PKG $OUTPUT
+cd $WORKDIR
+tar xvf $CWD/hybrid-portsrc_${MY_ARCH}-v$(printf $VERSION|tr . _).tar.gz
+
+# Build the module
+make -C /lib/modules/$KERNEL/build M=$WORKDIR clean
+make -C /lib/modules/$KERNEL/build M=$WORKDIR
+
+# Install the module
+mkdir -p $PKG/lib/modules/$KERNEL/kernel/extra
+cp wl.ko $PKG/lib/modules/$KERNEL/kernel/extra
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $WORKDIR/lib/LICENSE.txt > $PKG/usr/doc/$PRGNAM-$VERSION/LICENSE.txt
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+chown -R root:root .
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$PKG_VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
