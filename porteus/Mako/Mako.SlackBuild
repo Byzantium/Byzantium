@@ -5,7 +5,7 @@
 # Written by Larry Hajali <larryhaja[at]gmail[dot]com>
 
 PRGNAM=Mako
-VERSION=0.3.4
+VERSION=0.6.2
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -44,7 +44,7 @@ find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
-  CHANGES LICENSE README doc/* \
+  CHANGES LICENSE README.rst doc/* \
   $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
