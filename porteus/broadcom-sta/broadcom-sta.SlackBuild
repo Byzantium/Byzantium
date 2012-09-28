@@ -50,10 +50,17 @@ make -C /lib/modules/$KERNEL/build M=$WORKDIR
 mkdir -p $PKG/lib/modules/$KERNEL/kernel/extra
 cp wl.ko $PKG/lib/modules/$KERNEL/kernel/extra
 
+# Install the docs for this package.
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 cat $WORKDIR/lib/LICENSE.txt > $PKG/usr/doc/$PRGNAM-$VERSION/LICENSE.txt
 
+# Install the modprobe blacklist for the old Broadcom driver modules that don't
+# work anyway.
+mkdir -p $PKG/etc/modprobe.d
+cat $CWD/b43_blacklist.conf > $PKG/etc/modprobe.d/b43_blacklist.conf
+
+# Install the Slackware package management stuff.
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
