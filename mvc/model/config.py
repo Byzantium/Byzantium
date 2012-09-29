@@ -19,21 +19,34 @@ class Config(model.Model):
 		self.__mtime = time.time()
 
 	def _get_key(self, key):
-		if key in self.config:
+		if key in self._config:
 			return self._config[key]
 		else:
 			return None
 
 	def get(self, *args, **kwargs):
 		return_dict = {}
-		if 'key' in kwargs:
+		if len(kwargs) == 1:
 			return self._get_key(kwargs['key'])
-		elif len(kwargs) < 1:
+		elif len(args) == 1:
+			return self._get_key(args[0])
+		elif len(kwargs) < 1 and len(args) < 1:
 			return self._config
-		else:
+		elif len(args) > 0:
 			for key in args:
 				return_dict[key] = self._get_key(key)
-		self._mod()
+		elif len(kwargs) > 0:
+			for key, val in kwargs:
+				if key == 'key':
+					key = val
+					val = kwargs['value']
+					del kwargs['key']
+					del kwargs['value']
+				value = _get_key(key)
+				if type(value) == dict and val in value:
+					return_dict[key] = value[val]
+				else:
+					return_dict[key] = value
 		return return_dict
 
 	def _set_key_value(self, key, value):
@@ -51,7 +64,10 @@ class Config(model.Model):
 		return return_dict
 
 	def remove(self, *args):
-		self._mod()
+		for key in args:
+			if key in self._config:
+				del self._config[key]
+				self._mod()
 		return True
 
 	def save(self):
