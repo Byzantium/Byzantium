@@ -1,0 +1,12 @@
+The Python module called sh (https://github.com/amoffat/sh) lets you call just about anything
+that you could run from a login shell much more neatly than you can with subprocess.Popen, and
+more importantly lets you capture and parse the output much more readily.  You use it like this:
+
+    from sh import ifconfig
+    print ifconfig("eth0")
+
+Whatever command you want to run is imported like any other module.  That command is then usable
+just like a Python statement.  Arguments are passed per usual, and output can be captured and
+worked with in a like fashion.
+
+It's written for Python v2.6 - v3.2, so future compatibility shouldn't be a problem.

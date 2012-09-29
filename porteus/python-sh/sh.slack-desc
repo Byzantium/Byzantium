@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+         |-----handy-ruler------------------------------------------------------|
+python-sh: python-sh (call shell utilities like native Python primitives)
+python-sh:
+python-sh: python-sh is a lightweight Python module that lets you call just
+python-sh: about anything you can from a shell in Python code as if it were a
+python-sh: native Python method.  It also makes it much easier to capture (and
+python-sh: thus work with) the output of those utilities.
+python-sh:
+python-sh: Author: Andrew Moffat (andrew.robert.moffat@gmail.com)
+python-sh: Homepage: https://github.com/amoffat/sh
+python-sh: Version: 1.03
+python-sh:
+
