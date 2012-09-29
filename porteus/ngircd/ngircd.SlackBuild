@@ -60,9 +60,9 @@ CXXFLAGS="$SLKCFLAGS" \
   --localstatedir=/var \
   --mandir=/usr/man \
   --docdir=/usr/doc/$PRGNAM-$VERSION \
-  --with-openssl \
+  --with-${SSLTYPE:-gnutls} \
   --enable-ipv6 \
-  --without-syslog \
+  --without-gnutls \
   --build=$ARCH-slackware-linux
 
 make
