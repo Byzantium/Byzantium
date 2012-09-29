@@ -48,7 +48,6 @@ PRGNAM=sh
 VERSION=${VERSION:-1.03}
 ARCH=${ARCH:-i486}
 BUILD=${BUILD:-1}
-TAG=${TAG:}
 
 DOCS="AUTHORS.md LICENSE.txt README.md"
 
@@ -114,7 +113,7 @@ fi
 
 # Build the package.
 
-cd $TMP/tmp-$PRGNAM
+cd $TMP/build-$PRGNAM
 echo "Extracting source archive for $PRGNAM..."
 if `file ${SOURCE} | grep -q ": bzip2"`; then
   tar -xjvf ${SOURCE}
@@ -127,7 +126,7 @@ chmod -R u+w,go+r-w,a-s .
  
 echo "Compiling package."
 python ./setup.py build 2>&1 | tee $OUTPUT/build-${PRGNAM}.log
-python ./setup.py install --prefix=$PKG 2>&1 | tee -a $OUTPUT/build-${PRGNAM}.log
+python ./setup.py install --prefix=$PKG/usr 2>&1 | tee -a $OUTPUT/build-${PRGNAM}.log
 
 # Add documentation:
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
@@ -136,15 +135,15 @@ chmod 0644 $PKG/usr/doc/$PRGNAM-$VERSION/*
 
 # Add a package description:
 mkdir -p $PKG/install
-cat $SRCDIR/python-${PRGNAM}.slack-desc > $PKG/install/slack-desc
+cat $SRCDIR/${PRGNAM}.slack-desc > $PKG/install/slack-desc
 
 # Build the package:
 cd $PKG
-makepkg --linkadd y --chown n $OUTPUT/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.tgz 2>&1 | tee $OUTPUT/makepkg-${PRGNAM}.log
+makepkg --linkadd y --chown n $OUTPUT/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}.tgz 2>&1 | tee $OUTPUT/makepkg-${PRGNAM}.log
 cd $OUTPUT
-md5sum ${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.tgz > ${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.tgz.md5
+md5sum ${PRGNAM}-${VERSION}-${ARCH}-${BUILD}.tgz > ${PRGNAM}-${VERSION}-${ARCH}-${BUILD}.tgz.md5
 cd -
-cat $PKG/install/slack-desc | grep "^${PRGNAM}" > $OUTPUT/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}${TAG}.txt
+cat $PKG/install/slack-desc | grep "^${PRGNAM}" > $OUTPUT/${PRGNAM}-${VERSION}-${ARCH}-${BUILD}.txt
 
 # Clean up the extra stuff:
 if [ "$P1" = "--cleanup" ]; then
