@@ -24,7 +24,7 @@ class Model(object):
 		pass
 
 	@abc.abstractmethod
-	def del(self, **kwargs):
+	def remove(self, **kwargs):
 		'''del
 			remove/delete entry
 			return Boolean (True if success, False if failed)

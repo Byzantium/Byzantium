@@ -2,7 +2,7 @@
 '''
 import os
 import time
-from . import model
+import model
 
 # start for tesing only
 import json
@@ -12,39 +12,51 @@ import json
 class Config(model.Model):
 	def __init__(self, source):
 		self._source = source
-		self._config = None
+		self._config = {}
 		self.__mtime = time.time()
 	
 	def _mod(self):
 		self.__mtime = time.time()
 
+	def _get_key(self, key):
+		if key in self.config:
+			return self._config[key]
+		else:
+			return None
+
 	def get(self, *args, **kwargs):
 		return_dict = {}
 		if 'key' in kwargs:
-			return _get_key(kwargs['key'])
+			return self._get_key(kwargs['key'])
+		elif len(kwargs) < 1:
+			return self._config
 		else:
 			for key in args:
-				return_dict[key] = _get_key(key)
+				return_dict[key] = self._get_key(key)
 		self._mod()
 		return return_dict
+
+	def _set_key_value(self, key, value):
+		self._config[key] = value
+		return True
 
 	def set(self, **kwargs):
 		return_dict = {}
 		if len(kwargs) == 1:
-			return _set_key_value(kwargs.keys()[0], kwargs.vals()[0])
+			return self._set_key_value(kwargs.keys()[0], kwargs.values()[0])
 		else:
 			for key, val in kwargs.items():
-				return_dict[key] = _set_key_value(key, val)
+				return_dict[key] = self._set_key_value(key, val)
 		self._mod()
 		return return_dict
 
-	def del(self, *args):
+	def remove(self, *args):
 		self._mod()
 		return True
 
 	def save(self):
 		sink_file = open(self._source, 'w')
-		json.dump(sink_file, self._config)
+		json.dump(self._config, sink_file)
 		sink_file.close()
 		self._mod()
 		return True
@@ -70,3 +82,4 @@ class Config(model.Model):
 			self._config = source
 		self._mod()
 		return True
+
