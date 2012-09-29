@@ -1,0 +1,9 @@
+This is the new python package for all the python code for byzantium specific stuff.
+The directories are as follows:
+* model/ is for things that provide a standard interface to the outside world (OS, hardware, config files, etc).
+* view/ is for things that display info to humans
+** control_panel/ is for control panel specific view stuff
+** captive_portal/ is for captive portal specific view stuff
+** service_directory/ is for service directory specific view stuff
+* control/ is for things that process the output of models into things that views can show to humans
+
