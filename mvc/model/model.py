@@ -32,7 +32,7 @@ class Model(object):
 
     @abc.abstractmethod
     def remove(self, **kwargs):
-        '''del
+        '''remove
             Remove/delete a configuration entry for an aspect of the node.
             return Boolean (True if success, False if failed)
             '''
@@ -42,7 +42,7 @@ class Model(object):
     def save(self, sink=None):
         '''save
             Save settings to a data sink, where the data sink is a place to
-            store data in some fashion.
+            store or send data in some fashion.
             return Boolean (True if success, False if failed)
             '''
         pass
@@ -59,8 +59,8 @@ class Model(object):
     @abc.abstractmethod
     def sync(self, target=None):
         '''sync
-            Synchronize self._config (the control panel's snapshot of the
-            system state) with the target (the actual system state at time T
+            Synchronize self._config (eg. the control panel's snapshot of the
+            system state) with the target (eg. the actual system state at time T
             beneath the control panel).
             '''
         pass
