@@ -4,19 +4,32 @@
 '''
     system.py - *Example* Abstraction of a hardware system to Byzantium systems.
 '''
+import model
 
-class System(Model):
+def _is_ipforward():
+    from sh import cat
+    fval = cat("/proc/sys/net/ipv4/ip_forward")
+    if fval == '0': return False
+    return True
+
+def _do_randomcrap(crap):
+    from sh import echo
+    echo(str(crap))
+
+class System(model.Model):
     '''Hardware Interface Model'''
     def get(self, *agrs,**kwargs):
         '''get the value or values of the given item or items within the system
             return: value requested or None if not found
             '''
-        return None
+        return _is_ipforward()
 
     def set(self, **kwargs):
         '''set a given value or values within the system
             return Boolean (True if success, False if failed)
             '''
+        if 'crap' in kwargs:
+            _do_randomcrap(kwargs['crap'])
         return True
 
     def remove(self, **kwargs):
