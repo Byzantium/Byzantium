@@ -10,3 +10,7 @@ just like a Python statement.  Arguments are passed per usual, and output can be
 worked with in a like fashion.
 
 It's written for Python v2.6 - v3.2, so future compatibility shouldn't be a problem.
+
+Please note that this module is dependent on the value of the PATH variable in the underlying
+shell, so if you don't have /sbin in $PATH, then trying to run anything in that directory will
+result in exceptions being thrown.
