@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim: set expandtab tabstop=4 shiftwidth=4 :
 
-'''model.py - Abstraction of the system to Byzantium systems
+'''
+    model.py - Abstraction of the system to Byzantium systems
     All models must adhere to this interface.
 '''
 
