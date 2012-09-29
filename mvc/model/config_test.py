@@ -12,6 +12,7 @@ def test():
     print('# Test: import config module')
     conf = config.Config('example-config.json')
     print('result: True')
+    print
 
     # Set a single configuration value.
     print('# Test: set() with single value')
@@ -25,6 +26,7 @@ def test():
     set_one_key = set_one.keys()[0]
     set_one_val = set_one.values()[0]
     print('result: set_one == conf.get(set_one.keys()[0]): %s' % (str(set_one_val == conf.get(set_one_key))))
+    print
 
     # Get a single configuration value.
     print('# Test: get() with single value')
@@ -32,6 +34,7 @@ def test():
     print('info: get_ret_val %s' % str(get_ret_val))
     print('info: get value of %s' % set_one.keys()[0])
     print('result: value of %s == %s: %s' % (set_one.keys()[0], set_one.values()[0], str(get_ret_val == set_one.values()[0])))
+    print
 
     # Save and load values to the test datastore to make sure it's working
     # properly.
@@ -44,6 +47,7 @@ def test():
     load_ret_val = conf.load()
     after = conf.get()
     print('result: save successfull: %s' % str(before == after))
+    print
 
     # Store multiple configuration values in a JSON string.  Dictionary.
     # Whatever.
@@ -51,15 +55,18 @@ def test():
     multi_dict = {'test':'321', 'test0':'123', 'test1':'hello', 'test2':'world'}
     set_multi_ret_val = conf.set(**multi_dict)
     print('info: set multiple values: %s\nreturn == True: %s' % (str(set_multi_ret_val), str(multi_dict)))
+    print
 
     # Retrieve those values as a dictionary.
+    print('# Test: Retrieve multiple values from datastore.')
     get_multi_ret_val = conf.get(*(multi_dict.keys()))
     print('info: get multiple values: %s' % str(multi_dict.keys()))
     print('result: output == input: %s' % str(get_multi_ret_val == multi_dict))
+    print
 
     # Synch with data source with before and after printouts to make sure that
     # what gets saved is what gets loaded.
-    print('# Test: sync()')
+    print('# Test: Is what gets saved also what gets loaded?')
     before = copy.deepcopy(conf.get())
     ret_val = conf.sync()
     after = copy.deepcopy(conf.get())
@@ -68,19 +75,24 @@ def test():
     print('info: after: %s' % str(after))
     print('info: ret_val: %s' % str(ret_val))
     print('result: expected == after: %s' % str(expected_after == after))
+    print
 
     # Test the deletion of configuration values from the datastore.
+    print('# Test: Deletion of configuration values from datastore.')
     removed = 'test'
     before = copy.deepcopy(conf.get())
     ret_val = conf.remove(removed)
     after = copy.deepcopy(conf.get())
     del before[removed]
     print('(before - removed) == after: %s' % str((before == after)))
+    print
 
     # Test loading configuration settings from a canonical data source to load
     # the configuration model object.
+    print('Test: Load configuration settings from datastore and configure model object.')
     ret_val = conf.load()
     print('conf.load() returned: %s' % str(ret_val))
+    print
 
 # Run the tests.
 if __name__ == '__main__':
