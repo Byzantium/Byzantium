@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: python-sh.SlackBuild,v 1.5 2008/05/05 20:06:19 guest Exp guest $
+# $Id: sh.SlackBuild,v 1.5 2008/05/05 20:06:19 guest Exp guest $
 
 # Copyright (c) 2012-? The Doctor <drwho at virtadpt dot net>
 # Copyright (c) 2004-2007 Eric Hameleers <alien@slackware.com>
@@ -28,7 +28,7 @@
 # python-sh SlackBuild script 
 # ===========================
 # By:        The Doctor [412/724/301/703] [ZS] <drwho at virtadpt dot net>
-# For:       python-sh
+# For:       sh
 # Descr:     Python module that lets you call shell utilities like Python
 #	     primitives or methods.
 # URL:       https://github.com/amoffat/sh/downloads
@@ -37,7 +37,7 @@
 # 1.03-1:    2012/09/29
 #            Initial build.
 # 
-# Run 'sh python-sh.SlackBuild --cleanup' to build a Slackware package.
+# Run 'sh sh.SlackBuild --cleanup' to build a Slackware package.
 # The package (.tgz) plus descriptive .txt file are created in /tmp .
 # Install using 'installpkg'. 
 #
