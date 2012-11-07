@@ -33,6 +33,7 @@ commotion_netmask = '255.0.0.0'
 # Paths to generated configuration files.
 hostsmesh = '/etc/hosts.mesh'
 hostsmeshbak = '/etc/hosts.mesh.bak'
+dnsmasq_include_file = '/etc/dnsmasq.conf.include'
 
 # Global variables.
 wireless = []
@@ -73,7 +74,7 @@ for interface in wireless:
     # over if it didn't take the first time.
     break_flag = False
     while True:
-        print "Configuring wireless settings..."
+        logging.debug("Configuring wireless settings...")
         command = ['/sbin/iwconfig', interface, 'mode', 'ad-hoc']
         subprocess.Popen(command)
         time.sleep(1)
@@ -144,7 +145,7 @@ for interface in wireless:
 
         # Use arping to see if anyone's claimed it.
         arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I', interface, addr]
-        print "Finding an IP for mesh interface..."
+        logging.debug("Finding an IP for mesh interface...")
         ip_in_use = subprocess.call(arping)
 
         # If the IP isn't in use, ip_in_use==0 so we bounce out of the loop.
@@ -161,7 +162,7 @@ for interface in wireless:
 
         # Use arping to see if anyone's claimed it.
         arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I', interface, addr]
-        print "Finding an IP for client interface..."
+        logging.debug("Finding an IP for client interface...")
         ip_in_use = subprocess.call(arping)
 
         # If the IP isn't in use, ip_in_use==0 so we bounce out of the loop.
@@ -169,20 +170,20 @@ for interface in wireless:
         mesh_ip = addr
 
     # Configure the mesh interface.
-    print "Configuring mesh interface..."
+    logging.debug("Configuring mesh interface...")
     command = ['/sbin/ifconfig', interface, mesh_ip, 'netmask', mesh_netmask,
                'up']
     subprocess.Popen(command)
     time.sleep(5)
 
     # Configure the client interface.
-    print "Configuring client interface..."
+    logging.debug("Configuring client interface...")
     command = ['/sbin/ifconfig', (interface + ':1'), client_ip, 'up']
     subprocess.Popen(command)
     time.sleep(5)
 
     # Add a route for any Commotion nodes nearby.
-    print "Adding Commotion route..."
+    logging.debug("Adding Commotion route...")
     command = ['/sbin/route', 'add', '-net', commotion_network, 'netmask',
                commotion_netmask, 'dev', interface]
 
@@ -220,6 +221,12 @@ include_file.close()
 # Start dnsmasq.
 subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
 
-# MOOF MOOF MOOF
-# TODO:
-# - Add code that starts the mesh routing software.
+# Start olsrd.
+olsrd_command = ["", "", ""]
+subprocess.Popen(olsrd_command)
+time.sleep(5)
+
+# Test to make sure that olsrd actually started.
+
+# Fin.
+exit 0
