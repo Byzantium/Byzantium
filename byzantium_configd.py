@@ -229,4 +229,4 @@ time.sleep(5)
 # Test to make sure that olsrd actually started.
 
 # Fin.
-exit 0
+sys.exit(0)
