@@ -144,7 +144,8 @@ for interface in wireless:
         addr = addr + str(random.randint(1, 254))
 
         # Use arping to see if anyone's claimed it.
-        arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I', interface, addr]
+        arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I', interface,
+                  addr]
         logging.debug("Finding an IP for mesh interface...")
         ip_in_use = subprocess.call(arping)
 
@@ -179,7 +180,7 @@ for interface in wireless:
 
     # Configure the client interface.
     logging.debug("Configuring client interface...")
-    command = ['/sbin/ifconfig', (interface + ':1'), client_ip, 'up']
+    command = ['/sbin/ifconfig', interface + ':1', client_ip, 'up']
     subprocess.Popen(command)
     time.sleep(5)
 
@@ -204,7 +205,7 @@ prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 hosts = open(hosts_file, "w")
 line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
 hosts.write(line)
-for i in range(2, 255):
+for i in range(2, 254):
     line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
     hosts.write(line)
 hosts.close()
