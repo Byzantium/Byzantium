@@ -75,7 +75,7 @@ if [ -e /etc/magic_folders/folders.cfg ]; then
 fi
 
 # Initialize the networking hardware:
-#[ -x /etc/rc.d/rc.inet1 ] && . /etc/rc.d/rc.inet1 &
+[ -x /etc/rc.d/rc.inet1 ] && . /etc/rc.d/rc.inet1 &
 
 # Set the hostname:
 hostname $(cat /etc/HOSTNAME | cut -f1 -d .) &
