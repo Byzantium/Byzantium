@@ -224,7 +224,7 @@ include_file.close()
 subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
 
 # Start olsrd.
-olsrd_command = ["", "", ""]
+olsrd_command = ["/usr/sbin/olsrd"]
 subprocess.Popen(olsrd_command)
 time.sleep(5)
 
