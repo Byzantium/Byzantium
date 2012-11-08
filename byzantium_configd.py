@@ -200,7 +200,7 @@ for interface in wireless:
     time.sleep(5)
 
 # Build a string which can be used as a template for an /etc/hosts style file.
-(octet_one, octet_two, octet_three, octet_four) = client_ip.split('.')
+(octet_one, octet_two, octet_three, _) = client_ip.split('.')
 prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 
 # Make an /etc/hosts.mesh file, which will be used by dnsmasq to resolve its
@@ -208,7 +208,7 @@ prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 hosts = open(hostsmesh, "w")
 line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
 hosts.write(line)
-for i in range(2, 254):
+for i in range(2, 255):
     line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
     hosts.write(line)
 hosts.close()
