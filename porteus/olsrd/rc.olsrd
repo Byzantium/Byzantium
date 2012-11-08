@@ -1,77 +1,101 @@
-#!/bin/sh
-#
-# OLSRd - Optimized Link State Routing
-#
-# Init script for olsrd
-#
-# Written by haxwithaxe
-# ripped off from miredo init script by Fridrich von Stauffenberg <cancellor2@gmail.com>
-# Based on tor's init script by Marco Bonetti <sid77@slackware.it>
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          olsrd
+# Required-Start:    $network $remote_fs $syslog
+# Required-Stop:     $network $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: /etc/init.d/olsrd: start olsrd
+### END INIT INFO
 
-PIDFILE=/var/run/olsrd.pid
-LOGFILE="/dev/null"
-DAEMON="/usr/sbin/olsrd"
-HNAME="OLSRd"
+#		Based on skeleton script written by Miquel van Smoorenburg <miquels@cistron.nl>.
+#		Modified for Debian 
+#		by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+#		Modified for olsrd
+#		by Holger Levsen <debian@layer-acht.org>
+# 
+# Version:	21-Dec-2006  
+# modified:     01-Aug-2007
+# 	        31-Jun-2008
+#		30-May-2009
 
-olsrd_start() {
-  echo "Starting ${HNAME}: $DAEMON"
-  $DAEMON -d $DEBUG -nofork 2>&1 > $LOGFILE &
-  PID=$!
-  echo $PID > $PIDFILE 2>/dev/null
-  echo "Strarted."
-}
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/sbin/olsrd
+NAME=olsrd
+DESC=olsrd
 
-olsrd_stop() {
-  echo -n "Stopping ${HNAME}... "
-  PID=$(cat $PIDFILE 2>/dev/null)
-  if [ -z "$PID" ]; then
-    echo "not running."
-    exit 0
-  fi
-  if kill -15 $PID; then
-    echo "stopped."
-    rm $PIDFILE
-  else
-    sleep 1
-    if kill -9 $PID; then
-      echo "killed."
-    else
-      echo "error!"
-      exit 1
-    fi
-  fi
-}
+PID_FILE=/var/run/$NAME.pid
 
-olsrd_status() {
-  PID=$(cat $PIDFILE 2>/dev/null)
-  if [ -z "$PID" ]; then
-    echo "Not running."
-    exit 1
-  elif kill -0 $PID 2>/dev/null; then
-    echo "Running with PID $PID."
-    exit 0
-  else
-    echo "PID file $PIDFILE present, but PID $PID is not running."
-    exit 1
-  fi
-}
+test -x $DAEMON || exit 0
+
+set -e
 
 case "$1" in
-  start)
-    olsrd_start
-  ;;
-  stop)
-    olsrd_stop
-  ;;
-  restart)
-    olsrd_stop
-    sleep 1
-    olsrd_start
-  ;;
+  debug)
+	echo -n "Starting $DESC: "
+	$DAEMON $DAEMON_OPTS &
+	# sleep til olsrd has been started
+	while ! pidof $NAME > /dev/null ; do 
+	  sleep 1
+	done
+	echo "$NAME."
+	echo $(pidof $NAME) > $PID_FILE
+	;;
   status)
-    olsrd_status
-  ;;
+	if [[ $(pidof $NAME) -ne 0 ]] ; then 
+		echo "$NAME is running."
+		exit 0
+	else
+		echo "$NAME is not running."
+		exit 1
+	fi
+	;;
+  start)
+	#if [ "$START_OLSRD" != "YES" ] ; then exit 0 ; fi
+	if [[ $(pidof $NAME) -ne 0 ]] ; then 
+		echo "$NAME already running, doing nothing."
+		exit 0
+	fi
+	echo -n "Starting $DESC: "
+	$DAEMON $DAEMON_OPTS &
+	# sleep til olsrd has been started
+	while ! pidof $NAME > /dev/null ; do
+	  sleep 1
+	done
+	echo "$NAME."        
+	echo $(pidof $NAME) > $PID_FILE
+	;;
+  stop-soft)
+	if [[ $(pidof $NAME) -eq 0 ]] ; then 
+		echo "$NAME is not running."
+		exit 0
+	fi
+	echo -n "Stopping $DESC: "
+	kill -1 $(pidof $NAME)
+        rm -f $PID_FILE
+	echo "$NAME."
+	;;
+  stop)
+	if [[ $(pidof $NAME) -eq 0 ]] ; then 
+		echo "$NAME is not running."
+		exit 0
+	fi
+	echo -n "Stopping $DESC: "
+	kill -9 $(pidof $NAME)
+        rm -f $PID_FILE
+	echo "$NAME."
+	;;
+  restart|force-reload)
+	echo -n "Restarting $DESC: "
+	$0 stop
+	sleep 1
+	$0 start
+	;;
   *)
-    echo "Usage: $0 (start|stop|restart|status)"
-  ;;
+	N=/etc/rc.d/rc.$NAME
+	echo "Usage: $N {start|stop|restart|status}" >&2
+	exit 1
+	;;
 esac
+
+exit 0

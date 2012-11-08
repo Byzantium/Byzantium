@@ -1,8 +1,8 @@
 PRGNAM=olsrd
-VERSION=0.6.2
+VERSION=0.6.4
 HOMEPAGE="http://www.olsr.org"
-DOWNLOAD="http://www.olsr.org/releases/0.6/olsrd-0.6.2.tar.bz2"
-MD5SUM=1f55bbbaf0737364b53daaeecc2cd50c
+DOWNLOAD="http://www.olsr.org/releases/0.6/olsrd-0.6.4.tar.bz2"
+MD5SUM=24f213baa82b1dc198ae77acde8169b3
 DOWNLOAD_x86_64=
 MD5SUM_x86_64=
 MAINTAINER="haxwithaxe"

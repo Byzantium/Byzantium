@@ -6,8 +6,8 @@
 
 # Licence: Public Domain
 
-PRGNAM=olsrd			# replace with name of program
-VERSION=${VERSION:-0.6.2}	# replace with version of program
+PRGNAM=olsrd
+VERSION=${VERSION:-0.6.4}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -63,7 +63,11 @@ export CFLAGS="$SLKCFLAGS"
 export CXXFLAGS="$SLKCFLAGS"
 export LIBDIR=/usr/lib${LIBDIRSUFFIX}
 
+# export OS variable in case the build system can't detect it
+export OS=linux
+
 # Compile the application and install it into the $PKG directory
+export prefix=/usr
 make
 make libs
 make install DESTDIR=$PKG
@@ -105,6 +109,14 @@ cp -a \
   *README* license.txt CHANGELOG* \
   $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+# config file if a non-default one is present
+if [ -f $CWD/olsrd.conf ] ;then
+	mv $PKG/etc/olsrd.conf $PKG/etc/olsrd.conf.default
+	cp -a $CWD/olsrd.conf $PKG/etc/olsrd.conf
+	# and put a copy in the docs folder just in case
+	cp -a $CWD/olsrd.conf $PKG/usr/doc/$PRGNAM-$VERSION/olsrd.conf.custom
+fi
+
 # init script
 mkdir -p $PKG/etc/rc.d
 cat $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM
