@@ -130,10 +130,10 @@ for interface in wireless:
                     break_flag = True
                     break
 
-            # "Victory is mine!"
-            #     --Stewie, _Family Guy_
-            if not(break_flag):
-                break
+        # "Victory is mine!"
+        #     --Stewie, _Family Guy_
+        if not(break_flag):
+            break
 
     # Start with the mesh interface.
     ip_in_use = 1
