@@ -30,7 +30,7 @@ chmod 600 /etc/random-seed
 [ -x /etc/rc.d/rc.alsa ] && sh /etc/rc.d/rc.alsa &
 
 # Start avahidaemon
-[ -x /etc/rc.d/rc.avahidaemon ] && /etc/rc.d/rc.avahidaemon start
+#[ -x /etc/rc.d/rc.avahidaemon ] && /etc/rc.d/rc.avahidaemon start
 
 # Start avahidnsconfd
 [ -x /etc/rc.d/rc.avahidnsconfd ] && /etc/rc.d/rc.avahidnsconfd start &
