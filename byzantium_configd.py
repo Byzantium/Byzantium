@@ -64,11 +64,6 @@ for i in interfaces:
 
 # Find unused IP addresses to configure this node's interfaces with.
 for interface in wireless:
-    # Turn up the interface.
-    command = ['/sbin/ifconfig', interface, 'up']
-    subprocess.Popen(command)
-    time.sleep(5)
-
     # Set wireless parameters on the interface.  Do this by going into a loop
     # that tests the configuration for correctness and starts the procedure
     # over if it didn't take the first time.
@@ -134,6 +129,11 @@ for interface in wireless:
         #     --Stewie, _Family Guy_
         if not(break_flag):
             break
+
+    # Turn up the interface.
+    command = ['/sbin/ifconfig', interface, 'up']
+    subprocess.Popen(command)
+    time.sleep(5)
 
     # Start with the mesh interface.
     ip_in_use = 1
