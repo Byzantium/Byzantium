@@ -19,7 +19,7 @@ import sys
 import time
 
 # Layer 1 and 2 defaults.
-channel = 5
+channel = '5'
 frequency = 2.432
 bssid = '02:CA:FF:EE:BA:BE'
 essid = 'Sandy'
@@ -128,6 +128,7 @@ for interface in wireless:
         # "Victory is mine!"
         #     --Stewie, _Family Guy_
         if not(break_flag):
+            logging.debug("Wireless configured.")
             break
 
     # Turn up the interface.
@@ -152,6 +153,7 @@ for interface in wireless:
         # If the IP isn't in use, ip_in_use==0 so we bounce out of the loop.
         # We lose nothing by saving the address anyway.
         mesh_ip = addr
+    logging.debug("Mesh address: %s" % mesh_ip)
 
     # Now configure the client interface.
     ip_in_use = 1
@@ -169,7 +171,8 @@ for interface in wireless:
 
         # If the IP isn't in use, ip_in_use==0 so we bounce out of the loop.
         # We lose nothing by saving the address anyway.
-        mesh_ip = addr
+        client_ip = addr
+    logging.debug("Client address: %s" % client_ip)
 
     # Configure the mesh interface.
     logging.debug("Configuring mesh interface...")
@@ -180,7 +183,8 @@ for interface in wireless:
 
     # Configure the client interface.
     logging.debug("Configuring client interface...")
-    command = ['/sbin/ifconfig', interface + ':1', client_ip, 'up']
+    client_interface = interface + ':1'
+    command = ['/sbin/ifconfig', client_interface, client_ip, 'up']
     subprocess.Popen(command)
     time.sleep(5)
 
