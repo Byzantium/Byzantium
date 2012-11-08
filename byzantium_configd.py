@@ -228,7 +228,5 @@ olsrd_command = ["/usr/sbin/olsrd"]
 subprocess.Popen(olsrd_command)
 time.sleep(5)
 
-# Test to make sure that olsrd actually started.
-
 # Fin.
 sys.exit(0)
