@@ -111,22 +111,22 @@ for interface in wireless:
 
             # Correct ESSID?
             if 'ESSID' in line:
-                essid = line[-1].split(':')[1]
-                if essid != self.essid:
+                ESSID = line[-1].split(':')[1]
+                if ESSID != essid:
                     break_flag = True
                     break
 
             # Correct BSSID?
             if 'Cell' in line:
-                bssid = line[-1]
-                if bssid != self.bssid:
+                BSSID = line[-1]
+                if BSSID != bssid:
                     break_flag = True
                     break
 
             # Correct frequency (because iwconfig doesn't report channels)?
             if 'Frequency' in line:
-                frequency = line[2].split(':')[1]
-                if frequency != self.frequency:
+                FREQUENCY = line[2].split(':')[1]
+                if FREQUENCY != frequency:
                     break_flag = True
                     break
 
@@ -161,7 +161,8 @@ for interface in wireless:
         addr = addr + str(random.randint(0, 254)) + '.1'
 
         # Use arping to see if anyone's claimed it.
-        arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I', interface, addr]
+        arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I', interface,
+                  addr]
         logging.debug("Finding an IP for client interface...")
         ip_in_use = subprocess.call(arping)
 
