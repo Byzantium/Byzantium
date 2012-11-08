@@ -1,0 +1,198 @@
+#!/bin/bash
+# Helper for the rc.S and rc.M scripts to start some services in the background.
+
+# Configure runtime kernel parameters:
+[ -r /etc/sysctl.conf ] && sysctl -e -p /etc/sysctl.conf &
+
+# Enable swapping:
+swapon -a 2>/dev/null &
+
+# Configure ISA Plug-and-Play devices:
+[ -r /etc/isapnp.conf ] && isapnp /etc/isapnp.conf &
+
+# Run serial port setup script.
+# CAREFUL!  This can make some systems hang if the rc.serial script isn't
+# set up correctly.  If this happens, you may have to edit the file from a
+# boot disk, and/or set it as non-executable:
+[ -x /etc/rc.d/rc.serial ] && sh /etc/rc.d/rc.serial start &
+
+# Carry an entropy pool between reboots to improve randomness:
+[ -f /etc/random-seed ] && { echo "Using /etc/random-seed to initialize /dev/urandom."; cat /etc/random-seed > /dev/urandom; }
+
+# Use the pool size from /proc, or 512 bytes:
+[ -r /proc/sys/kernel/random/poolsize ] && dd if=/dev/urandom of=/etc/random-seed count=1 bs=`cat /proc/sys/kernel/random/poolsize` 2>/dev/null || dd if=/dev/urandom of=/etc/random-seed count=1 bs=512 2>/dev/null
+chmod 600 /etc/random-seed
+
+# Start HAL:
+[ -x /etc/rc.d/rc.hald ] && . /etc/rc.d/rc.hald start &
+
+# Load ALSA (sound) defaults:
+[ -x /etc/rc.d/rc.alsa ] && sh /etc/rc.d/rc.alsa &
+
+# Start avahidaemon
+[ -x /etc/rc.d/rc.avahidaemon ] && /etc/rc.d/rc.avahidaemon start
+
+# Start avahidnsconfd
+[ -x /etc/rc.d/rc.avahidnsconfd ] && /etc/rc.d/rc.avahidnsconfd start &
+
+# Look for additional USB/SCSI/IEEE1394/etc devices on multiple LUNs:
+[ -x /etc/rc.d/rc.scanluns ] && sh /etc/rc.d/rc.scanluns &
+
+# Start the Control Script for automounter:
+[ -x /etc/rc.d/rc.autofs ] && sh /etc/rc.d/rc.autofs start &
+
+# Start the Network Time Protocol daemon:
+[ -x /etc/rc.d/rc.ntpd ] && sh /etc/rc.d/rc.ntpd start &
+
+# Start Bluetooth:
+[ -x /etc/rc.d/rc.bluetooth ] && sh /etc/rc.d/rc.bluetooth start &
+
+# Start dnsmasq, a simple DHCP/DNS server:
+#[ -x /etc/rc.d/rc.dnsmasq ] && sh /etc/rc.d/rc.dnsmasq start &
+
+# Start snmpd:
+#[ -x /etc/rc.d/rc.snmpd ] && sh /etc/rc.d/rc.snmpd start &
+
+# Start the print spooling system.  This will usually be LPRng (lpd) or CUPS.
+#if [ -x /etc/rc.d/rc.cups ]; then
+    # Start CUPS:
+#    sh /etc/rc.d/rc.cups start &
+#elif [ -x /etc/rc.d/rc.lprng ]; then
+    # Start LPRng (lpd):
+#    . /etc/rc.d/rc.lprng start &
+#fi
+
+# Start netatalk. (a file/print server for Macs using Appletalk)
+#[ -x /etc/rc.d/rc.atalk ] && sh /etc/rc.d/rc.atalk &
+
+# Start smartd, which monitors the status of S.M.A.R.T. compatible
+# hard drives and reports any problems.  Note some devices (which aren't
+# smart, I guess ;) will hang if probed by smartd, so it's commented out
+# by default.
+# [ -x /usr/sbin/smartd ] && /usr/sbin/smartd
+
+# If we're using udev, make /dev/cdrom and any other optical drive symlinks
+# if some udev rule hasn't made them already:
+if ! egrep -qo " nohotplug( |\$)" /proc/cmdline; then
+    [ -x /lib/udev/rc.optical-symlinks -a -x /etc/rc.d/rc.udev ] && sh /lib/udev/rc.optical-symlinks &
+fi
+
+# Monitor the UPS with genpowerd.
+# To use this, uncomment this section and edit your settings in
+# /etc/genpowerd.conf (serial device, UPS type, etc).  For more information,
+# see "man genpowerd" or the extensive documentation in the
+# /usr/doc/genpower-*/ directory.
+# You'll also need to configure a similar block in /etc/rc.d/rc.6 if you want
+# support for stopping the UPS's inverter after the machine halts.
+# [ -x /sbin/genpowerd ] && { echo "Starting genpowerd daemon..."; /sbin/genpowerd; }
+
+# Turn on process accounting.  To enable process accounting, make sure the
+# option for BSD process accounting is enabled in your kernel, and then
+# create the file /var/log/pacct (touch /var/log/pacct).  By default, process
+# accounting is not enabled (since /var/log/pacct does not exist).  This is
+# because the log file can get VERY large.
+#[ -x /sbin/accton -a -r /var/log/pacct ] && chmod 640 /var/log/pacct && /sbin/accton /var/log/pacct &
+
+# Start crond (Dillon's crond):
+# If you want cron to actually log activity to /var/log/cron, then change
+# -l notice to -l info to increase the logging level.
+crond -l notice &
+
+# Start atd (manages jobs scheduled with 'at'):
+#[ -x /usr/sbin/atd ] && /usr/sbin/atd -b 15 -l 1 &
+
+# Slackware-Mini-Quota-HOWTO:
+# To really activate quotas, you'll need to add 'usrquota' and/or 'grpquota' to
+# the appropriate partitions as listed in /etc/fstab.  Here's an example:
+#
+# /dev/hda2      /home      ext3     defaults,usrquota      1   1
+#
+# You'll then need to setup initial quota files at the top of the partitions
+# to support quota, like this:
+# touch /home/aquota.user /home/aquota.group
+# chmod 600 /home/aquota.user /home/aquota.group
+#
+# Then, reboot to activate the system.
+# To edit user quotas, use 'edquota'.  See 'man edquota'.  Also, the
+# official Quota Mini-HOWTO has lots of useful information.  That can be found
+# here:  /usr/doc/Linux-HOWTOs/Quota
+
+# Check quotas and then turn quota system on:
+#if grep -q quota /etc/fstab; then
+#    for quotafs in $(awk '/quota/ {print $2}' /etc/fstab) ; do rm -f $quotafs/{a,}quota.{group,user}.new; done
+#    [ -x /sbin/quotacheck ] && echo "Checking filesystem quotas:  /sbin/quotacheck -avugm" && /sbin/quotacheck -avugm
+#    [ -x /sbin/quotaon ] && echo "Activating filesystem quotas:  /sbin/quotaon -avug" && /sbin/quotaon -avug
+#fi
+
+# If /etc/rc.d/rc.rpc is executable, run it to load rpc.portmap, rpc.lockd,
+# and rpc.statd.  This might be needed to mount NFS partitions that are not
+# listed in /etc/fstab.  Starting this twice won't hurt as the script will
+# check if things are already running before trying to start them.
+#[ -x /etc/rc.d/rc.rpc ] && sh /etc/rc.d/rc.rpc start &
+
+# If there is a firewall script, run it before enabling packet forwarding.
+# See the HOWTOs on http://www.netfilter.org/ for documentation on
+# setting up a firewall or NAT on Linux.  In some cases this might need to
+# be moved past the section below dealing with IP packet forwarding.
+#[ -x /etc/rc.d/rc.firewall ] && /etc/rc.d/rc.firewall start
+
+# Turn on IPv4 packet forwarding support.
+[ -x /etc/rc.d/rc.ip_forward ] && . /etc/rc.d/rc.ip_forward start &
+
+# Start the inetd server:
+#[ -x /etc/rc.d/rc.inetd ] && /etc/rc.d/rc.inetd start &
+
+# Start the OpenSSH SSH daemon:
+#if [ -x /etc/rc.d/rc.sshd ]; then
+#    echo "Starting OpenSSH SSH daemon:  /usr/sbin/sshd"
+#     /etc/rc.d/rc.sshd start &
+#fi
+
+# Start the BIND name server daemon:
+#[ -x /etc/rc.d/rc.bind ] && /etc/rc.d/rc.bind start &
+
+# Start NIS (the Network Information Service):
+#[ -x /etc/rc.d/rc.yp ] && . /etc/rc.d/rc.yp start &
+
+# Start the NFS server.  Note that for this to work correctly, you'll
+# need nfsd support in the kernel (the startup script will try to load
+# the module for you).
+# You'll also need to set up some shares in /etc/exports.
+# Starting the NFS server:
+#[ -x /etc/rc.d/rc.nfsd ] && /etc/rc.d/rc.nfsd start &
+
+# Start the SASL authentication server.  This provides SASL
+# authentication services for sendmail:
+#[ -x /etc/rc.d/rc.saslauthd ] && sh /etc/rc.d/rc.saslauthd start
+
+# Start the sendmail daemon:
+#[ -x /etc/rc.d/rc.sendmail ] && sh /etc/rc.d/rc.sendmail start
+
+# Load a custom screen font if the user has an rc.font script.
+[ -x /etc/rc.d/rc.font ] && sh /etc/rc.d/rc.font &
+
+# Load a custom keymap if the user has an rc.keymap script.
+[ -x /etc/rc.d/rc.keymap ] && sh /etc/rc.d/rc.keymap &
+
+# Start the MySQL database:
+#[ -x /etc/rc.d/rc.mysqld ] && sh /etc/rc.d/rc.mysqld start &
+
+# Start Apache web server:
+#[ -x /etc/rc.d/rc.httpd ] && sh /etc/rc.d/rc.httpd start &
+
+# Start OpenLDAP:
+#[ -x /etc/rc.d/rc.openldap ] && sh /etc/rc.d/rc.openldap start &
+
+# Start Samba (a file/print server for Win95/NT machines).
+# Samba can be started in /etc/inetd.conf instead.
+#[ -x /etc/rc.d/rc.samba ] && sh /etc/rc.d/rc.samba start &
+
+# Start the GPM mouse server:
+#[ -x /etc/rc.d/rc.gpm ] && sh /etc/rc.d/rc.gpm start &
+
+# Screen blanks after 15 minutes idle time, and powers down in one hour
+# if the kernel supports APM or ACPI power management:
+setterm -blank 15 -powersave powerdown -powerdown 60 &
+
+# Save the contents of 'dmesg':
+dmesg -s 65536 > /var/log/dmesg &
