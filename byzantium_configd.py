@@ -32,7 +32,6 @@ commotion_netmask = '255.0.0.0'
 
 # Paths to generated configuration files.
 hostsmesh = '/etc/hosts.mesh'
-hostsmeshbak = '/etc/hosts.mesh.bak'
 dnsmasq_include_file = '/etc/dnsmasq.conf.include'
 
 # Global variables.
@@ -201,12 +200,12 @@ for interface in wireless:
     time.sleep(5)
 
 # Build a string which can be used as a template for an /etc/hosts style file.
-(octet_one, octet_two, octet_three) = client_ip.split('.')
+(octet_one, octet_two, octet_three, octet_four) = client_ip.split('.')
 prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 
 # Make an /etc/hosts.mesh file, which will be used by dnsmasq to resolve its
 # mesh clients.
-hosts = open(hosts_file, "w")
+hosts = open(hostsmesh, "w")
 line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
 hosts.write(line)
 for i in range(2, 254):
