@@ -219,10 +219,14 @@ include_file.write(dhcp_range)
 include_file.close()
 
 # Start dnsmasq.
+print "Starting dnsmasq."
 subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
 
 # Start olsrd.
-olsrd_command = ['/etc/rc.d/rc.olsrd', 'start']
+olsrd_command = ['/usr/sbin/olsrd']
+for i in wireless:
+    olsrd_command.apppend(i)
+print "Starting routing daemon."
 subprocess.Popen(olsrd_command)
 time.sleep(5)
 
