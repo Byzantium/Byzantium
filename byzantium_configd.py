@@ -19,7 +19,7 @@ import time
 
 # Layer 1 and 2 defaults.
 channel = '5'
-frequency = 2.432
+frequency = '2.432'
 bssid = '02:CA:FF:EE:BA:BE'
 essid = 'Sandy'
 
@@ -225,6 +225,7 @@ subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
 # Start olsrd.
 olsrd_command = ['/usr/sbin/olsrd']
 for i in wireless:
+    olsrd_command.append('-i')
     olsrd_command.append(i)
 print "Starting routing daemon."
 subprocess.Popen(olsrd_command)
