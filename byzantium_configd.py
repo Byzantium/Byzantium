@@ -225,7 +225,7 @@ subprocess.Popen(['/etc/rc.d/rc.dnsmasq', 'restart'])
 # Start olsrd.
 olsrd_command = ['/usr/sbin/olsrd']
 for i in wireless:
-    olsrd_command.apppend(i)
+    olsrd_command.append(i)
 print "Starting routing daemon."
 subprocess.Popen(olsrd_command)
 time.sleep(5)
