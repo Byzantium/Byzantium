@@ -68,16 +68,16 @@ for interface in wireless:
     while True:
         command = ['/sbin/iwconfig', interface, 'mode', 'ad-hoc']
         subprocess.Popen(command)
-        time.sleep(1)
+        time.sleep(2)
         command = ['/sbin/iwconfig', interface, 'essid', essid]
         subprocess.Popen(command)
-        time.sleep(1)
+        time.sleep(2)
         command = ['/sbin/iwconfig', interface, 'ap', bssid]
         subprocess.Popen(command)
-        time.sleep(1)
+        time.sleep(2)
         command = ['/sbin/iwconfig', interface, 'channel', channel]
         subprocess.Popen(command)
-        time.sleep(1)
+        time.sleep(2)
 
         # Capture the interface's current settings.
         command = ['/sbin/iwconfig', interface]
