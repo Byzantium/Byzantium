@@ -9,7 +9,6 @@
 # This is a hack, but it's also an emergency.
 
 # Imports
-import logging
 import os
 import os.path
 import random
@@ -50,14 +49,13 @@ interfaces = os.listdir('/sys/class/net')
 if 'lo' in interfaces:
     interfaces.remove('lo')
 if not interfaces:
-    logging.debug("No wireless interfaces found.  Terminating.")
+    print "No wireless interfaces found.  Terminating."
     sys.exit(1)
 
 # For each network interface's pseudofile in /sys, test to see if a
 # subdirectory 'wireless/' exists.  Use this to sort the list of
 # interfaces into wired and wireless.
 for i in interfaces:
-    logging.debug("Adding network interface %s.", i)
     if os.path.isdir("/sys/class/net/%s/wireless" % i):
         wireless.append(i)
 
@@ -68,7 +66,6 @@ for interface in wireless:
     # over if it didn't take the first time.
     break_flag = False
     while True:
-        logging.debug("Configuring wireless settings...")
         command = ['/sbin/iwconfig', interface, 'mode', 'ad-hoc']
         subprocess.Popen(command)
         time.sleep(1)
@@ -127,7 +124,6 @@ for interface in wireless:
         # "Victory is mine!"
         #     --Stewie, _Family Guy_
         if not(break_flag):
-            logging.debug("Wireless configured.")
             break
 
     # Turn up the interface.
@@ -146,13 +142,12 @@ for interface in wireless:
         # Use arping to see if anyone's claimed it.
         arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I', interface,
                   addr]
-        logging.debug("Finding an IP for mesh interface...")
         ip_in_use = subprocess.call(arping)
 
         # If the IP isn't in use, ip_in_use==0 so we bounce out of the loop.
         # We lose nothing by saving the address anyway.
         mesh_ip = addr
-    logging.debug("Mesh address: %s" % mesh_ip)
+    print "Mesh interface address: %s" % mesh_ip
 
     # Now configure the client interface.
     ip_in_use = 1
@@ -165,30 +160,29 @@ for interface in wireless:
         # Use arping to see if anyone's claimed it.
         arping = ['/sbin/arping', '-c 5', '-D', '-f', '-q', '-I', interface,
                   addr]
-        logging.debug("Finding an IP for client interface...")
         ip_in_use = subprocess.call(arping)
 
         # If the IP isn't in use, ip_in_use==0 so we bounce out of the loop.
         # We lose nothing by saving the address anyway.
         client_ip = addr
-    logging.debug("Client address: %s" % client_ip)
+    print "Client interface address: %s" % client_ip
 
     # Configure the mesh interface.
-    logging.debug("Configuring mesh interface...")
     command = ['/sbin/ifconfig', interface, mesh_ip, 'netmask', mesh_netmask,
                'up']
     subprocess.Popen(command)
     time.sleep(5)
+    print "Mesh interface %s configured." % interface
 
     # Configure the client interface.
-    logging.debug("Configuring client interface...")
     client_interface = interface + ':1'
     command = ['/sbin/ifconfig', client_interface, client_ip, 'up']
     subprocess.Popen(command)
     time.sleep(5)
+    print "Client interface %s configured." % client_interface
 
     # Add a route for any Commotion nodes nearby.
-    logging.debug("Adding Commotion route...")
+    print "Adding Commotion route..."
     command = ['/sbin/route', 'add', '-net', commotion_network, 'netmask',
                commotion_netmask, 'dev', interface]
 
@@ -198,6 +192,7 @@ for interface in wireless:
     captive_portal_return = 0
     captive_portal_return = subprocess.Popen(captive_portal_daemon)
     time.sleep(5)
+    print "Started captive portal daemon."
 
 # Build a string which can be used as a template for an /etc/hosts style file.
 (octet_one, octet_two, octet_three, _) = client_ip.split('.')
