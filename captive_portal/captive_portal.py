@@ -94,7 +94,7 @@ class CaptivePortalDetector(object):
 
 # Dummy class that has to exist to create a durectory URI hierarchy.
 class Library(object):
-    
+
     logging.debug("Instantiating Library() dummy object.")
     test = CaptivePortalDetector()
 
@@ -107,7 +107,7 @@ class Library(object):
 # The CaptivePortal class implements the actual captive portal stuff - the
 # HTML front-end and the IP tables interface.
 class CaptivePortal(object):
-    
+
     def __init__(self, args):
         self.args = args
 
@@ -261,8 +261,8 @@ def check_args(args):
         print "Captive portal functional testing mode is on."
 
     return args
-        
-        
+
+
 def create_pidfile(args):
     # Create the filename for this instance's PID file.
     if not args.pidfile:
@@ -272,13 +272,13 @@ def create_pidfile(args):
             args.pidfile = '/var/run/captive_portal.'
     full_pidfile = args.pidfile + args.interface
     logging.debug("Name of PID file is: %s", full_pidfile)
-    
+
     # If a PID file already exists for this network interface, ABEND.
     if os.path.exists(full_pidfile):
         logging.error("A pidfile already exists for network interface %s.", full_pidfile)
         logging.error("Is a daemon already running on this interface?")
         exit(5)
-    
+
     # Write the PID file of this instance to the PID file.
     logging.debug("Creating pidfile for network interface %s.", str(args.interface))
     logging.debug("PID of process is %s.", str(os.getpid()))
@@ -311,7 +311,7 @@ def build_templatelookup(args):
 def setup_url_tree(args):
     # Attach the captive portal object to the URL tree.
     root = CaptivePortal(args)
-    
+
     # Mount the object for the root of the URL tree, which happens to be the
     # system status page.  Use the application config file to set it up.
     logging.debug("Mounting web app in %s to /.", args.appconfig)
@@ -366,7 +366,7 @@ def check_ip_tables(iptables, args):
         logging.error("Unknown IP tables error during firewall initialization.")
         logging.error("Packet filters NOT configured.  Examine the rules in captive-portal.sh.")
         exit(3)
-    
+
     if iptables == 2:
         logging.error("Invalid or incorrect options passed to iptables in captive-portal.sh")
         logging.error("Packet filters NOT configured.  Examine the rules in captive-portal.sh.")
