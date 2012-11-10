@@ -1,0 +1,98 @@
+#!/bin/sh
+
+# Slackware build script for skype
+
+# Copyright 2010-2012, mario <mario@slackverse.org>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=skype
+VERSION=${VERSION:-4.0.0.8}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+case "$( uname -m )" in
+  i?86) ARCH=i486 ;;
+  arm*) ARCH=arm ;;
+     *) ARCH=$( uname -m ) ;;
+esac
+
+# Some people will want staticly linked version instead.
+STATIC=${STATIC:-no}
+
+if [ "$STATIC" = yes ]; then
+  SRCNAM=${PRGNAM}_static
+  TMPNAM=${SRCNAM}QT
+else
+  SRCNAM=$PRGNAM
+  TMPNAM=$PRGNAM
+fi
+
+# Sanity check, we make sure resulting package will work on users system.
+case "$ARCH" in
+  x86_64)
+    echo "$ARCH is not supported, you will need 32bit compatibility libs..."
+    ARCH=i486
+    ;;
+  i486)
+    echo "System check passed..."
+    ;;
+  *)
+    echo "$ARCH is not supported."
+    exit 1
+    ;;
+esac
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $TMPNAM-$VERSION
+tar xvf $CWD/$SRCNAM-$VERSION.tar.bz2
+cd $TMPNAM-$VERSION
+chown -R root:root .
+chmod -R u+w,go+r-w,a-s .
+
+mkdir -p $PKG/usr/{bin,share/{skype,pixmaps,applications}} $PKG/etc/dbus-1/system.d
+cp -a skype $PKG/usr/bin
+cp -a avatars lang sounds $PKG/usr/share/skype
+cat skype.desktop > $PKG/usr/share/applications/skype.desktop
+cat icons/SkypeBlue_48x48.png > $PKG/usr/share/pixmaps/skype.png
+cat skype.conf > $PKG/etc/dbus-1/system.d/skype.conf
+
+# If we strip it, it segfaults, so lets disable this for now.
+#find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+#  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a LICENSE README $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
