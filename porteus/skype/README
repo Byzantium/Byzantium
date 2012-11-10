@@ -1,0 +1,8 @@
+Skype is a free Voice Over IP program for Linux, Windows and MacOS.
+It allows users to communicate with other Skype users running any of
+the supported platforms, as well as receiving and placing calls from
+and to normal land lines and mobile phones.
+
+This script repackages the shared tarball provided by Skype, which
+has been built dynamically. For more information on how to repackage
+a static version, check README.STATIC which came with this package.
