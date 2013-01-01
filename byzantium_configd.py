@@ -5,8 +5,16 @@
 
 # byzantium_configd.py - A (relatively) simple daemon that automatically
 # configures wireless interfaces on a Byzantium node.  No user interaction is
-# required.
-# This is a hack, but it's also an emergency.
+# required.  Much of this code was taken from the control panel, it's just
+# been assembled into a more compact form.  The default network settings are
+# the same ones used by Commotion Wireless, so this means that our respective
+# projects are now seamlessly interoperable.  For the record, we tested this
+# in Red Hook in November of 2012 and it works.
+
+# This is a hack, but it was also an emergency.
+
+# By: The Doctor [412/724/301/703] [ZS|Media]
+# License: GPLv3
 
 # Imports
 import os
@@ -17,11 +25,12 @@ import subprocess
 import sys
 import time
 
-# Layer 1 and 2 defaults.
+# Layer 1 and 2 defaults.  Note that ESSIDs are for logical separation of
+# wireless networks and not signal separation.  It's the BSSIDs that count.
 channel = '5'
 frequency = '2.432'
 bssid = '02:CA:FF:EE:BA:BE'
-essid = 'Sandy'
+essid = 'Byzantium'
 
 # Layer 3 defaults.
 mesh_netmask = '255.255.0.0'
