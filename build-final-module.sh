@@ -173,6 +173,7 @@ cp home/guest/.mozilla/firefox/c3pp43bg.default/prefs.js ${FAKE_ROOT}/home/guest
 # script into it.
 mkdir -p ${FAKE_ROOT}/home/guest/.trinity/Autostart
 cp ../verify_operation.sh ${FAKE_ROOT}/home/guest/.trinity/Autostart/
+chmod 0755 ${FAKE_ROOT}/home/guest/.trinity/Autostart/
 
 # Why aren't these in their modules?
 echo "Installing custom configuration files and initscripts for services."
