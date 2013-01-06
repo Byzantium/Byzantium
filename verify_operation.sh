@@ -52,9 +52,9 @@ if [ ! $FAKEDNS_PID ]; then
 # Depending on whether or not everything started up properly, run Firefox with
 # one of two HTML files as arguments.
 if [ $SUCCESS ]; then
-    firefox .passfail/success.html &
+    firefox ~/.passfail/success.html &
 else
-    firefox .passfail/failure.html &
+    firefox ~/.passfail/failure.html &
 fi
 
 # End.
