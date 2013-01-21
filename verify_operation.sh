@@ -38,7 +38,7 @@ if [ ! $CP_PID ]; then
     fi
 
 # Test to see if the dead client reaper started.
-MUDC_PID=`ps ax | grep [c]aptive_portal | awk '{print $1}'`
+MUDC_PID=`ps ax | grep [m]op_up_dead_clients | awk '{print $1}'`
 if [ ! $MUDC_PID ]; then
     SUCCESS=""
     fi
