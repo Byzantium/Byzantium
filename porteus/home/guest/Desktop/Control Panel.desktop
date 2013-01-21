@@ -1,6 +1,0 @@
-[Desktop Entry]
-Icon=/usr/share/pixmaps/porteus/byzantium-icon.png
-Name=Control Panel
-Name[en_US]=Control Panel
-Type=Application
-Exec=firefox http://localhost:8080/
