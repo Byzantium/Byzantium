@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Skype
+Comment=Skype Internet Telephony
+Exec=skype
+Icon=skype.png
+Terminal=0
+Type=Application
+Encoding=UTF-8
+Categories=Network;Application;
