@@ -22,7 +22,7 @@ IRCSERVER, IRCPORT = "localhost", 6667
 
 # OPTION: REALNAME
 #         The realname field of IRC clients will be set to this value.
-REALNAME = "AethyrJabber"
+REALNAME = "Byzantium User"
 
 # OPTION: IDENT
 #        ident to use on irc, possible values include:
@@ -78,6 +78,13 @@ WEBIRC_PASSWORD = ""
 #         Command sent to IRC server in for cgiirc WEBIRC_MODE.
 #         See WEBIRC_MODE option documentation.
 #CGIIRC_STRING = "CGIIRC"
+
+
+# OPTION: CHANNEL
+#        The default channel what the user should join upon connect.
+#        This will only apply when no channel parameters are specified
+#        in the URI.
+CHANNEL = "#byzantium"
 
 # UI OPTIONS
 # ---------------------------------------------------------------------
