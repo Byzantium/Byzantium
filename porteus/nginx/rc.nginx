@@ -1,0 +1,96 @@
+#!/bin/sh
+#
+# Nginx daemon control script.
+# Written for Slackware Linux by Cherife Li <cherife-#-dotimes.com>.
+
+BIN=/usr/sbin/nginx
+CONF=/etc/nginx/nginx.conf
+PID=/var/run/nginx.pid
+
+nginx_start() {
+  # Sanity checks.
+  if [ ! -r $CONF ]; then # no config file, exit:
+    echo "$CONF does not appear to exist. Abort."
+    exit 1
+  fi
+
+  if [ -s $PID ]; then
+    echo "Nginx appears to already be running?"
+    exit 1
+  fi
+
+  echo "Starting Nginx server daemon..."
+  if [ -x $BIN ]; then
+    $BIN -c $CONF
+  fi
+}
+
+nginx_test_conf() {
+  echo "Checking configuration for correct syntax and"
+  echo "then trying to open files referenced in configuration..."
+  $BIN -t -c $CONF
+}
+
+nginx_term() {
+  echo "Shutdown Nginx quickly..."
+  kill -TERM $(cat $PID)
+}
+
+nginx_stop() {
+  echo "Shutdown Nginx gracefully..."
+  kill -QUIT $(cat $PID)
+}
+
+nginx_reload() {
+  echo "Reloading Nginx configuration..."
+  kill -HUP $(cat $PID)
+}
+
+nginx_upgrade() {
+  echo "Upgrading to the new Nginx binary."
+  echo "Make sure the Nginx binary has been replaced with new one"
+  echo "or Nginx server modules were added/removed."
+  kill -USR2 $(cat $PID)
+  sleep 3
+  kill -QUIT $(cat $PID.oldbin)
+}
+
+nginx_rotate() {
+  echo "Rotating Nginx logs..."
+  kill -USR1 $(cat $PID)
+}
+
+nginx_restart() {
+  nginx_stop
+  sleep 3
+  nginx_start
+}
+
+case "$1" in
+  check)
+    nginx_test_conf
+    ;;
+  start)
+    nginx_start
+    ;;
+  term)
+    nginx_term
+    ;;
+  stop)
+    nginx_stop
+    ;;
+  reload)
+    nginx_reload
+    ;;
+  restart)
+    nginx_restart
+    ;;
+  upgrade)
+    nginx_upgrade
+    ;;
+  rotate)
+    nginx_rotate
+    ;;
+  *)
+  echo "usage: `basename $0` {check|start|term|stop|reload|restart|upgrade|rotate}"
+esac
