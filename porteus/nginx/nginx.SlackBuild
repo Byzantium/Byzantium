@@ -81,7 +81,7 @@ CXXFLAGS="$SLKCFLAGS" \
   --conf-path=/etc/nginx/nginx.conf \
   --pid-path=/var/run/nginx.pid \
   --lock-path=/var/lock/nginx \
-  --user=${NGINXUSER:=nobody} \
+  --user=${NGINXUSER:=nginx} \
   --group=${NGINXGROUP:=nogroup} \
   --error-log-path=/var/log/nginx/error.log \
   --http-log-path=/var/log/nginx/access.log \
