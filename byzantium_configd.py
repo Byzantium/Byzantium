@@ -11,9 +11,9 @@
 # projects are now seamlessly interoperable.  For the record, we tested this
 # in Red Hook in November of 2012 and it works.
 
-# This is a hack, but it was also an emergency.
+# This utility is less of a hack, but it's far from perfect.
 
-# By: The Doctor [412/724/301/703] [ZS|Media]
+# By: The Doctor [412/724/301/703] [ZS|Media] <drwho at virtadpt dot net>
 # License: GPLv3
 
 # Imports
