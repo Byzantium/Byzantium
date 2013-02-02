@@ -18,7 +18,7 @@
 # first time.  Trying to run the script a second time in the event Apache
 # already started up won't hurt anything because it'll detect the already
 # running instance and error out.
-#/etc/rc.d/rc.httpd start
+/etc/rc.d/rc.httpd start
 
 # Run the configuration daemon.
 echo "Now configurating network interfaces.  Please stand by."
@@ -38,8 +38,4 @@ echo "Starting IRC server."
 # Start QwebIRC.
 echo "Starting web chat server."
 /etc/rc.d/rc.qwebirc start &
-
-# Start Nginx.
-echo "Starting web server."
-/etc/rc.d/rc.nginx start &
 
