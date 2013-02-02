@@ -9,28 +9,37 @@
 
 # As an experiment, let's sleep for 60 seconds to give the desktop a chance
 # to start up
-sleep 60
-
-# Start rrdtool up to gather stats on the network interfaces.
-/usr/local/bin/traffic_stats.sh &
+#sleep 60
 
 # Test for SSL cert and generate if necessary.
 /etc/rc.d/rc.ssl
-
-# Run the MySQL setup script.  If it's been run successfully in the past it'll
-# be a NOP.
-/etc/rc.d/rc.setup_mysql
 
 # Try to start Apache again in caes the lack of SSL certs caused it to fail the
 # first time.  Trying to run the script a second time in the event Apache
 # already started up won't hurt anything because it'll detect the already
 # running instance and error out.
-/etc/rc.d/rc.httpd start
+#/etc/rc.d/rc.httpd start
 
-# Start the Avahi daemons.
-/etc/rc.d/rc.avahidaemon start
-/etc/rc.d/rc.avahidnsconfd start
-/etc/rc.d/rc.avahiclient start
+# Run the configuration daemon.
+echo "Now configurating network interfaces.  Please stand by."
+/usr/local/sbin/byzantium_configd.py
 
-# Start the control panel.
-/etc/rc.d/rc.byzantium start
+# Start the olsr network visualizer.
+/etc/rc.d/rc.olsr-viz start &
+
+# Start Etherpad.
+echo "Starting pad."
+/etc/rc.d/rc.etherpad-lite start &
+
+# Start IRC server.
+echo "Starting IRC server."
+/etc/rc.d/rc.ngircd start 
+
+# Start QwebIRC.
+echo "Starting web chat server."
+/etc/rc.d/rc.qwebirc start &
+
+# Start Nginx.
+echo "Starting web server."
+/etc/rc.d/rc.nginx start &
+
