@@ -58,7 +58,7 @@ interfaces = os.listdir('/sys/class/net')
 if 'lo' in interfaces:
     interfaces.remove('lo')
 if not interfaces:
-    print "No wireless interfaces found.  Terminating."
+    print "ERROR: No wireless interfaces found.  Terminating."
     sys.exit(1)
 
 # For each network interface's pseudofile in /sys, test to see if a
@@ -70,23 +70,35 @@ for i in interfaces:
 
 # Find unused IP addresses to configure this node's interfaces with.
 for interface in wireless:
+    print "Attepting to configure interface %s." % interface
+
+    # Turn down the interface.
+    command = ['/sbin/ifconfig', interface, 'down']
+    subprocess.Popen(command)
+    time.sleep(5)
+
     # Set wireless parameters on the interface.  Do this by going into a loop
     # that tests the configuration for correctness and starts the procedure
     # over if it didn't take the first time.
+    # We wait a few seconds between iwconfig operations because some wireless
+    # chipsets are pokey (coughAtheroscough) and silently reset themselves if
+    # you try to configure them too rapidly, meaning that they drop out of
+    # ad-hoc mode.
     break_flag = False
     while True:
+        # Configure the wireless chipset.
         command = ['/sbin/iwconfig', interface, 'mode', 'ad-hoc']
         subprocess.Popen(command)
-        time.sleep(2)
+        time.sleep(5)
         command = ['/sbin/iwconfig', interface, 'essid', essid]
         subprocess.Popen(command)
-        time.sleep(2)
+        time.sleep(5)
         command = ['/sbin/iwconfig', interface, 'ap', bssid]
         subprocess.Popen(command)
-        time.sleep(2)
+        time.sleep(5)
         command = ['/sbin/iwconfig', interface, 'channel', channel]
         subprocess.Popen(command)
-        time.sleep(2)
+        time.sleep(5)
 
         # Capture the interface's current settings.
         command = ['/sbin/iwconfig', interface]
@@ -95,7 +107,7 @@ for interface in wireless:
         configuration = output.readlines()
 
         # Test the interface's current configuration.  Go back to the top of
-        # the loop and try again if it's not what we expect.
+        # the configuration loop and try again if it's not what we expect.
         for line in configuration:
             if re.search("Mode|ESSID|Cell|Frequency", line):
                 line = line.split(' ')
@@ -153,7 +165,7 @@ for interface in wireless:
                   addr]
         ip_in_use = subprocess.call(arping)
 
-        # If the IP isn't in use, ip_in_use==0 so we bounce out of the loop.
+        # If the IP isn't in use, ip_in_use == 0 so we bounce out of the loop.
         # We lose nothing by saving the address anyway.
         mesh_ip = addr
     print "Mesh interface address: %s" % mesh_ip
