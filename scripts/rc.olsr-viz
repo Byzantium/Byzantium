@@ -1,0 +1,50 @@
+#!/bin/sh
+# rc.olsr-viz - Initscript that starts a small web server implemented in
+#	Python that interfaces with olsrd's instrumentation port and
+#	displays a network map and traffic metrics.
+
+# AUTHORS:
+#	Haxwithaxe <me at haxwithaxe dot net>
+#	0x78347E2D / 19C8 B023 73A6 2556 DD80  2297 CF42 C708 7834 7E2D
+
+#	The Doctor [412/724/301/703] <drwho at virtadpt dot net>
+#	0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
+
+# v1.0	- Initial release.
+
+# TODO:
+
+# Variables
+USER="etherpad"
+HOMEDIR="/opt/olsr-viz-lite"
+PID="/var/run/olsr-viz-lite.pid"
+
+# Core code.
+# Here's where the heavy lifting happens - this parses the arguments passed to
+# script and triggers what has to be triggered.
+case "$1" in
+	'start')
+		# Start the miniature web server.
+		cd $HOMEDIR/htdocs
+		/bin/su -c "./self_serve.py &" $USER
+
+		# Wait five seconds for the node.js server to start up.
+		sleep 5
+	
+		# Store the PID in a file.
+		ps ax | grep [s]elf_serve.py | awk '{print $1}' > $PID
+		;;
+	'stop')
+		# Terminate the miniature web server.
+		kill `cat $PID`
+		rm -f $PID
+		;;
+	'status')
+		ps ax | grep [s]elf_serve.py
+		;;
+	*)
+		echo "USAGE: $0 {start|stop|status}"
+		exit 0
+	esac
+
+# End of script.
