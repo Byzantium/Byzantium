@@ -25,7 +25,7 @@ case "$1" in
 		# Start up the server.  It'll drop into the background on its
 		# own.
 		cd $BASE
-		./run.py
+		./run.py -p 8989
 	
 		# Save the PID.
 		sleep 5
