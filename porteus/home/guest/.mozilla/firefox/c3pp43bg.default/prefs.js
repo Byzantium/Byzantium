@@ -31,7 +31,7 @@ user_pref("browser.rights.3.shown", true);
 user_pref("browser.search.update", false);
 user_pref("browser.sessionstore.resume_session_once", true);
 user_pref("browser.shell.checkDefaultBrowser", false);
-user_pref("browser.startup.homepage", "http://localhost:8080/");
+user_pref("browser.startup.homepage", "http://localhost/");
 user_pref("browser.startup.homepage_override.buildID", "20110501235237");
 user_pref("browser.startup.homepage_override.mstone", "ignore");
 user_pref("browser.urlbar.autocomplete.enabled", false);
