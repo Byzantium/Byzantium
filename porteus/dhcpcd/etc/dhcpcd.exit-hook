@@ -1,0 +1,12 @@
+# Variables passed by dhcpcd: $interface, $reason
+
+# Get the name of the mesh interface.
+mesh=`ps ax | grep [o]lsr | awk '{print $NF}'`
+
+# If the reason this script was run is because the interface has been deconfigured, turn off NAT.
+if [ $reason == "EXPIRE" ] || [ $reason == "RELEASE" ] || [ $reason == "NOCARRIER" ] ; then
+    /usr/sbin/iptables -t nat -D POSTROUTING -o $interface -j MASQUERADE
+    /usr/sbin/iptables -D FORWARD -i $interface -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
+    /usr/sbin/iptables -D FORWARD -i $mesh -o $interface -j ACCEPT
+fi
+

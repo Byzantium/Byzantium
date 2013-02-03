@@ -1,0 +1,13 @@
+# Variables passed by dhcpcd: $interface, $reason
+
+# Get the name of the mesh interface.
+mesh=`ps ax | grep [o]lsr | awk '{print $NF}'`
+
+# If the reason this script was run is because the interface has been given an IP address,
+# set up NAT.
+if [ $reason == "BOUND" ] || [ $reason == "STATIC" ] ; then
+    /usr/sbin/iptables -t nat -A POSTROUTING -o $interface -j MASQUERADE
+    /usr/sbin/iptables -A FORWARD -i $interface -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
+    /usr/sbin/iptables -A FORWARD -i $mesh -o $interface -j ACCEPT
+fi
+
