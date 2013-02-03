@@ -1,4 +1,4 @@
 [Desktop Entry]
-Icon=network.png
+Icon=/usr/share/pixmaps/network.png
 Type=Link
 URL[$e]=http://localhost:8089
