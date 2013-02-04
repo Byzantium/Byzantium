@@ -70,7 +70,7 @@ for i in interfaces:
 
 # Find unused IP addresses to configure this node's interfaces with.
 for interface in wireless:
-    print "Attepting to configure interface %s." % interface
+    print "Attempting to configure interface %s." % interface
 
     # Turn down the interface.
     command = ['/sbin/ifconfig', interface, 'down']
