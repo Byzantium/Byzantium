@@ -3,11 +3,30 @@
 # Get the name of the mesh interface.
 mesh=`ps ax | grep [o]lsr | awk '{print $NF}'`
 
+# Get the PID of olsrd.
+PID=`ps ax | grep [o]lsrd | awk '{print $1}'`
+
 # If the reason this script was run is because the interface has been given an IP address,
-# set up NAT.
+# set up NAT and propagate the default route.
 if [ $reason == "BOUND" ] || [ $reason == "STATIC" ] ; then
+    # NAT.
     /usr/sbin/iptables -t nat -A POSTROUTING -o $interface -j MASQUERADE
     /usr/sbin/iptables -A FORWARD -i $interface -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
     /usr/sbin/iptables -A FORWARD -i $mesh -o $interface -j ACCEPT
+
+    # Set up the default route.
+    # Kill olsrd.
+    kill -9 $PID
+    sleep 5
+
+    # Add Hna4 line.
+    echo "Hna4 {0.0.0.0 0.0.0.0}" >> /etc/olsrd.conf
+
+    # Add DNSes that actually work to resolve.conf.
+    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
+    # Restart olsrd.
+    olsrd -i $INTERFACES
 fi
 
