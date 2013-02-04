@@ -27,6 +27,6 @@ if [ $reason == "BOUND" ] || [ $reason == "STATIC" ] ; then
     echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
     # Restart olsrd.
-    olsrd -i $INTERFACES
+    olsrd -i $mesh $interface
 fi
 
