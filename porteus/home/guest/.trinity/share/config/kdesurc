@@ -1,2 +1,2 @@
 [super-user-command]
-super-user-command=sudo
+super-user-command=su
