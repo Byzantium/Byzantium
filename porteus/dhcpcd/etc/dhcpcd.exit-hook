@@ -23,8 +23,8 @@ if [ $reason == "EXPIRE" ] || [ $reason == "RELEASE" ] || [ $reason == "NOCARRIE
     grep -v "^Hna4 {" /etc/olsrd.conf.bak > /etc/olsrd.conf
 
     # Remove extra DNSes from resolv.conf.
-    mv -f /etc/resolv.conf /etc/resolv.conf.bak
-    grep -v "^nameserver 8.8." /etc/resolv.conf.bak >> /etc/resolv.conf
+    #mv -f /etc/resolv.conf /etc/resolv.conf.bak
+    #grep -v "^nameserver 8.8." /etc/resolv.conf.bak >> /etc/resolv.conf
 
     # Restart olsrd.
     olsrd -i $mesh

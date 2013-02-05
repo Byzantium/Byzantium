@@ -23,8 +23,8 @@ if [ $reason == "BOUND" ] || [ $reason == "STATIC" ] ; then
     echo "Hna4 {0.0.0.0 0.0.0.0}" >> /etc/olsrd.conf
 
     # Add DNSes that actually work to resolve.conf.
-    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+    #echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+    #echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
     # Restart olsrd.
     olsrd -i $mesh
