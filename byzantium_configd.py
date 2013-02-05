@@ -69,7 +69,8 @@ for i in interfaces:
         wireless.append(i)
 
 # Find unused IP addresses to configure this node's interfaces with.
-for interface in wireless:
+if len(wireless):
+    interface = wireless[0]
     print "Attempting to configure interface %s." % interface
 
     # Turn down the interface.
