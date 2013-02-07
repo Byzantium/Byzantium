@@ -66,6 +66,9 @@ for i in /sys/class/net/*; do
     fi
 done
 
+# Add the default network interface for tethered mobile devices.
+INTERFACES="$INTERFACES usb0"
+
 case "$VERB" in
     start)
         echo -n "Starting Network Interface Plugging Daemon:"
