@@ -55,8 +55,16 @@ shift
 
 [ "x$*" != "x" ] && INTERFACES="$*"
 
-# Dammit, you do NOT need to be managing wireless interfaces, too!
-[ "x$INTERFACES" = "xauto" ] && INTERFACES="`cat /proc/net/dev | awk '{ print $1 }' | egrep '^eth' | cut -d: -f1`"
+# Find only the Ethernet interfaces on this system.
+INTERFACES=""
+for i in /sys/class/net/*; do
+    if [ ! -d $i/wireless ]; then
+        int=`echo $i | awk -F/ '{print $NF}'`
+        if [ "$int" != "lo" ]; then
+            INTERFACES="$INTERFACES $int"
+        fi
+    fi
+done
 
 case "$VERB" in
     start)

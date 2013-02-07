@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# This script accepts two arguments on the command line, and if they're not there
+# the script aborts.  They are:
+# $1 - name of the interface
+# $2 - 'up' or 'down'
+
+# Several environment variables are made available to this script by ifplugd, also.
+# IFPLUGD_PREVIOUS - The previous link status.  'up', 'down', 'error', 'disabled'
+# IFPLUGD_CURRENT - The current link status.  Same as above.
+
+set -e
+
+# Sanity check arguments.
+if [ -z "$1" ] || [ -z "$2" ] ; then
+    echo "Missing arguments to ifplugd.action." > /dev/stderr
+    exit 1
+fi
+
+# Figure out what network interface olsrd is listening on.
+mesh=`ps ax | grep [o]lsrd | awk '{print $NF}'`
+
+# Get the PID of olsrd.
+PID=`ps ax | grep [o]lsrd | awk '{print $1}'`
+
+if [ "$2" = "up" ]; then
+    # Configure the network interface.
+    dhcpcd -L -q $1
+
+    # Kill olsrd.
+    kill -9 $PID
+
+    # Add the gateway route.
+    echo "Hna4 {0.0.0.0 0.0.0.0}" >> /etc/olsrd.conf
+
+    # Set up NAT rules.
+    /usr/sbin/iptables -t nat -A POSTROUTING -o $1 -j MASQUERADE
+    /usr/sbin/iptables -A FORWARD -i $1 -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
+    /usr/sbin/iptables -A FORWARD -i $mesh -o $1 -j ACCEPT
+
+    # Restart olsrd.
+    olsrd -i $mesh
+fi
+
+if [ "$2" = "down" ]; then
+    # Kill olsrd.
+    kill -9 $PID
+
+    # Deconfigure the network interface by killing dhcpcd.
+    killall dhcpcd
+
+    # Remove the gateway route from olsrd.conf.
+    mv /etc/olsrd.conf /etc/olsrd.conf.bak
+    grep -v "^Hna4 {" /etc/olsrd.conf.bak > /etc/olsrd.conf
+
+    # Remove NAT rules.
+    /usr/sbin/iptables -t nat -D POSTROUTING -o $1 -j MASQUERADE
+    /usr/sbin/iptables -D FORWARD -i $1 -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
+    /usr/sbin/iptables -D FORWARD -i $mesh -o $1 -j ACCEPT
+
+    # Restart olsrd.
+    olsrd -i $mesh
+fi
+
+exit 1

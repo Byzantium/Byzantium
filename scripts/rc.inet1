@@ -18,22 +18,22 @@ if [ "$1" = "start" -o "$1" = "" ]; then
    # /sbin/dhcpcd -L -t 0 $x >/dev/null 2>&1 &
    #done
 
-   echo "enabling dhcpcd on all available hardwired interfaces..."
-   for i in `ls /sys/class/net`; do
+   #echo "enabling dhcpcd on all available hardwired interfaces..."
+   #for i in `ls /sys/class/net`; do
       # Skip the loopback interface.
-      if [ "$i" == "lo" ]; then
-         continue
-      fi
+   #   if [ "$i" == "lo" ]; then
+   #      continue
+   #   fi
       
       # Skip wireless interfaces because we'll conflict with the configuration
       # daemon.
-      if [ -d "/sys/class/net/$i/wireless" ]; then
-         continue
-      fi
+   #   if [ -d "/sys/class/net/$i/wireless" ]; then
+   #      continue
+   #   fi
       
       # If it doesn't match, run dhcpcd on it.
-      /sbin/dhcpcd -L -t 0 $x >/dev/null 2>&1 &
-   done
+   #   /sbin/dhcpcd -L -t 0 $x >/dev/null 2>&1 &
+   #done
 fi
 
 if [ "$1" = "stop" ]; then
