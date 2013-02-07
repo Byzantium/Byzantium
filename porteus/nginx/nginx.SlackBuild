@@ -134,6 +134,8 @@ for file in fastcgi_params fastcgi.conf mime.types nginx.conf \
             koi-utf koi-win scgi_params uwsgi_params win-utf ; do
             mv $PKG/etc/nginx/$file $PKG/etc/nginx/$file.new ;
 done
+# Add Byzantium configs
+cp -r $CWD/byzantium.conf.d $PKG/etc/nginx/
 
 # Create the log dir and set the permissions
 mkdir -p $PKG/var/log/nginx
