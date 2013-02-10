@@ -20,6 +20,7 @@ config etc/ifplugd/ifplugd.action.new
 config etc/ifplugd/ifplugd.conf.new
 
 append_to_rc_local() {
+  # breaks existing rc.local when installed as module.
   cat - >> /etc/rc.local <<-EOM
 	if [ -x /etc/rc.d/rc.ifplugd ]; then
 	  # Start ifplugd
@@ -31,5 +32,6 @@ append_to_rc_local() {
 
 # Update rc.local so that the ifplugd daemon will be started on boot
 if ! grep "rc.ifplugd" etc/rc.d/rc.local 1>/dev/null 2>&1 ; then
-	append_to_rc_local
+	#append_to_rc_local
+	echo "add me to your rc.local!"
 fi
