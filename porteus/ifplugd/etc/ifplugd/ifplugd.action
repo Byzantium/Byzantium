@@ -62,4 +62,7 @@ if [ "$2" = "down" ]; then
     olsrd -i $mesh
 fi
 
+# Bounce avahi-daemon to propagate the new DNSes.
+/usr/sbin/avahi-daemon -r
+
 exit 1
