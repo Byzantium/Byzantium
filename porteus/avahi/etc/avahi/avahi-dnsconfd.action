@@ -1,11 +1,24 @@
 #!/bin/sh
 
-# This started life as the avahi-dnsconfd.action script from the Avahi package
-# but it does more than we need.. which breaks Avahi, incidentally.  We
-# deleted the netconfig stuff because we don't need it.
+# This file is part of avahi.
+# 
+# avahi is free software; you can redistribute it and/or modify it
+# under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+#
+# avahi is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with avahi; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA.
 
 set -e
-TRUERESOLV=/etc/resolv.conf.avahi
+
 test "x$AVAHI_INTERFACE" != "x"
 
 # Command line arguments:
@@ -15,38 +28,30 @@ test "x$AVAHI_INTERFACE" != "x"
 #   $4 protocol number where this server was found on
 
 # Available environment variables:
-#   $AVAHI_INTERFACE: The interface which heard the announcement of the
-#		      DNS on the gateway node.
-#   $AVAHI_INTERFACE_DNS_SERVERS: A whitespace seperated list of DNS servers
-#				  heard on $AVAHI_INTERFACE.
-#   $AVAHI_DNS_SERVERS: The list of all DNS servers found on all interfaces
+#
+#   $AVAHI_INTERFACE               The interface name where this DNS server was found on
+#   $AVAHI_INTERFACE_DNS_SERVERS   A whitespace seperated list of DNS servers on $AVAHI_INTERFACE
+#   $AVAHI_DNS_SERVERS             The complete list of all DNS servers found on all interfaces
 
-# Check for reslov.conf files and link to /etc/resolv.conf.avahi
-if [ ! -e $TRUERESOLV ] && [ ! -h /etc/resolv.conf ] ;then
-	mv /etc/resolv.conf $TRUERESOLV
-	ln -s $TRUERESOLV /etc/resolv.conf
-elif [ -e $TRUERESOLV ] && [ ! -e /etc/resolv.conf ] ;then
-	ln -s $TRUERESOLV /etc/resolv.conf
-elif [ ! -e ${TRUERESLOV} ] && [ ! -e /etc/resolv.conf ] ;then
-	touch $TRUERESOLV
-	ln -s $TRUERESOLV /etc/resolv.conf
-elif [ ! -h /etc/resolv.conf ] ;then
-	cat /etc/reslov.conf $TRUERESOLV > /tmp/resolv.conf
-	rm /etc/reslov.conf $TRUERESOLV
-	mv /tmp/resolv.conf $TRUERESOLV
-	ln -s $TRUERESOLV /etc/resolv.conf
+
+if [ "x$AVAHI_DNS_SERVERS" = "x" ] ; then
+        test -f /etc/resolv.conf.avahi && mv /etc/resolv.conf.avahi /etc/resolv.conf
+
+	# Get the mesh interface and PID of olsrd.
+	mesh=`ps ax | grep [o]lsrd | awk '{print $NF}'`
+	olsrdpid=`ps ax | grep [o]lsrd | awk '{print $1}'`
+
+	# Restart olsrd because the gateway route won't un-propagate any other way.
+	kill -9 $olsrdpid
+	sleep 2
+	olsrd -i $mesh
+else
+        test -f /etc/resolv.conf.avahi || mv /etc/resolv.conf /etc/resolv.conf.avahi
+
+        grep -v ^nameserver /etc/resolv.conf.avahi > /etc/resolv.conf
+
+        for n in $AVAHI_DNS_SERVERS ; do
+                echo "nameserver $n"
+        done >> /etc/resolv.conf
 fi
-# A DNS server and an action were passed to the script (as well as some other junk we current don't care about)
-if [ ! -z $1 ] && [ ! -z $2 ] ;then # for the pedant #|| -z $3 || -z $4 ]; then
-	if [[ $1 == '+' ]] ;then
-		if grep -q $2 ${TRUERESOLV} ;then
-        	    echo "IP address $2 already in ${TRUERESOLV}.  Skipping."
-	        else
-        	    echo "IP address $2 not found in ${TRUERESOLV}.  Adding."
-	            echo "nameserver ${2}" >> ${TRUERESOLV}
-        	fi
-	elif [[ $1 == '-' ]] ;then
-		echo "Removing IP address $2 from ${TRUERESOLV}."
-		sed -i "/${2}/d" ${TRUERESOLV}
-	fi
-fi
+
