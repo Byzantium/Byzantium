@@ -54,13 +54,11 @@ import socket
 import struct
 import subprocess
 
-
-# Need this for the 404 method
+# Need this for the 404 method.
 def get_ip_address(interface):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     return socket.inet_ntoa(fcntl.ioctl(sock.fileno(), 0x8915,
                             struct.pack('256s', interface[:15]))[20:24])
-
 
 # The CaptivePortalDetector class implements a fix for an undocumented bit of
 # fail in Apple iOS.  iProducts attempt to access a particular file hidden in
@@ -90,7 +88,6 @@ class CaptivePortalDetector(object):
                 '''
         return success
     success_html.exposed = True
-
 
 # Dummy class that has to exist to create a durectory URI hierarchy.
 class Library(object):
@@ -180,7 +177,7 @@ class CaptivePortal(object):
     # calling self.index() directly) but the stable's fresh out of ponies.
     # We don't use any of the arguments passed to this method so I reference
     # a few of them in debug mode.
-    def error_page_404(self, status, message, traceback, version):
+    def error_page_404(self, status, message, traceback):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
         logging.debug("Client's IP address: %s", clientip)
