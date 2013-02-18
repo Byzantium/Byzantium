@@ -25,7 +25,7 @@ PID=`ps ax | grep [o]lsrd | awk '{print $1}'`
 
 if [ "$2" = "up" ]; then
     # Configure the network interface.
-    dhcpcd -L -q $1
+    dhcpcd -C resolv.conf -L -q $1
 
     # Kill olsrd.
     kill -9 $PID
@@ -37,6 +37,18 @@ if [ "$2" = "up" ]; then
     /usr/sbin/iptables -t nat -A POSTROUTING -o $1 -j MASQUERADE
     /usr/sbin/iptables -A FORWARD -i $1 -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
     /usr/sbin/iptables -A FORWARD -i $mesh -o $1 -j ACCEPT
+    
+    # First, make a backup of the resolv.conf file set up by dhcpcd.
+    #mv /etc/resolv.conf /etc/resolv.conf.dhcpcd
+    
+    # Add a couple of DNSes to the resolv.conf file.
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+    echo "nameserver 4.2.2.2" >> /etc/resolv.conf
+    echo "nameserver 208.67.220.220" >> /etc/resolv.conf
+    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+    echo "nameserver 4.2.2.1" >> /etc/resolv.conf
+    echo "nameserver 208.67.222.222" >> /etc/resolv.conf
+    echo "nameserver 4.2.2.4" >> /etc/resolv.conf
 
     # Restart olsrd.
     olsrd -i $mesh
@@ -45,6 +57,10 @@ fi
 if [ "$2" = "down" ]; then
     # Kill olsrd.
     kill -9 $PID
+    
+    # Put the resolv.conf file originally created by dhcpcd back.
+    #rm -f /etc/resolv.conf
+    #mv /etc/resolv.conf.dhcpcd /etc/resolv.conf
 
     # Deconfigure the network interface by killing dhcpcd.
     killall dhcpcd
