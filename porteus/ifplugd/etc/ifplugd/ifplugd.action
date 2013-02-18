@@ -38,9 +38,6 @@ if [ "$2" = "up" ]; then
     /usr/sbin/iptables -A FORWARD -i $1 -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
     /usr/sbin/iptables -A FORWARD -i $mesh -o $1 -j ACCEPT
     
-    # First, make a backup of the resolv.conf file set up by dhcpcd.
-    #mv /etc/resolv.conf /etc/resolv.conf.dhcpcd
-    
     # Add a couple of DNSes to the resolv.conf file.
     echo "nameserver 8.8.4.4" >> /etc/resolv.conf
     echo "nameserver 4.2.2.2" >> /etc/resolv.conf
@@ -49,6 +46,9 @@ if [ "$2" = "up" ]; then
     echo "nameserver 4.2.2.1" >> /etc/resolv.conf
     echo "nameserver 208.67.222.222" >> /etc/resolv.conf
     echo "nameserver 4.2.2.4" >> /etc/resolv.conf
+    
+    # Sleep for a few seconds to give everything a chance to settle.
+    sleep 3
 
     # Restart olsrd.
     olsrd -i $mesh
@@ -58,10 +58,6 @@ if [ "$2" = "down" ]; then
     # Kill olsrd.
     kill -9 $PID
     
-    # Put the resolv.conf file originally created by dhcpcd back.
-    #rm -f /etc/resolv.conf
-    #mv /etc/resolv.conf.dhcpcd /etc/resolv.conf
-
     # Deconfigure the network interface by killing dhcpcd.
     killall dhcpcd
 
