@@ -64,6 +64,11 @@ if [ "$2" = "down" ]; then
     # Remove the gateway route from olsrd.conf.
     mv /etc/olsrd.conf /etc/olsrd.conf.bak
     grep -v "^Hna4 {" /etc/olsrd.conf.bak > /etc/olsrd.conf
+    
+    # Remove the DNSes from resolv.conf.
+    mv /etc/resolv.conf /etc/resolv.conf.bak
+    grep -v '^nameserver' /etc/resolv.conf.bak > /etc/resolv.conf
+    rm -f /etc/resolv.conf.bak
 
     # Remove NAT rules.
     /usr/sbin/iptables -t nat -D POSTROUTING -o $1 -j MASQUERADE
