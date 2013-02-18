@@ -21,8 +21,12 @@
 /etc/rc.d/rc.httpd start
 
 # Run the configuration daemon.
-echo "Now configurating network interfaces.  Please stand by."
+echo "Now configuring network interfaces.  Please stand by."
 /usr/local/sbin/byzantium_configd.py
+
+# Start ifplugd.
+echo "Starting ifplugd on all hardwired interfaces."
+/etc/rc.d/rc.ifplugd start
 
 # Start the olsr network visualizer.
 /etc/rc.d/rc.olsr-viz start &
