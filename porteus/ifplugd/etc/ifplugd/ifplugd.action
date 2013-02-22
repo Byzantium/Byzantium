@@ -59,7 +59,7 @@ if [ "$2" = "down" ]; then
     killall olsrd
     
     # Deconfigure the network interface by killing dhcpcd.
-    dhcpcd -k $1
+    dhcpcd -x $1
 
     # Remove the gateway route from olsrd.conf.
     mv /etc/olsrd.conf /etc/olsrd.conf.bak
