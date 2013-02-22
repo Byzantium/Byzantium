@@ -35,14 +35,9 @@ if [ "$2" = "up" ]; then
     /usr/sbin/iptables -A FORWARD -i $1 -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
     /usr/sbin/iptables -A FORWARD -i $mesh -o $1 -j ACCEPT
     
-    # Add a couple of DNSes to the resolv.conf file.
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
-    echo "nameserver 4.2.2.2" >> /etc/resolv.conf
-    echo "nameserver 208.67.220.220" >> /etc/resolv.conf
-    echo "nameserver 8.8.8.8" >> /etc/resolv.conf
-    echo "nameserver 4.2.2.1" >> /etc/resolv.conf
-    echo "nameserver 208.67.222.222" >> /etc/resolv.conf
-    echo "nameserver 4.2.2.4" >> /etc/resolv.conf
+    # Set up the resolv.conf file.
+    rm -f /etc/resolv.conf
+    ln -s /etc/resolv.conf.gateway /etc/resolv.conf
     
     # Sleep for a few seconds to give everything a chance to settle.
     sleep 3
@@ -63,6 +58,7 @@ if [ "$2" = "down" ]; then
     grep -v "^Hna4 {" /etc/olsrd.conf.bak > /etc/olsrd.conf
     
     # Wipe out the contents of resolv.conf because that function of dhcpcd is disabled.
+    rm -f /etc/resolv.onf
     echo "" > /etc/resolv.conf
 
     # Remove NAT rules.
