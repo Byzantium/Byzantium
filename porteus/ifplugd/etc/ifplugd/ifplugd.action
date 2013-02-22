@@ -20,15 +20,12 @@ fi
 # Figure out what network interface olsrd is listening on.
 mesh=`ps ax | grep [o]lsrd | awk '{print $NF}'`
 
-# Get the PID of olsrd.
-PID=`ps ax | grep [o]lsrd | awk '{print $1}'`
-
 if [ "$2" = "up" ]; then
     # Configure the network interface.
     dhcpcd -C resolv.conf -L -q $1
 
     # Kill olsrd.
-    kill -9 $PID
+    killall olsrd
 
     # Add the gateway route.
     echo "Hna4 {0.0.0.0 0.0.0.0}" >> /etc/olsrd.conf
