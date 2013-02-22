@@ -58,7 +58,7 @@ if [ "$2" = "down" ]; then
     grep -v "^Hna4 {" /etc/olsrd.conf.bak > /etc/olsrd.conf
     
     # Wipe out the contents of resolv.conf because that function of dhcpcd is disabled.
-    rm -f /etc/resolv.onf
+    rm -f /etc/resolv.conf
     echo "" > /etc/resolv.conf
 
     # Remove NAT rules.
