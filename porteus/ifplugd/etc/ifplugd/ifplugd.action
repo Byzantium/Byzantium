@@ -56,7 +56,7 @@ fi
 
 if [ "$2" = "down" ]; then
     # Kill olsrd.
-    kill -9 $PID
+    killall olsrd
     
     # Deconfigure the network interface by killing dhcpcd.
     dhcpcd -k $1
