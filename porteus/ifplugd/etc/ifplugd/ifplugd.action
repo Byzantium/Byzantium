@@ -9,7 +9,7 @@
 # IFPLUGD_PREVIOUS - The previous link status.  'up', 'down', 'error', 'disabled'
 # IFPLUGD_CURRENT - The current link status.  Same as above.
 
-set -e
+#set -e
 
 # Sanity check arguments.
 if [ -z "$1" ] || [ -z "$2" ] ; then
