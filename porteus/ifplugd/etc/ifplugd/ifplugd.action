@@ -9,7 +9,7 @@
 # IFPLUGD_PREVIOUS - The previous link status.  'up', 'down', 'error', 'disabled'
 # IFPLUGD_CURRENT - The current link status.  Same as above.
 
-#set -e
+set -e
 
 # Sanity check arguments.
 if [ -z "$1" ] || [ -z "$2" ] ; then
@@ -48,10 +48,10 @@ fi
 
 if [ "$2" = "down" ]; then
     # Kill olsrd.
-    killall olsrd
+    killall olsrd && logger "olsrd killed" || logger "\[killall olsrd\] returned: $?"
     
     # Deconfigure the network interface by killing dhcpcd.
-    dhcpcd -x $1
+    dhcpcd -x $1 && logger "dhcpcd killed" || logger "\[dhcpcd -x $1\] returned: $?"
 
     # Remove the gateway route from olsrd.conf.
     mv /etc/olsrd.conf /etc/olsrd.conf.bak
@@ -62,12 +62,12 @@ if [ "$2" = "down" ]; then
     echo "" > /etc/resolv.conf
 
     # Remove NAT rules.
-    /usr/sbin/iptables -t nat -D POSTROUTING -o $1 -j MASQUERADE
-    /usr/sbin/iptables -D FORWARD -i $1 -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT
-    /usr/sbin/iptables -D FORWARD -i $mesh -o $1 -j ACCEPT
+    /usr/sbin/iptables -t nat -D POSTROUTING -o $1 -j MASQUERADE || logger "iptables returned: $?"
+    /usr/sbin/iptables -D FORWARD -i $1 -o $mesh -m state --state ESTABLISHED,RELATED -j ACCEPT || logger "iptables returned: $?"
+    /usr/sbin/iptables -D FORWARD -i $mesh -o $1 -j ACCEPT || logger "iptables returned: $?"
 
     # Restart olsrd.
-    olsrd -i $mesh
+    olsrd -i $mesh && logger "olsrd started" || logger "\[olsrd -i $mesh\] returned: $?"
 fi
 
 # Bounce avahi-daemon to propagate the new DNSes.
