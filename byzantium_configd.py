@@ -115,22 +115,26 @@ if len(wireless):
         Frequency = False
         for line in configuration:
             # Ad-hoc mode?
-            if re.search('Mode:([\w-]+)', line).group(1) == 'Ad-Hoc':
+            match = re.search('Mode:([\w-]+)', line)
+            if match and match.group(1) == 'Ad-Hoc':
                 print "Mode is correct."
                 Mode = True
 
             # Correct ESSID?
-            if re.search('ESSID:"([\w]+)"', line).group(1) == essid:
+            match = re.search('ESSID:"([\w]+)"', line)
+            if match and match.group(1) == essid:
                 print "ESSID is correct."
                 Essid = True
 
             # Correct BSSID?
-            if re.search('Cell: (([\dA-F][\dA-F]:){5}[\dA-F][\dA-F])', line).group(1) == bssid:
+            match = re.search('Cell: (([\dA-F][\dA-F]:){5}[\dA-F][\dA-F])', line)
+            if match and match.group(1) == bssid:
                 print "BSSID is correct."
                 Bssid = True
 
             # Correct frequency (because iwconfig doesn't report channels)?
-            if re.search('Frequency:([\d.]+)', line).group(1) == frequency:
+            match = re.search('Frequency:([\d.]+)', line)
+            if match and match.group(1) == frequency:
                 print "Channel is correct."
                 Frequency = True
 
