@@ -136,7 +136,7 @@ if len(wireless):
 
         # "Victory is mine!"
         #     --Stewie, _Family Guy_
-        if Mode && Essid && Bssid && Frequency:
+        if Mode and Essid and Bssid and Frequency:
             break
         else:
             print "Failed to setup the interface properly. Retrying..."
