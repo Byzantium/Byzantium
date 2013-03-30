@@ -109,44 +109,37 @@ if len(wireless):
 
         # Test the interface's current configuration.  Go back to the top of
         # the configuration loop and try again if it's not what we expect.
+        Mode = False
+        Essid = False
+        Bssid = False
+        Frequency = False
         for line in configuration:
-            if re.search("Mode|ESSID|Cell|Frequency", line):
-                line = line.split(' ')
-            else:
-                continue
-
             # Ad-hoc mode?
-            if 'Mode' in line:
-                mode = line[0].split(':')[1]
-                if mode != 'Ad-Hoc':
-                    break_flag = True
-                    break
+            if re.search('Mode:([\w-]+)', line).group(1) == 'Ad-Hoc':
+                print "Mode is correct."
+                Mode = True
 
             # Correct ESSID?
-            if 'ESSID' in line:
-                ESSID = line[-1].split(':')[1]
-                if ESSID != essid:
-                    break_flag = True
-                    break
+            if re.search('ESSID:"([\w]+)"', line).group(1) == essid:
+                print "ESSID is correct."
+                Essid = True
 
             # Correct BSSID?
-            if 'Cell' in line:
-                BSSID = line[-1]
-                if BSSID != bssid:
-                    break_flag = True
-                    break
+            if re.search('Cell: (([\dA-F][\dA-F]:){5}[\dA-F][\dA-F])', line).group(1) == bssid:
+                print "BSSID is correct."
+                Bssid = True
 
             # Correct frequency (because iwconfig doesn't report channels)?
-            if 'Frequency' in line:
-                FREQUENCY = line[2].split(':')[1]
-                if FREQUENCY != frequency:
-                    break_flag = True
-                    break
+            if re.search('Frequency:([\d.]+)', line).group(1) == frequency:
+                print "Channel is correct."
+                Frequency = True
 
         # "Victory is mine!"
         #     --Stewie, _Family Guy_
-        if not(break_flag):
+        if Mode && Essid && Bssid && Frequency:
             break
+        else:
+            print "Failed to setup the interface properly. Retrying..."
 
     # Turn up the interface.
     command = ['/sbin/ifconfig', interface, 'up']
