@@ -215,6 +215,10 @@ if len(wireless):
     captive_portal_return = subprocess.Popen(captive_portal_daemon)
     time.sleep(5)
     print "Started captive portal daemon."
+else:
+    # There is no wireless interface.  Don't even bother continuing.
+    print "ERROR: I wasn't able to find a wireless interface to configure.  ABENDing."
+    sys.exit(1)
 
 # Build a string which can be used as a template for an /etc/hosts style file.
 (octet_one, octet_two, octet_three, _) = client_ip.split('.')
