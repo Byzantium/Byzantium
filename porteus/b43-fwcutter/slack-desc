@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in.  You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+            |-----handy-ruler------------------------------------------------------|
+b43-fwcutter: b43-fwcutter (firmware extracter)
+b43-fwcutter:
+b43-fwcutter: b43-fwcutter is a tool which can extract firmware from various
+b43-fwcutter: source files.  It's written for BCM43xx driver files.
+b43-fwcutter:
+b43-fwcutter: Homepage: http://linuxwireless.org/en/users/Drivers/b43
+b43-fwcutter:
+b43-fwcutter:
+b43-fwcutter:
+b43-fwcutter:
+b43-fwcutter:
