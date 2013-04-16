@@ -43,7 +43,7 @@ cd $WORKDIR
 tar xvf $CWD/hybrid-portsrc_${MY_ARCH}-v$(printf $VERSION|tr . _).tar.gz
 
 # Install the patch for Linux kernels >= v3.4.0
-patch -p1 < $CWD/0005-add-support-for-linux-3.4.0.patch
+patch -p1 < $CWD/0001-v3.4.4-compilation-patch.diff
 
 # Build the module
 make -C /lib/modules/$KERNEL/build M=$WORKDIR clean

@@ -1,0 +1,21 @@
+diff -uprN a/src/wl/sys/wl_linux.c b/src/wl/sys/wl_linux.c
+--- a/src/wl/sys/wl_linux.c	2011-10-22 16:55:54.000000000 +0000
++++ b/src/wl/sys/wl_linux.c	2013-04-16 20:45:13.512822345 +0000
+@@ -40,7 +40,9 @@
+ #include <linux/pci_ids.h>
+ #define WLC_MAXBSSCFG		1	
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 4, 0)
+ #include <asm/system.h>
++#endif
+ #include <asm/io.h>
+ #include <asm/irq.h>
+ #include <asm/pgtable.h>
+@@ -385,7 +387,6 @@ static const struct net_device_ops wl_ne
+ #endif
+ 	.ndo_get_stats = wl_get_stats,
+ 	.ndo_set_mac_address = wl_set_mac_address,
+-	.ndo_set_multicast_list = wl_set_multicast_list,
+ 	.ndo_do_ioctl = wl_ioctl
+ };
+ 
