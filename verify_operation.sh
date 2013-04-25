@@ -51,7 +51,7 @@ if [ $? -gt 0 ]; then
 
 # Depending on whether or not everything started up properly, run Firefox with
 # one of two HTML files as arguments.
-if [ $SUCCESS ]; then
+if [ $SUCCESS = "true" ]; then
     firefox ~/.passfail/success.html &
 else
     firefox ~/.passfail/failure.html &
