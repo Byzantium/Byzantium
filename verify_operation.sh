@@ -26,26 +26,26 @@ if [ ! $WIRELESS ]; then
     fi
 
 # Test to see if olsrd started.
-OLSRD_PID=`ps ax | grep [o]lsrd | awk '{print $1}'`
-if [ ! $OLSRD_PID ]; then
+OLSRD_PID=`pgrep olsrd`
+if [ $? -gt 0 ]; then
     SUCCESS=""
     fi
 
 # Test to see if the captive portal started.
-CP_PID=`ps ax | grep [c]aptive_portal | awk '{print $1}'`
-if [ ! $CP_PID ]; then
+CP_PID=`pgrep captive_portal`
+if [ $? -gt 0 ]; then
     SUCCESS=""
     fi
 
 # Test to see if the dead client reaper started.
-MUDC_PID=`ps ax | grep [m]op_up_dead_clients | awk '{print $1}'`
-if [ ! $MUDC_PID ]; then
+MUDC_PID=`pgrep mod_up_dead_clients`
+if [ $? -gt 0 ]; then
     SUCCESS=""
     fi
 
 # Test to see if the fake DNS server started.
-FAKEDNS_PID=`ps ax | grep [f]ake_dns | awk '{print $1}'`
-if [ ! $FAKEDNS_PID ]; then
+FAKEDNS_PID=`pgrep fake_dns`
+if [ $? -gt 0 ]; then
     SUCCESS=""
     fi
 
