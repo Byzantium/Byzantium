@@ -1,11 +1,8 @@
 #!/bin/bash
-# Helper for the rc.S and rc.M scripts to start some services in the background.
+# Helper script for the rc.S and rc.M to start some services in the background.
 
 # Configure runtime kernel parameters:
 [ -r /etc/sysctl.conf ] && sysctl -e -p /etc/sysctl.conf &
-
-# Enable swapping:
-swapon -a 2>/dev/null &
 
 # Configure ISA Plug-and-Play devices:
 [ -r /etc/isapnp.conf ] && isapnp /etc/isapnp.conf &
@@ -14,20 +11,23 @@ swapon -a 2>/dev/null &
 # CAREFUL!  This can make some systems hang if the rc.serial script isn't
 # set up correctly.  If this happens, you may have to edit the file from a
 # boot disk, and/or set it as non-executable:
-[ -x /etc/rc.d/rc.serial ] && sh /etc/rc.d/rc.serial start &
+#[ -x /etc/rc.d/rc.serial ] && sh /etc/rc.d/rc.serial start &
 
 # Carry an entropy pool between reboots to improve randomness:
-[ -f /etc/random-seed ] && { echo "Using /etc/random-seed to initialize /dev/urandom."; cat /etc/random-seed > /dev/urandom; }
+[ -f /etc/random-seed ] && cat /etc/random-seed > /dev/urandom
 
 # Use the pool size from /proc, or 512 bytes:
 [ -r /proc/sys/kernel/random/poolsize ] && dd if=/dev/urandom of=/etc/random-seed count=1 bs=`cat /proc/sys/kernel/random/poolsize` 2>/dev/null || dd if=/dev/urandom of=/etc/random-seed count=1 bs=512 2>/dev/null
 chmod 600 /etc/random-seed
 
-# Start HAL:
-[ -x /etc/rc.d/rc.hald ] && . /etc/rc.d/rc.hald start &
-
 # Load ALSA (sound) defaults:
 [ -x /etc/rc.d/rc.alsa ] && sh /etc/rc.d/rc.alsa &
+
+# Start Bluetooth:
+#[ -x /etc/rc.d/rc.bluetooth ] && sh /etc/rc.d/rc.bluetooth start &
+
+# Start the print spooling system:
+#[ -x /etc/rc.d/rc.cups ] && sh /etc/rc.d/rc.cups start &
 
 # Start avahidaemon
 [ -x /etc/rc.d/rc.avahidaemon ] && /etc/rc.d/rc.avahidaemon start
@@ -36,16 +36,13 @@ chmod 600 /etc/random-seed
 [ -x /etc/rc.d/rc.avahidnsconfd ] && /etc/rc.d/rc.avahidnsconfd start &
 
 # Look for additional USB/SCSI/IEEE1394/etc devices on multiple LUNs:
-[ -x /etc/rc.d/rc.scanluns ] && sh /etc/rc.d/rc.scanluns &
+#[ -x /etc/rc.d/rc.scanluns ] && sh /etc/rc.d/rc.scanluns &
 
 # Start the Control Script for automounter:
 [ -x /etc/rc.d/rc.autofs ] && sh /etc/rc.d/rc.autofs start &
 
 # Start the Network Time Protocol daemon:
-[ -x /etc/rc.d/rc.ntpd ] && sh /etc/rc.d/rc.ntpd start &
-
-# Start Bluetooth:
-[ -x /etc/rc.d/rc.bluetooth ] && sh /etc/rc.d/rc.bluetooth start &
+#[ -x /etc/rc.d/rc.ntpd ] && sh /etc/rc.d/rc.ntpd start &
 
 # Start dnsmasq, a simple DHCP/DNS server:
 #[ -x /etc/rc.d/rc.dnsmasq ] && sh /etc/rc.d/rc.dnsmasq start &
@@ -53,29 +50,14 @@ chmod 600 /etc/random-seed
 # Start snmpd:
 #[ -x /etc/rc.d/rc.snmpd ] && sh /etc/rc.d/rc.snmpd start &
 
-# Start the print spooling system.  This will usually be LPRng (lpd) or CUPS.
-#if [ -x /etc/rc.d/rc.cups ]; then
-    # Start CUPS:
-#    sh /etc/rc.d/rc.cups start &
-#elif [ -x /etc/rc.d/rc.lprng ]; then
-    # Start LPRng (lpd):
-#    . /etc/rc.d/rc.lprng start &
-#fi
-
 # Start netatalk. (a file/print server for Macs using Appletalk)
-#[ -x /etc/rc.d/rc.atalk ] && sh /etc/rc.d/rc.atalk &
+[ -x /etc/rc.d/rc.atalk ] && sh /etc/rc.d/rc.atalk &
 
 # Start smartd, which monitors the status of S.M.A.R.T. compatible
 # hard drives and reports any problems.  Note some devices (which aren't
 # smart, I guess ;) will hang if probed by smartd, so it's commented out
 # by default.
 # [ -x /usr/sbin/smartd ] && /usr/sbin/smartd
-
-# If we're using udev, make /dev/cdrom and any other optical drive symlinks
-# if some udev rule hasn't made them already:
-if ! egrep -qo " nohotplug( |\$)" /proc/cmdline; then
-    [ -x /lib/udev/rc.optical-symlinks -a -x /etc/rc.d/rc.udev ] && sh /lib/udev/rc.optical-symlinks &
-fi
 
 # Monitor the UPS with genpowerd.
 # To use this, uncomment this section and edit your settings in
@@ -91,15 +73,10 @@ fi
 # create the file /var/log/pacct (touch /var/log/pacct).  By default, process
 # accounting is not enabled (since /var/log/pacct does not exist).  This is
 # because the log file can get VERY large.
-#[ -x /sbin/accton -a -r /var/log/pacct ] && chmod 640 /var/log/pacct && /sbin/accton /var/log/pacct &
-
-# Start crond (Dillon's crond):
-# If you want cron to actually log activity to /var/log/cron, then change
-# -l notice to -l info to increase the logging level.
-crond -l notice &
+[ -x /sbin/accton -a -r /var/log/pacct ] && chmod 640 /var/log/pacct && /sbin/accton /var/log/pacct &
 
 # Start atd (manages jobs scheduled with 'at'):
-#[ -x /usr/sbin/atd ] && /usr/sbin/atd -b 15 -l 1 &
+[ -x /usr/sbin/atd ] && /usr/sbin/atd -b 15 -l 1 &
 
 # Slackware-Mini-Quota-HOWTO:
 # To really activate quotas, you'll need to add 'usrquota' and/or 'grpquota' to
@@ -128,25 +105,16 @@ crond -l notice &
 # and rpc.statd.  This might be needed to mount NFS partitions that are not
 # listed in /etc/fstab.  Starting this twice won't hurt as the script will
 # check if things are already running before trying to start them.
-#[ -x /etc/rc.d/rc.rpc ] && sh /etc/rc.d/rc.rpc start &
-
-# If there is a firewall script, run it before enabling packet forwarding.
-# See the HOWTOs on http://www.netfilter.org/ for documentation on
-# setting up a firewall or NAT on Linux.  In some cases this might need to
-# be moved past the section below dealing with IP packet forwarding.
-#[ -x /etc/rc.d/rc.firewall ] && /etc/rc.d/rc.firewall start
+[ -x /etc/rc.d/rc.rpc ] && sh /etc/rc.d/rc.rpc start &
 
 # Turn on IPv4 packet forwarding support.
-[ -x /etc/rc.d/rc.ip_forward ] && . /etc/rc.d/rc.ip_forward start &
+#[ -x /etc/rc.d/rc.ip_forward ] && . /etc/rc.d/rc.ip_forward start &
 
 # Start the inetd server:
 #[ -x /etc/rc.d/rc.inetd ] && /etc/rc.d/rc.inetd start &
 
 # Start the OpenSSH SSH daemon:
-#if [ -x /etc/rc.d/rc.sshd ]; then
-#    echo "Starting OpenSSH SSH daemon:  /usr/sbin/sshd"
-#     /etc/rc.d/rc.sshd start &
-#fi
+#[ -x /etc/rc.d/rc.sshd ] && /etc/rc.d/rc.sshd start &
 
 # Start the BIND name server daemon:
 #[ -x /etc/rc.d/rc.bind ] && /etc/rc.d/rc.bind start &
@@ -163,10 +131,10 @@ crond -l notice &
 
 # Start the SASL authentication server.  This provides SASL
 # authentication services for sendmail:
-#[ -x /etc/rc.d/rc.saslauthd ] && sh /etc/rc.d/rc.saslauthd start
+[ -x /etc/rc.d/rc.saslauthd ] && sh /etc/rc.d/rc.saslauthd start &
 
 # Start the sendmail daemon:
-#[ -x /etc/rc.d/rc.sendmail ] && sh /etc/rc.d/rc.sendmail start
+#[ -x /etc/rc.d/rc.sendmail ] && sh /etc/rc.d/rc.sendmail start &
 
 # Load a custom screen font if the user has an rc.font script.
 [ -x /etc/rc.d/rc.font ] && sh /etc/rc.d/rc.font &
@@ -178,7 +146,7 @@ crond -l notice &
 #[ -x /etc/rc.d/rc.mysqld ] && sh /etc/rc.d/rc.mysqld start &
 
 # Start Apache web server:
-#[ -x /etc/rc.d/rc.httpd ] && sh /etc/rc.d/rc.httpd start &
+[ -x /etc/rc.d/rc.httpd ] && sh /etc/rc.d/rc.httpd start &
 
 # Start OpenLDAP:
 #[ -x /etc/rc.d/rc.openldap ] && sh /etc/rc.d/rc.openldap start &
@@ -187,12 +155,36 @@ crond -l notice &
 # Samba can be started in /etc/inetd.conf instead.
 #[ -x /etc/rc.d/rc.samba ] && sh /etc/rc.d/rc.samba start &
 
-# Start the GPM mouse server:
-#[ -x /etc/rc.d/rc.gpm ] && sh /etc/rc.d/rc.gpm start &
+# Start crond (Dillon's crond):
+# If you want cron to actually log activity to /var/log/cron, then change
+# -l notice to -l info to increase the logging level.
+crond -l notice &
 
-# Screen blanks after 15 minutes idle time, and powers down in one hour
-# if the kernel supports APM or ACPI power management:
-setterm -blank 15 -powersave powerdown -powerdown 60 &
+# Start the GPM mouse server:
+[ -x /etc/rc.d/rc.gpm ] && sh /etc/rc.d/rc.gpm start &
+
+# Enable swapping:
+swapon -a 2>/dev/null
+
+# Initialize zram feature if requested:
+zsize=`egrep -o " zram=[^ ]+" /proc/cmdline | cut -d= -f2`
+if [ "$zsize" ]; then
+    modprobe zram; mem=`grep MemTotal /proc/meminfo | cut -d" " -f2- | sed s/kB//`; size=`echo $zsize | sed 's/%//'`
+    echo $(($mem*1024*$size/100)) > /sys/block/zram0/disksize
+    mkswap /dev/zram0 >/dev/null
+    swapon -p 100 /dev/zram0
+fi
 
 # Save the contents of 'dmesg':
-dmesg -s 65536 > /var/log/dmesg &
+dmesg -s 65536 > /var/log/dmesg
+
+# Start Laptop-Mode-Tools:
+#[ -x /etc/rc.d/rc.laptop-mode ] && sh /etc/rc.d/rc.laptop-mode start &
+
+# Need to set brighteness manually when booting on a battery (LMT bug?):
+if ! on_ac_power; then
+    lcd=`ls -1 /sys/class/backlight | head -n1`
+    [ $lcd ] && echo $((`cat /sys/class/backlight/$lcd/max_brightness`*66/100)) > /sys/class/backlight/$lcd/brightness
+fi
+
+# End
