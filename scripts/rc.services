@@ -146,7 +146,7 @@ chmod 600 /etc/random-seed
 #[ -x /etc/rc.d/rc.mysqld ] && sh /etc/rc.d/rc.mysqld start &
 
 # Start Apache web server:
-[ -x /etc/rc.d/rc.httpd ] && sh /etc/rc.d/rc.httpd start &
+#[ -x /etc/rc.d/rc.httpd ] && sh /etc/rc.d/rc.httpd start &
 
 # Start OpenLDAP:
 #[ -x /etc/rc.d/rc.openldap ] && sh /etc/rc.d/rc.openldap start &
