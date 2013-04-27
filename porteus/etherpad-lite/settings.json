@@ -4,54 +4,105 @@
   Please edit settings.json, not settings.json.template
 */
 {
-  //Ip and port which etherpad should bind at
+  // Name your instance!
+  "title": "Byzantium Pad",
+
+  // favicon default name
+  // alternatively, set up a fully specified Url to your own favicon
+  "favicon": "favicon.ico",
+  
+  //IP and port which etherpad should bind at
   "ip": "0.0.0.0",
   "port" : 9001,
-  
-  //The Type of the database. You can choose between dirty, sqlite and mysql
-  //You should use mysql or sqlite for anything else than testing or development
-  //"dbType" : "dirty",
-  //"dbType" : "mysql",
 
-  //the database specific settings
-  //"dbSettings" : {
-  //                 "filename" : "../var/dirty.db"
-  //               },
+  /*  
+  // Node native SSL support
+  // this is disabled by default
+  //
+  // make sure to have the minimum and correct file access permissions set
+  // so that the Etherpad server can access them
+
+  "ssl" : {
+            "key"  : "/etc/httpd/server.key",
+            "cert" : "/etc/httpd/server.crt"
+          },
+
+  */
+
+  //The Type of the database. You can choose between dirty, postgres, sqlite and mysql
+  //You shouldn't use "dirty" for for anything else than testing or development
+  "dbType" : "dirty",
+  "dbSettings" : {
+                   "filename" : "var/dirty.db"
+                 },
                  
-  /* An Example of MySQL Configuration */
+  /* An Example of MySQL Configuration
    "dbType" : "mysql",
    "dbSettings" : {
-                    "user"    : "etherpad", 
+                    "user"    : "root", 
                     "host"    : "localhost", 
-                    "password": "byzantiumpad12345", 
-                    "database": "etherpad"
+                    "password": "", 
+                    "database": "store"
                   },
-
+  */
+  
+  //Logging configuration. See log4js documentation for further information
+  // https://github.com/nomiddlename/log4js-node
+  "logconfig" :
+	{ "appenders": [
+	    { "type": "console" }
+	] },
   
   //the default text of a pad
-  "defaultPadText" : "Welcome to Etherpad Lite!\n\nThis pad text is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents!\n\nEtherpad Lite on Github: http:\/\/j.mp/ep-lite\n",
+  "defaultPadText" : "Welcome to Etherpad Lite!\n\nThis pad text is synchronized as you type, so that everyone viewing this page sees the same text. This allows you to collaborate seamlessly on documents!\n\nGet involved with Etherpad at http:\/\/etherpad.org\n",
   
-  /* Users must have a session to access pads. This effectively allows only group pads to be accessed. */
+  /* Users must have a session to access pads. This effectively allows only
+     group pads to be accessed. */
   "requireSession" : false,
 
-  /* Users may edit pads but not create new ones. Pad creation is only via the API. This applies both to group pads and regular pads. */
+  /* Users may edit pads but not create new ones. Pad creation is only via the
+     API. This applies both to group pads and regular pads. */
   "editOnly" : false,
   
-  /* if true, all css & js will be minified before sending to the client. This will improve the loading performance massivly, 
-     but makes it impossible to debug the javascript/css */
+  /* if true, all css & js will be minified before sending to the client. This
+     will improve the loading performance massivly, but makes it impossible to
+     debug the javascript/css */
   "minify" : true,
 
-  /* How long may clients use served javascript code? Without versioning this
-    is may cause problems during deployment. */
-  "maxAge" : 21600000, // 6 hours
+  /* How long may clients use served javascript code (in seconds)? Without
+     versioning this may cause problems during deployment. Set to 0 to disable
+     caching */
+  "maxAge" : 21600, // 60 * 60 * 6 = 6 hours
   
-  /* This is the path to the Abiword executable. Setting it to null, disables abiword.
-     Abiword is needed to enable the import/export of pads*/  
+  /* This is the path to the Abiword executable. Setting it to null disables
+     abiword. Abiword is needed to advanced import/export features of pads*/  
   "abiword" : null,
-  
-  /* This setting is used if you need http basic auth */
-  // "httpAuth" : "user:pass",
+ 
+  /* This setting is used if you require authentication of all users.
+     Note: /admin always requires authentication. */
+  "requireAuthentication": false,
+
+  /* Require authorization by a module, or a user with is_admin set, see below. */
+  "requireAuthorization": false,
+
+  /* Users for basic authentication. is_admin = true gives access to /admin.
+     If you do not uncomment this, /admin will not be available! */
+  /*
+  "users": {
+    "admin": {
+      "password": "changeme1",
+      "is_admin": true
+    },
+    "user": {
+      "password": "changeme1",
+      "is_admin": false
+    }
+  },
+  */
 
   /* The log level we are using, can be: DEBUG, INFO, WARN, ERROR */
-  "loglevel": "ERROR"
+  "loglevel": "ERROR",
+
+  // restrict socket.io transport methods
+  "socketTransportProtocols" : ['xhr-polling', 'jsonp-polling', 'htmlfile']
 }
