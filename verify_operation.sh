@@ -32,26 +32,26 @@ if [ $? -gt 0 ]; then
     fi
 
 # Test to see if the captive portal started.
-CP_PID=`pgrep captive_portal`
+CP_PID=`pgrep -f captive_portal`
 if [ $? -gt 0 ]; then
     SUCCESS=""
     fi
 
 # Test to see if the dead client reaper started.
-MUDC_PID=`pgrep mod_up_dead_clients`
+MUDC_PID=`pgrep -f mod_up_dead_clients`
 if [ $? -gt 0 ]; then
     SUCCESS=""
     fi
 
 # Test to see if the fake DNS server started.
-FAKEDNS_PID=`pgrep fake_dns`
+FAKEDNS_PID=`pgrep -f fake_dns`
 if [ $? -gt 0 ]; then
     SUCCESS=""
     fi
 
 # Depending on whether or not everything started up properly, run Firefox with
 # one of two HTML files as arguments.
-if [ $SUCCESS = "true" ]; then
+if [ "$SUCCESS" == "true" ]; then
     firefox ~/.passfail/success.html &
 else
     firefox ~/.passfail/failure.html &
