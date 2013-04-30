@@ -161,7 +161,7 @@ chmod 600 /etc/random-seed
 crond -l notice &
 
 # Start the GPM mouse server:
-[ -x /etc/rc.d/rc.gpm ] && sh /etc/rc.d/rc.gpm start &
+#[ -x /etc/rc.d/rc.gpm ] && sh /etc/rc.d/rc.gpm start &
 
 # Enable swapping:
 swapon -a 2>/dev/null
