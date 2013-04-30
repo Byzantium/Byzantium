@@ -38,7 +38,7 @@ if [ $? -gt 0 ]; then
     fi
 
 # Test to see if the dead client reaper started.
-MUDC_PID=`pgrep -f mod_up_dead_clients`
+MUDC_PID=`pgrep -f mop_up_dead_clients`
 if [ $? -gt 0 ]; then
     SUCCESS=""
     fi
