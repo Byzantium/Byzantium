@@ -204,6 +204,7 @@ if len(wireless):
     print "Adding Commotion route..."
     command = ['/sbin/route', 'add', '-net', commotion_network, 'netmask',
                commotion_netmask, 'dev', interface]
+    commotion_route_return = subprocess.Popen(command)
 
     # Start the captive portal daemon on that interface.
     captive_portal_daemon = ['/usr/local/sbin/captive_portal.py', '-i',
