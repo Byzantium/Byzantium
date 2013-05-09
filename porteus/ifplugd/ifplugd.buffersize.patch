@@ -1,0 +1,14 @@
+diff -rupN ifplugd-0.28-orig/src/nlapi.c ifplugd-0.28-patched/src/nlapi.c
+--- ifplugd-0.28-orig/src/nlapi.c	2005-01-05 00:25:31.000000000 +0000
++++ ifplugd-0.28-patched/src/nlapi.c	2013-05-09 20:47:28.436093973 +0000
+@@ -71,7 +71,9 @@ int nlapi_work(int block) {
+     
+     for (;;) {
+         int bytes;
+-        char replybuf[1024];
++        /* Patched per http://0pointer.de/lennart/projects/ifplugd/
++           --drwho */
++        char replybuf[4096];
+         struct nlmsghdr *p = (struct nlmsghdr *) replybuf;
+         
+         if ((bytes = recv(nlapi_fd, &replybuf, sizeof(replybuf), block ? 0 : MSG_DONTWAIT)) < 0) {

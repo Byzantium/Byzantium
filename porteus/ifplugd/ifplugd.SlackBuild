@@ -120,6 +120,7 @@ echo "++"
 
 patch -p1 < $CWD/${PRGNAM}.action.patch
 patch -p0 < $CWD/${PRGNAM}.interface.patch
+patch -p1 < $CWD/${PRGNAM}.buffersize.patch
 chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
 
