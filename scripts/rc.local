@@ -7,6 +7,9 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
+# Delete any stale PID files in case we're using persistent storage.
+rm -f /var/run/captive_portal.*
+
 # Test for SSL cert and generate if necessary.
 /etc/rc.d/rc.ssl
 
@@ -15,6 +18,9 @@
 # already started up won't hurt anything because it'll detect the already
 # running instance and error out.
 /etc/rc.d/rc.httpd start
+
+# Make rc.dnsmasq executable if it's not already.
+chmod +x /etc/rc.d/rc.dnsmasq
 
 # Run the configuration daemon.
 echo "Now configuring network interfaces.  Please stand by."
