@@ -170,19 +170,21 @@ class CaptivePortal(object):
     whitelist.exposed = True
 
     # error_page_404(): Registered with CherryPy as the default handler for
-    # HTTP 404 errors (file or resource not found).  Takes four arguments (this
-    # is required by CherryPy), returns some HTML generated at runtime that
+    # HTTP 404 errors (file or resource not found).  Takes four arguments
+    # (required by CherryPy), returns some HTML generated at runtime that
     # redirects the client to http://<IP address>/, where it'll be caught by
     # CaptivePortal.index().  I wish there was an easier way to do this (like
     # calling self.index() directly) but the stable's fresh out of ponies.
     # We don't use any of the arguments passed to this method so I reference
-    # a few of them in debug mode.
-    def error_page_404(self, status, message, traceback):
+    # them in debug mode.
+    def error_page_404(status, message, traceback, version):
         # Extract the client's IP address from the client headers.
         clientip = cherrypy.request.headers['Remote-Addr']
         logging.debug("Client's IP address: %s", clientip)
         logging.debug("Value of status is: %s", status)
         logging.debug("Value of message is: %s", message)
+        logging.debug("Value of traceback is: %s", traceback)
+        logging.debug("Value of version is: %s", version)
 
         # Assemble some HTML to redirect the client to the captive portal's
         # /index.html-* page.
