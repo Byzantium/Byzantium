@@ -1,0 +1,27 @@
+
+
+			    Byzantium Linux v0.3.2a
+				  ("Taxi Cat")
+			 http://project-byzantium.org/
+
+	    Built on top of Porteus Linux v2.0 (http://porteus.org/)
+			    with our deepest thanks.
+
+Your Byzantium node is now up and running.
+
+ Login as "[1;29mroot[0;29m" with password "[1;29mtoor[0;29m", or
+ Login as "[1;29mguest[0;29m" with password "[1;29mguest[0;29m"
+
+Both the username and password are lowercase.
+
+After you log in, type [1;29m'startx'[0;29m (no quotes) to open the desktop.
+
+ [1;29mOther commands you may find useful (for experts only!):[0;29m
+
+ activate ..... insert (install) Porteus module into the system on the fly
+ deactivate ... remove (uninstall) Porteus module from the root filesystem    
+ mkfileswap ... to create a special file on your harddisk for virtual memory
+
+[1;32m When finished, use "halt" or "reboot" command and wait until it completes [0;39m
+[1;32m===============================================================================[0;39m
+
