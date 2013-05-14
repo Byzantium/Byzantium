@@ -9,6 +9,7 @@
 
 # Delete any stale PID files in case we're using persistent storage.
 rm -f /var/run/captive_portal.*
+rm -f /var/run/avahi_client.pid
 
 # Test for SSL cert and generate if necessary.
 /etc/rc.d/rc.ssl
