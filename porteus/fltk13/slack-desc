@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+      |-----handy-ruler------------------------------------------------------|
+fltk13: FLTK (Fast Light Tool Kit 1.3.x series)
+fltk13:
+fltk13: The Fast Light Tool Kit ("FLTK", pronounced "fulltick") is a
+fltk13: a cross-platform C++ GUI toolkit for UNIX(r)/Linux(r) (X11),
+fltk13: Microsoft(r) Windows(r), and MacOS(r) X. FLTK provides
+fltk13: modern GUI functionality without the bloat and supports 3D
+fltk13: graphics via OpenGL(r) and its built-in GLUT emulation. It
+fltk13: was originally developed by Mr. Bill Spitzak and is
+fltk13: currently maintained by a small group of developers across
+fltk13: the world with a central repository in the US.
+fltk13:

@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# Slackware build script for fltk
+# Slackware build script for fltk13
 
-# Copyright 2006-2010  LukenShiro <lukenshiro@ngi.it>
+# Copyright 2006-2013  LukenShiro, Italy
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -22,17 +22,15 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PRGNAM=fltk
-VERSION=1.1.10
+PRGNAM=fltk13
+VERSION=${VERSION:-1.3.2}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
-# Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
     i?86) ARCH=i486 ;;
     arm*) ARCH=arm ;;
-    # Unless $ARCH is already set, use uname -m for all other archs:
        *) ARCH=$( uname -m ) ;;
   esac
 fi
@@ -42,7 +40,10 @@ TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
+SRCNAM=fltk
 DOCFILES="ANNOUNCEMENT CHANGES COPYING CREDITS README"
+# By default Cairo library support is disabled
+CAIRO=${CAIRO:-0}
 
 if [ "$ARCH" = "i486" ]; then
   SLKCFLAGS="-O2 -march=i486 -mtune=i686"
@@ -64,27 +65,35 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xjf $CWD/$PRGNAM-$VERSION-source.tar.bz2
-cd $PRGNAM-$VERSION
+tar xvf $CWD/$SRCNAM-$VERSION-source.tar.gz
+cd $SRCNAM-$VERSION
 chown -R root:root .
-chmod -R u+w,go+r-w,a-s .
-
-# Fix underlinking.
-patch -p1 -i $CWD/fltk-1.1.10-pkgconfig_xft.patch
-patch -p1 -i $CWD/fltk-1.1.x-r5750-undefined.patch
+find . \
+ \( -perm 777 -o -perm 775 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
 
 # Fix linking when --libdir=/usr/lib64 
 sed -i \
   -e '/RANLIB/s:$(libdir)/\(.*LIBNAME)\):$(libdir)/`basename \1`:g' \
   src/Makefile || exit
 
-# --docdir seems to be ignored
+# Cairo library support
+case "$CAIRO" in
+    0)  CAIRO_FLAG="dis" ;;
+    *)  CAIRO_FLAG="en" ;;
+esac
+
+# --docdir seems to be ignored here
 CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
   --sysconfdir=/etc \
-  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --libdir=/usr/lib${LIBDIRSUFFIX}/fltk13 \
+  --includedir=/usr/include/fltk13 \
+  --datadir=/usr/share/fltk13 \
   --localstatedir=/var \
   --mandir=/usr/man \
   --enable-gl \
@@ -93,32 +102,36 @@ CXXFLAGS="$SLKCFLAGS" \
   --enable-threads \
   --enable-xinerama \
   --enable-xft \
-  --enable-xdbe 
+  --enable-xdbe \
+  --${CAIRO_FLAG}able-cairo \
+  --build=$ARCH-slackware-linux
 
-make
-make install DESTDIR=$PKG
+# but not here... :)
+make docdir=/usr/doc/$PRGNAM-$VERSION
+make install docdir=/usr/doc/$PRGNAM-$VERSION DESTDIR=$PKG
 
-find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-( cd $PKG/usr/man
-  find . -type f -exec gzip -9 {} \;
-  for i in $(find . -type l) ; do ln -s $(readlink $i).gz $i.gz ; rm $i ; done
-)
+# Some files are to be manually renamed so they do not conflict with fltk(1.1.x)'s ones
+mv $PKG/usr/bin/fluid $PKG/usr/bin/fluid13
+mv $PKG/usr/bin/fltk-config $PKG/usr/bin/fltk13-config
+mv $PKG/usr/man/man1/fluid.1 $PKG/usr/man/man1/fluid13.1
+mv $PKG/usr/man/man1/fltk-config.1 $PKG/usr/man/man1/fltk13-config.1
+mv $PKG/usr/man/man3/fltk.3 $PKG/usr/man/man3/fltk13.3
+# Change some reference in man files
+sed -i "s|fluid|fluid13|g" $PKG/usr/man/man[1,3]/*
+sed -i "s|fltk|fltk13|g" $PKG/usr/man/man[1,3]/*
+sed -i "s|www.fltk13.org|www.fltk.org|g" $PKG/usr/man/man[1,3]/*
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
 # Remove catman directories :)
 rm -rf $PKG/usr/man/cat{1,3}
 
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/{examples,html}
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/
 cp -a $DOCFILES $PKG/usr/doc/$PRGNAM-$VERSION
-# move html and image files
-mv $PKG/usr/share/doc/$PRGNAM/*.{html,gif,jpg} \
-  $PKG/usr/doc/$PRGNAM-$VERSION/html/
-# move remaing files
-mv $PKG/usr/share/doc/$PRGNAM/examples \
-  $PKG/usr/doc/$PRGNAM-$VERSION/
-rm -rf $PKG/usr/share
-
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install

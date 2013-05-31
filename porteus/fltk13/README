@@ -1,0 +1,18 @@
+The Fast Light Tool Kit ("FLTK", pronounced "fulltick") is a a cross-platform 
+C++ GUI toolkit for UNIX(r)/Linux(r) (X11), Microsoft(r) Windows(r), and 
+MacOS(r) X.  FLTK provides modern GUI functionality without the bloat and 
+supports 3D graphics via OpenGL(r) and its built-in GLUT emulation.  It was 
+originally developed by Mr. Bill Spitzak and is currently maintained by a 
+small group of developers across the world with a central repository in the US.
+
+This is 1.3.x (in development) series.
+
+CAVEATS:
+1) fltk13 can be installed alongside fltk (1.1.x), but in order to build it,
+you need to remove fltk first (with removepkg); you can then reinstall it
+afterwards.
+2) In order to avoid conflicting files and some other problems, the homonyms
+are renamed, and library and include directories are moved to nonstandard
+locations (<libdir>/fltk13/ and /usr/include/fltk13/FL).
+
+If you want cairo support, you need to pass CAIRO=1 to the build script.
