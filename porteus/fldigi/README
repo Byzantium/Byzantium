@@ -1,0 +1,8 @@
+Fldigi is a "digital modem" program for Linux, FreeBSD, and Windows.  
+This software allows amateur radio enthusiasts to communicate using a 
+number of digital protocols, including but not limited to PSK, 
+Hellschreiber, Olivia, Morse Code, and many more.  Receiving signals is 
+as simple as plugging an audio cable into your line in or microphone 
+port on your sound card, and transmitting can be accomplished using one 
+of any number of prebuilt or homebrew interfaces which can found on the 
+internet.

@@ -1,0 +1,11 @@
+--- fltk-1.1.x-r5750/src/Makefile.undefined	2007-02-10 08:31:12.000000000 -0600
++++ fltk-1.1.x-r5750/src/Makefile	2007-04-05 07:51:31.000000000 -0500
+@@ -282,7 +282,7 @@
+ 
+ libfltk_gl.so.1.1: $(GLOBJECTS) libfltk.so.1.1
+ 	echo $(DSOCOMMAND) $@ ...
+-	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. -lfltk
++	$(DSOCOMMAND) $@ $(GLOBJECTS) -L. $(GLDLIBS) -lfltk
+ 	$(RM) libfltk_gl.so
+ 	$(LN) libfltk_gl.so.1.1 libfltk_gl.so
+ 

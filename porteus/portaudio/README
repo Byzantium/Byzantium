@@ -1,0 +1,2 @@
+PortAudio is a portable API for audio I/O. It allows people writing audio
+programs to easily access the audio devices.
