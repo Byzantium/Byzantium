@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+       |-----handy-ruler-------------------------------------------------------|
+libax25: libax25 (library for writing ham radio software)
+libax25:
+libax25: This is a library which makes it easier to write ham radio software
+libax25: for Linux. Implements functions for AX.25, ROSE, and NET/ROM.  Lots of
+libax25: utility software uses it.
+libax25:
+libax25:
+libax25:
+libax25:
+libax25:
+libax25:
