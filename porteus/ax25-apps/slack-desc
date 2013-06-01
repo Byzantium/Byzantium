@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+         |-----handy-ruler-----------------------------------------------------|
+ax25-apps: ax25-apps (user applications that use AX.25)
+ax25-apps:
+ax25-apps: This is a set of apps that users are able to use that run over AX.25
+ax25-apps: instead of daemons that the sysadmin sets up and runs to enable this
+ax25-apps: functionality.
+ax25-apps:
+ax25-apps:
+ax25-apps:
+ax25-apps:
+ax25-apps:
+ax25-apps:
