@@ -94,6 +94,12 @@ make install DESTDIR=$PKG
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
+# Install default config files.
+mkdir -p $PKG/etc/ax25
+cat axports > $PKG/etc/ax25/axports
+cat nrports > $PKG/etc/ax25/nrports
+cat rsports > $PKG/etc/ax25/rsports
+
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 

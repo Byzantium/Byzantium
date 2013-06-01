@@ -94,6 +94,16 @@ make install DESTDIR=$PKG
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
+# Install the default configuration files.
+mkdir -p $PKG/etc/ax25
+cat ax25/ax25.profile > $PKG/etc/ax25/ax25.profile
+cat ax25/ax25d.conf > $PKG/etc/ax25/ax25d.conf
+cat ax25/axspawn.conf > $PKG/etc/ax25/axspawn.conf
+cat netrom/nrbroadcast > $PKG/etc/ax25/nrbroadcast
+cat tcpip/rip98d.conf > $PKG/etc/ax25/rip98d.conf
+cat ax25/rxecho.conf > $PKG/etc/ax25/rxecho.conf
+cat tcpip/ttylinkd.conf > $PKG/etc/ax25/ttylinkd.conf
+
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
