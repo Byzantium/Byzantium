@@ -1,0 +1,3 @@
+Virtualenv is a tool to create isolated Python environments.
+
+Virtualenv can optionally use distribute or Python 3 during install.
