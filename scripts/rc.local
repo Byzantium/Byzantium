@@ -9,7 +9,6 @@
 
 # Delete any stale PID files in case we're using persistent storage.
 rm -f /var/run/captive_portal.*
-rm -f /var/run/avahi_client.pid
 
 # Test for SSL cert and generate if necessary.
 /etc/rc.d/rc.ssl
@@ -45,4 +44,8 @@ echo "Starting IRC server."
 # Start QwebIRC.
 echo "Starting web chat server."
 /etc/rc.d/rc.qwebirc start &
+
+# Start Groundstation.
+echo "Starting web chat server."
+/etc/rc.d/rc.groundstation start
 
