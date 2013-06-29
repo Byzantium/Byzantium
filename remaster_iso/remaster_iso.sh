@@ -1,8 +1,9 @@
 #!/bin/bash
-
 # remaster_iso.sh - Shell script that takes a Porteus Linux .iso image and
 #	turns it into a Byzantium Linux .iso image by unpacking, modifying, and
 #	rebuilding it.
+# Copyright (C) 2013 Project Byzantium
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
 
 # NOTE: This script is intended for developers only.  If you don't plan on
 #	hacking your .iso image you don't need this utility!
@@ -10,7 +11,6 @@
 # Project Byzantium: http://project-byzantium.org/
 
 # By: The Doctor <drwho at virtadpt dot net>
-# License: GPLv3
 
 # Command line arguments:
 #    $1: Location of Porteus Linux .iso image.

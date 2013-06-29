@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 # vim: set expandtab tabstop=4 shiftwidth=4 :
+# Copyright (C) 2013 Project Byzantium
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
+__license__ = 'GPL v3'
 
 import select
 import json

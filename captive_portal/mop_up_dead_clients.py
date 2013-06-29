@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: set expandtab tabstop=4 shiftwidth=4 :
-
 # mop_up_dead_clients.py - Daemon that pairs with the captive portal to remove
 #    IP tables rules for idle clients so they don't overflow the kernel.
 # By: Haxwithaxe
+# Copyright (C) 2013 Project Byzantium
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
 
 # Modules
 import sys

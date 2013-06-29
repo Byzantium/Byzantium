@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: set expandtab tabstop=4 shiftwidth=4 :
-
-'''
-services.py
+''' services.py
 A module that reads the database of services running on the node and those found via avahi (mdns) and spits them out for use elsewhere.
 '''
+# Copyright (C) 2013 Project Byzantium
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+
 
 __author__ = 'haxwithaxe (me at haxwithaxe dot net)'
+
+__license__ = 'GPL v3'
 
 import _utils
 import sqlite3

@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim: set expandtab tabstop=4 shiftwidth=4 :
-
 # Project Byzantium: http://wiki.hacdc.org/index.php/Byzantium
-# License: GPLv3
+__license__ = 'GPL v3'
 
 # captive_portal.py
 # This application implements a little web server that mesh clients will be

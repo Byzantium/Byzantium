@@ -1,13 +1,13 @@
 #!/bin/bash
-
 # verify_operation.sh - This script runs as the guest user when the desktop
 #     starts up.  It does two things: First, it tests to see if network
 #     functionality has been configured.  Depending on what it finds it starts
 #     Firefox with one of two HTML files, one for success and one for failure.
+# Copyright (C) 2013 Project Byzantium
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
 
 # Written for Project Byzantium.
 # By: The Doctor [412/724/301/703] [ZS|Media]
-# License: GPLv3
 
 # Set the global pass/fail flag.
 SUCCESS="true"

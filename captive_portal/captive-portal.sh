@@ -5,7 +5,8 @@
 # captive portal's hood.  It should only be used by the captive portal daemon.
 
 # Written by Sitwon and The Doctor.
-# License: GPLv3
+# Copyright (C) 2013 Project Byzantium
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
 
 IPTABLES=/usr/sbin/iptables
 ARP=/sbin/arp
