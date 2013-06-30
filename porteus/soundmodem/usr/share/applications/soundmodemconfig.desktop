@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Soundmodem Config
+Comment=Configure soundmodem for amateur packet radio support.
+Comment[fr]=Configurer soundmodem pour le soutien de radiocommunication par paquets amateur.
+GenericName=soundmodemconfig
+Exec=lxterminal -e "sudo -p 'Enter the password for the guest account: ' /usr/bin/soundmodemconfig"
+Terminal=false
+X-MultipleArgs=false
+Type=Application
+Icon=/usr/share/pixmaps/porteus/headphones.png
+Categories=System;
