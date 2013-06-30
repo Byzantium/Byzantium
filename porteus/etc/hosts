@@ -16,6 +16,6 @@
 # This next entry is technically wrong, but good enough to get TCP/IP apps
 # to quit complaining that they can't verify the hostname on a loopback-only
 # Linux box.
-127.0.0.1	porteus.example.net porteus byzantium
+127.0.0.1	porteus.example.net porteus
 
 # End of hosts.
