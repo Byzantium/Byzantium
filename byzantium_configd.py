@@ -228,7 +228,7 @@ prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 hosts = open(hostsmesh, "w")
 line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
 hosts.write(line)
-for i in range(2, 255):
+for i in range(2, 254):
     line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
     hosts.write(line)
 hosts.close()
