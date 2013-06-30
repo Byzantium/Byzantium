@@ -22,6 +22,11 @@ votre adresse. Ces précautions peuvent vous sauver la vie.</p>
 <p>Si votre réseau est équipé d'un portail d'accès internet vous en serez
 informé et l'accès normal aux services en ligne sera alors possible.</p>
 
+<!-- From Google Translate, which probably means that it sucks. -->
+<p>Certains navigateurs web cache DNS, ce qui signifie que vous pouvez avoir
+des problèmes après avoir cliqué sur le bouton ci-dessous. Si vous le faites,
+s'il vous plaît redémarrer votre navigateur.</p>
+
 <p>Soyez prudent et bon courage.</p>
 <form action="whitelist" method="post">
 <input type="submit" name="accepted" value="OK" class="btn btn-large btn-success"></input>
