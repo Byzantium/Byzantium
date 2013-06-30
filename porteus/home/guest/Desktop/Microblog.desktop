@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Microblog
+Icon=/usr/share/pixmaps/easypaint_64.png
+Type=Link
+URL[$e]=http://localhost:9005
