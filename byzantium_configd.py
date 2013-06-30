@@ -226,7 +226,7 @@ prefix = octet_one + '.' + octet_two + '.' + octet_three + '.'
 # Make an /etc/hosts.mesh file, which will be used by dnsmasq to resolve its
 # mesh clients.
 hosts = open(hostsmesh, "w")
-line = prefix + str('1') + '\tbyzantium.byzantium.mesh\n'
+line = prefix + str('1') + '\tbyzantium.mesh\n'
 hosts.write(line)
 for i in range(2, 254):
     line = prefix + str(i) + '\tclient-' + prefix + str(i) + '.byzantium.mesh\n'
