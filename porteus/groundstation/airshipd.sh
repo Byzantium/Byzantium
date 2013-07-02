@@ -11,7 +11,7 @@ cd /opt/groundstation
 
 # Start stationd in a loop to ensure that it keeps running.
 cd groundstation
-./airshipd --host 0.0.0.0 2> /dev/null
+./airshipd 2> /dev/null
 
 # Fin.
 exit 0

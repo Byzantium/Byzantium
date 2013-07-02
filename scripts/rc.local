@@ -52,3 +52,6 @@ echo "Starting web chat server."
 echo "Starting web chat server."
 /etc/rc.d/rc.groundstation start
 
+# Start stunnel.
+echo "Starting stunnel for servers that aren't SSL-enabled."
+/etc/rc.d/rc.stunnel start
