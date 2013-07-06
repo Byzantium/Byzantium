@@ -1,10 +1,29 @@
 #!/bin/sh
 
 # Slackware build script for node
-# Written by Audrius Kažukauskas <audrius@neutrino.lt>
+
+# Copyright 2012-2013 Audrius Kažukauskas <audrius@neutrino.lt>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=node
-VERSION=${VERSION:-0.6.16}
+VERSION=${VERSION:-0.10.12}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -47,25 +66,23 @@ chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
 
 # Fix man page path.
-sed -i 's|/share||' wscript
+sed -i 's|share/||' tools/install.py
 sed -i '/var manRoot/ s/"share",//' deps/npm/lib/{,un}build.js
 
 # Make `npm help' to look for gzipped man pages.
 sed -i 's/\." + num/." + num + ".gz"/' deps/npm/lib/help.js
 
 # Fix libdir for 64-bit.
-sed -i "s|/lib/|/lib${LIBDIRSUFFIX}/|" wscript
-sed -i "s/'lib'/'lib${LIBDIRSUFFIX}'/" \
-  lib/module.js tools/wafadmin/Tools/node_addon.py
-sed -i "s|\"lib\"|\"lib${LIBDIRSUFFIX}\"|" deps/npm/lib/npm.js tools/node-waf
+sed -i "s|lib/|lib${LIBDIRSUFFIX}/|g" tools/install.py
+sed -i "s/'lib'/'lib${LIBDIRSUFFIX}'/" lib/module.js
+sed -i "s|\"lib\"|\"lib${LIBDIRSUFFIX}\"|" deps/npm/lib/npm.js
 
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
-  --libdir=/usr/lib${LIBDIRSUFFIX}
+  --shared-openssl \
+  --shared-zlib
 
-make
+make CFLAGS="$SLKCFLAGS" CXXFLAGS="$SLKCFLAGS"
 make install DESTDIR=$PKG
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
@@ -75,7 +92,7 @@ find $PKG/usr/man $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/npm/man -type f -exec
 for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
 # Add bash completion file for npm.
-install -D -m 644 $CWD/npm.sh $PKG/etc/bash_completion.d/npm
+install -D -m 644 $CWD/npm.sh $PKG/usr/share/bash-completion/completions/npm
 
 # Remove unneeded files.
 find $PKG/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
