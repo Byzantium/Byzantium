@@ -3,7 +3,7 @@
 <service-group>
 	<name replace-wildcards="yes">Web chat client on %h</name>
 	<service>
-		<type>_http._tcp</type>
+		<type>_http.__byz__._tcp</type>
 		<port>9001</port>
 	</service>
 </service-group>
