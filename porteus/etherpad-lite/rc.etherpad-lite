@@ -6,6 +6,7 @@
 #	The Doctor [412/724/301/703] <drwho at virtadpt dot net>
 #	0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
 
+# v1.1	- Reworked for sandboxed design pattern.  It's easier to maintain.
 # v1.0	- Initial release.
 
 # TODO:
@@ -24,7 +25,7 @@ ACTIVE=/etc/avahi/services
 case "$1" in
 	'start')
 		# Start Etherpad.
-		/bin/su -l -c "bin/run.sh &" $USER
+		/bin/su -l -c "./etherpad-lite.sh" $USER
 
 		# Wait five seconds for the node.js server to start up.
 		sleep 5
