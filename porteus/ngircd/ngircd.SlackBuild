@@ -3,9 +3,10 @@
 # Slackware build script for ngircd
 
 # Written by /dev/rob0 <rob0@slackbuilds.org>
+# Updated by The Doctor [412/724/301/703][ZS] <drwho at virtadpt dot net>
 
 PRGNAM=ngircd
-VERSION=${VERSION:-17.1}
+VERSION=${VERSION:-20.2}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
