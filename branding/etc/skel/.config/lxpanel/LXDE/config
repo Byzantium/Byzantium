@@ -1,4 +1,0 @@
-[Command]
-FileManager=pcmanfm %s
-Terminal=xterm -e
-Logout=lxde-logout
