@@ -3,11 +3,17 @@
 #     starts up.  It does two things: First, it tests to see if network
 #     functionality has been configured.  Depending on what it finds it starts
 #     Firefox with one of two HTML files, one for success and one for failure.
-# Copyright (C) 2013 Project Byzantium
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.
 
-# Written for Project Byzantium.
-# By: The Doctor [412/724/301/703] [ZS|Media]
+# Copyright (C) 2013 Project Byzantium
+# By: The Doctor [412/724/301/703][ZS]
+
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or any later version.
+
+# If the .desktop file for re-running the configuration daemon exists on the
+# desktop, delete it.
+rm -f ~/Desktop/retry.desktop
 
 # Set the global pass/fail flag.
 SUCCESS="true"
@@ -55,6 +61,11 @@ if [ "$SUCCESS" == "true" ]; then
     firefox ~/.passfail/success.html &
 else
     firefox ~/.passfail/failure.html &
+
+    # Copy the .desktop file for re-running the configuration daemon into
+    # position.
+    cp ~/retry.desktop ~/Desktop/retry.desktop
+
 fi
 
 # End.
