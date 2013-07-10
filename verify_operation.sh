@@ -65,7 +65,6 @@ else
     # Copy the .desktop file for re-running the configuration daemon into
     # position.
     cp ~/retry.desktop ~/Desktop/retry.desktop
-
 fi
 
 # End.

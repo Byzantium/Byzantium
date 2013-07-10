@@ -4,5 +4,5 @@ Encoding=UTF-8
 Name=Try again?
 Comment=Attempt to configure this node again?
 Exec=sudo /usr/local/bin/reconfigure.sh
-Icon=application.png
+Icon=/usr/share/pixmaps/easypaint_64.png
 Terminal=false
