@@ -28,7 +28,7 @@
 BUILD=${BUILD:-1}
 
 PKGNAM=libgit2
-VERSION=${VERSION:-0.18.0}
+VERSION=${VERSION:-0.19.0}
 
 # Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
@@ -59,9 +59,9 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 
 cd $TMP
-rm -rf libgit2-master
+rm -rf libgit2-development
 unzip $CWD/libgit2-master.zip || exit 1
-cd libgit2-master
+cd libgit2-development
 
 chown -R root:root .
 find . \
