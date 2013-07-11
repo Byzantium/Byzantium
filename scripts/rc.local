@@ -45,11 +45,11 @@ echo "Starting IRC server."
 /etc/rc.d/rc.ngircd start 
 
 # Start QwebIRC.
-echo "Starting web chat server."
+echo "Starting QwebIRC server."
 /etc/rc.d/rc.qwebirc start &
 
 # Start Groundstation.
-echo "Starting web chat server."
+echo "Starting Groundstation server."
 /etc/rc.d/rc.groundstation start
 
 # Start stunnel.
