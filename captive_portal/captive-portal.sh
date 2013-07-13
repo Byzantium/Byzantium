@@ -48,6 +48,14 @@ case "$1" in
         $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p udp --dport 53 \
             -j DNAT --to-destination $CLIENTIP:31339
 
+        # HTTP replies come from the same port the requests were received by.
+        # Rewrite the outbound packets to appear to come from the appropriate
+        # ports.
+        $IPTABLES -t nat -A POSTROUTING -d $CLIENTNET -p tcp --sport 31337 \
+            -j SNAT --to-source :80
+        $IPTABLES -t nat -A POSTROUTING -d $CLIENTNET -p tcp --sport 31338 \
+            -j SNAT --to-source :443
+
         # Replies from fake_dns.py come from the same port because they're
         # UDP.  Rewrite the packet headers so it loos like it's from port
         # 53/udp.
