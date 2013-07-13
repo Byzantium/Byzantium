@@ -69,13 +69,19 @@ case "$1" in
         $IPTABLES -t filter -A INPUT -p tcp --dport 53 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p tcp --dport 443 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 1248 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 6667 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 8089 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p tcp --dport 9001 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 9005 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 9006 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p tcp --dport 9090 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p tcp --dport 31337 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p tcp --dport 31338 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 53 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 67 -j ACCEPT
+        $IPTABLES -t filter -A INPUT -p udp --dport 698 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 5353 -j ACCEPT
-        $IPTABLES -t filter -A INPUT -p udp --dport 6696 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p udp --dport 31339 -j ACCEPT
         $IPTABLES -t filter -A INPUT -p icmp -j ACCEPT
 
