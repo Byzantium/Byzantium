@@ -42,11 +42,17 @@ case "$1" in
         # Traffic which has been marked 99 and is headed for 80/TCP or 443/TCP
         # should be redirected to the captive portal web server.
         $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 80 \
-	    -j DNAT --to-destination $CLIENTIP:31337
+            -j DNAT --to-destination $CLIENTIP:31337
         $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p tcp --dport 443 \
-	    -j DNAT --to-destination $CLIENTIP:31338
+            -j DNAT --to-destination $CLIENTIP:31338
         $IPTABLES -t nat -A PREROUTING -m mark --mark 99 -p udp --dport 53 \
-	    -j DNAT --to-destination $CLIENTIP:31339
+            -j DNAT --to-destination $CLIENTIP:31339
+
+        # Replies from fake_dns.py come from the same port because they're
+        # UDP.  Rewrite the packet headers so it loos like it's from port
+        # 53/udp.
+        $IPTABLES -t nat -A POSTROUTING -d $CLIENTNET -p udp --sport 31339 \
+            -j SNAT --to-source :53
 
         # All other traffic which is marked 99 is just dropped
         $IPTABLES -t filter -A FORWARD -m mark --mark 99 -j DROP
@@ -68,7 +74,7 @@ case "$1" in
         # But reject anything else coming from unrecognized users.
         $IPTABLES -t filter -A INPUT -m mark --mark 99 -j DROP
 
-	exit 0
+        exit 0
         ;;
     'add')
         # $2: IP address of client.
@@ -82,7 +88,7 @@ case "$1" in
         $IPTABLES -t mangle -I internet -m mac --mac-source \
             $CLIENTMAC -j RETURN
 
-	exit 0
+        exit 0
         ;;
     'remove')
         # $2: IP address of client.
@@ -95,7 +101,7 @@ case "$1" in
         $IPTABLES -t mangle -D internet -m mac --mac-source \
             $CLIENTMAC -j RETURN
 
-	exit 0
+        exit 0
         ;;
     'purge')
         # Purge all of the IP tables rules.
@@ -108,17 +114,17 @@ case "$1" in
         $IPTABLES -t filter -F
         $IPTABLES -t filter -X
 
-	exit 0
+        exit 0
         ;;
     'list')
-	# Display the currently running IP tables ruleset.
-	$IPTABLES --list -n
-	$IPTABLES --list -t nat -n
-	$IPTABLES --list -t mangle -n
-	$IPTABLES --list -t filter -n
+        # Display the currently running IP tables ruleset.
+        $IPTABLES --list -n
+        $IPTABLES --list -t nat -n
+        $IPTABLES --list -t mangle -n
+        $IPTABLES --list -t filter -n
 
-	exit 0
-	;;
+        exit 0
+        ;;
     *)
         echo "USAGE: $0 {initialize <IP> <interface>|add <IP> <interface>|remove <IP> <interface>|purge|list}"
         exit 0
