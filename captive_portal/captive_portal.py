@@ -155,7 +155,7 @@ class CaptivePortal(object):
         redirect = """
                    <html>
                    <head>
-                   <meta http-equiv="refresh" content="0; url=http://""" + self.args.address + """/" />
+                   <meta http-equiv="refresh" content="0; url=http://""" + self.args.address + """/index.html" />
                    </head>
                    <body>
                    </body>
