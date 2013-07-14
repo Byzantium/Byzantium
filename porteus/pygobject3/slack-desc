@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|' on
+# the right side marks the last column you can put a character in.  You must make
+# exactly 11 lines for the formatting to be correct.  It's also customary to
+# leave one space after the ':'.
+
+          |-----handy-ruler------------------------------------------------------|
+pygobject3: pygobject3 (GObject bindings for Python)
+pygobject3:
+pygobject3: This archive contains bindings for the GObject, to be used in Python.
+pygobject3: It is a fairly complete set of bindings, it's already rather useful,
+pygobject3: and is usable to write moderately complex programs.
+pygobject3:
+pygobject3: pygobject's home page:  http://www.pygtk.org/
+pygobject3:
+pygobject3:
+pygobject3:
+pygobject3:
