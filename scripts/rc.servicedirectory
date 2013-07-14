@@ -1,0 +1,46 @@
+#!/bin/sh
+# rc.servicedirectory - Initscript that starts the dynamic service directory
+#	daemon.
+
+# AUTHORS:
+#	The Doctor [412/724/301/703][ZS] <drwho at virtadpt dot net>
+#	0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
+
+# v1.0	- Initial release.
+
+# TODO:
+
+# Variables
+USER="servicedirectory"
+HOMEDIR="/opt/byzantium"
+PID="/var/run/servicedirectory.pid"
+
+# Core code.
+# Here's where the heavy lifting happens - this parses the arguments passed to
+# script and triggers what has to be triggered.
+case "$1" in
+    'start')
+        # Start service directory daemon.
+        cd $HOMEDIR
+        /bin/su -l -c "./servicedirectory.sh" $USER
+
+        # Wait five seconds for stationd to start up.
+        sleep 5
+    
+        # Store the PID in a file.
+        ps ax | grep 'python' | grep '[s]ervices.py' | awk '{print $1}' > $PID
+        ;;
+    'stop')
+        # Terminate service directory daemon.
+        kill -9 `cat $PID`
+        rm -f $PID
+        ;;
+    'status')
+        ps ax | grep [s]ervices.py
+        ;;
+    *)
+        echo "USAGE: $0 {start|stop|status}"
+        exit 0
+    esac
+
+# End of script.
