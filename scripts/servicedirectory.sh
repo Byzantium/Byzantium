@@ -7,8 +7,6 @@
 # Make sure we are where we need to be.
 cd /opt/byzantium
 
-pwd
-
 # Source the custom Python environment.
 . env/bin/activate
 
