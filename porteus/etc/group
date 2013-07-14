@@ -45,5 +45,6 @@ nogroup:x:99:
 users:x:100:guest
 console:x:101:
 kdm:x:102:
-avahi:x:214:avahi
+avahi:x:214:
 guest:x:1000:guest
+servicedirectory:x:1004:servicedirectory
