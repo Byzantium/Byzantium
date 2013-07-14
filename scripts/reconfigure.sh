@@ -11,6 +11,9 @@
 # under the terms of the GNU General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or any later version.
 
+# Delete the captive portal pid file just in case one exists.
+rm -f /var/run/captive_portal.*
+
 # Run the autoconfiguration daemon again.
 /usr/local/sbin/byzantium_configd.py
 
