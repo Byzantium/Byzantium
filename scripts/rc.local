@@ -7,6 +7,9 @@
 # make an /etc/rc.d/rc.local_shutdown script and put those
 # commands in there.
 
+# Spin down hard drives to conserve power.
+/etc/rc.d/rc.spin-down-drives
+
 # Run ldconfig to make sure libraries in /usr/local/lib get mapped.
 ldconfig
 
