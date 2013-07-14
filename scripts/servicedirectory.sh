@@ -7,9 +7,6 @@
 # Make sure we are where we need to be.
 cd /opt/byzantium
 
-# Source the custom Python environment.
-. env/bin/activate
-
 # Start the service directory daemon.
 python service_index/services.py 2>/dev/null &
 
