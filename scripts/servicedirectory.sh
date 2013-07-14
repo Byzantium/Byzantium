@@ -10,5 +10,8 @@ cd /opt/byzantium
 # Start the service directory daemon.
 python service_index/services.py 2>/dev/null &
 
+# Start the Avahi client.
+python -m byzantium.avahi.client &
+
 # Fin.
 exit 0
