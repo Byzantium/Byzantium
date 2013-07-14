@@ -1,0 +1,69 @@
+avahi-dnsconfd.action looks for /sbin/netconfig, and if found, attempts to 
+use it to modify /etc/resolv.conf.  While *our* netconfig and SuSE's
+netconfig started out the same, they're quite different these days, and
+thus the result is /etc/HOSTNAME getting set to some nonsense such as:
+  INTERFACE='eth0'.DNSSERVERS='192.168.13.1'
+This was quite some fun tracking down, by the way...  :-)  --rworkman
+
+
+diff -Nur avahi-0.6.30.orig/avahi-dnsconfd/avahi-dnsconfd.action avahi-0.6.30/avahi-dnsconfd/avahi-dnsconfd.action
+--- avahi-0.6.30.orig/avahi-dnsconfd/avahi-dnsconfd.action	2010-06-28 22:30:34.000000000 -0500
++++ avahi-0.6.30/avahi-dnsconfd/avahi-dnsconfd.action	2012-01-21 16:18:24.337986754 -0600
+@@ -33,48 +33,16 @@
+ #   $AVAHI_INTERFACE_DNS_SERVERS   A whitespace seperated list of DNS servers on $AVAHI_INTERFACE
+ #   $AVAHI_DNS_SERVERS             The complete list of all DNS servers found on all interfaces
+ 
+-if [ -x /sbin/netconfig ]; then
+-    # SUSE method on 11.1+
+-    if [ -n "$AVAHI_INTERFACE_DNS_SERVERS" ]; then
+-	/sbin/netconfig modify -s avahi -i "$AVAHI_INTERFACE" <<-EOF
+-	INTERFACE='$AVAHI_INTERFACE'
+-	DNSSERVERS='$AVAHI_INTERFACE_DNS_SERVERS'
+-	EOF
+-    else
+-	/sbin/netconfig remove -s avahi -i "$AVAHI_INTERFACE"
+-    fi
+-elif [ -x /sbin/modify_resolvconf ] ; then
+-    # method for SUSE <= 11.0
+-    if [ -n "$AVAHI_DNS_SERVERS" ]; then
+-	/sbin/modify_resolvconf modify -s avahi -t - -p avahi-dnsconfd -n "$AVAHI_DNS_SERVERS" <<-EOF
+-	if you don't like avahi to update your Nameservers
+-	disable the avahi-dnsconfd init script
+-	EOF
+-    else
+-	/sbin/modify_resolvconf restore -s avahi
+-    fi
+-elif [ -x /sbin/resolvconf ] ; then
+ 
+-    # We have Debian's resolvconf tool
+-
+-    if [ "x$AVAHI_INTERFACE_DNS_SERVERS" = "x" ] ; then
+-        /sbin/resolvconf -d "$AVAHI_INTERFACE.avahi"
+-    else
+-        for n in $AVAHI_INTERFACE_DNS_SERVERS ; do 
+-            echo "nameserver $n"
+-        done | /sbin/resolvconf -a "$AVAHI_INTERFACE.avahi"
+-    fi
+-else
+-
+-    # No resolvconf tool available
+-
+-    if [ "x$AVAHI_DNS_SERVERS" = "x" ] ; then
++if [ "x$AVAHI_DNS_SERVERS" = "x" ] ; then
+         test -f /etc/resolv.conf.avahi && mv /etc/resolv.conf.avahi /etc/resolv.conf
+-    else
++else
+         test -f /etc/resolv.conf.avahi || mv /etc/resolv.conf /etc/resolv.conf.avahi
+ 
+-        for n in $AVAHI_DNS_SERVERS ; do 
+-            echo "nameserver $n"
+-        done > /etc/resolv.conf
+-    fi
++        grep -v ^nameserver /etc/resolv.conf.avahi > /etc/resolv.conf
++
++        for n in $AVAHI_DNS_SERVERS ; do
++                echo "nameserver $n"
++        done >> /etc/resolv.conf
+ fi
++
+ 
