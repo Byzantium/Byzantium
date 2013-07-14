@@ -1,0 +1,29 @@
+#!/bin/sh
+# rc.spin-down-drives - Script that figures out which drives on a system that
+#	aren't involved in Byzantium Linux and spins them down to conserve
+#	battery power.
+
+# AUTHORS:
+#	The Doctor [412/724/301/703][ZS] <drwho at virtadpt dot net>
+#	0x807B17C1 / 7960 1CDC 85C9 0B63 8D9F  DD89 3BD8 FF2B 807B 17C1
+
+# v1.0	- Initial release.
+
+# TODO:
+
+# Variables
+HDPARM="/usr/sbin/hdparm"
+
+# Core code.
+# Enumerate all of the storage devices on the system.  Skip the one that
+# Byzantium was booted from because it might be an electromechanical hard drive
+# and not a flash drive.  Other flash drives (like SSDs) don't draw as much
+# power as drives that have rotating platters.
+for i in `ls /sys/block/* | grep -v 'loop' | sed 's/@$//'`; do
+    removable=$(cat /sys/block/$i/removable)
+    if [ $removable -eq 0 ]; then
+        $HDPARM -Y $i
+    fi
+done
+
+# End of script.
