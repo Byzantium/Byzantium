@@ -13,8 +13,8 @@
 # Variables
 USER="groundstation"
 HOMEDIR="/opt/groundstation"
-STATIOND_PID="/var/run/stationd.pid"
-AIRSHIPD_PID="/var/run/airshipd.pid"
+SPID="/var/run/stationd.pid"
+APID="/var/run/airshipd.pid"
 
 # Core code.
 # Here's where the heavy lifting happens - this parses the arguments passed to
