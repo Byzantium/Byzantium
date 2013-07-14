@@ -159,7 +159,7 @@ if len(wireless):
     while ip_in_use:
         # Generate a pseudorandom IP address for the mesh interface.
         addr = '192.168.'
-        addr = addr + str(random.randint(0, 254)) + '.'
+        addr = addr + str(random.randint(0, 255)) + '.'
         addr = addr + str(random.randint(1, 254))
 
         # Use arping to see if anyone's claimed it.
