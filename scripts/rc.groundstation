@@ -25,9 +25,6 @@ case "$1" in
         cd $HOMEDIR
         /bin/su -l -c "./stationd.sh &" $USER
 
-        # Wait five seconds for stationd to start up.
-        sleep 5
-
         # Start airshipd.
         /bin/su -l -c "./airshipd.sh &" $USER
         ;;
