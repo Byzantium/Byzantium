@@ -24,8 +24,7 @@ case "$1" in
         CLIENTNET=`echo $2 | sed 's/1$/0\/24/'`
 
         # Exempt traffic which does not originate from the client network.
-        $IPTABLES -t mangle -A PREROUTING -p tcp ! -s $CLIENTNET -j RETURN
-        $IPTABLES -t mangle -A PREROUTING -p udp ! -s $CLIENTNET -j RETURN
+        $IPTABLES -t mangle -A PREROUTING -p all ! -s $CLIENTNET -j RETURN
 
         # Traffic not exempted by the above rules gets kicked to the captive
         # portal chain.  When a use clicks through a rule is inserted above

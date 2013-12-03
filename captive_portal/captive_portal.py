@@ -155,6 +155,13 @@ class CaptivePortal(object):
         redirect = """
                    <html>
                    <head>
+                   <!-- Disable browser caching -->
+                   <meta http-equiv="cache-control" content="max-age=0" />
+                   <meta http-equiv="cache-control" content="no-cache" />
+                   <meta http-equiv="expires" content="0" />
+                   <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+                   <meta http-equiv="pragma" content="no-cache" />
+
                    <meta http-equiv="refresh" content="0; url=http://""" + self.args.address + """/index.html" />
                    </head>
                    <body>
@@ -191,7 +198,20 @@ class CaptivePortal(object):
         # We are using wlan0:1 here for the address - this may or may not be
         # right, but since we can't get at self.args.address it's the best we
         # can do.
-        redirect = """<html><head><meta http-equiv="refresh" content="0; url=http://""" + get_ip_address("wlan0:1") + """/" /></head> <body></body> </html>"""
+        redirect = """
+<html>
+  <head>
+    <!-- Disable browser caching -->
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+
+    <meta http-equiv="refresh" content="0; url=http://""" + get_ip_address("wlan0:1") + """/" />
+  </head>
+  <body></body>
+</html>"""
 
         logging.debug("Generated HTML refresh is:")
         logging.debug(redirect)

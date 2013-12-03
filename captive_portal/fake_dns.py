@@ -48,7 +48,7 @@ class DNSQuery:
       # Response type, TTL of the reply, and length of data in reply.
       packet+='\x00\x01'  # TYPE: A record
       packet+='\x00\x01'  # CLASS: IN (Internet)
-      packet+='\x00\x00\x00\x0f'  # TTL: 15 sec
+      packet+='\x00\x00\x00\x00'  # TTL: 0 sec
       packet+='\x00\x04'  # Length of data: 4 bytes
 
       # The IP address of the server the DNS is running on.
