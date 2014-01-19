@@ -13,8 +13,8 @@
 # Variables
 USER="groundstation"
 HOMEDIR="/opt/groundstation"
-SPID="/var/run/stationd.pid"
-APID="/var/run/airshipd.pid"
+export SPID="/var/run/stationd.pid"
+export APID="/var/run/airshipd.pid"
 
 # Core code.
 # Here's where the heavy lifting happens - this parses the arguments passed to
@@ -25,17 +25,8 @@ case "$1" in
         cd $HOMEDIR
         /bin/su -l -c "./stationd.sh &" $USER
 
-        # Wait five seconds for stationd to start up.
-        sleep 5
-    
-        # Store the PID in a file.
-        ps ax | grep 'python' | grep 'stationd' | awk '{print $1}' > $SPID
-
         # Start airshipd.
         /bin/su -l -c "./airshipd.sh &" $USER
-    
-        # Store the PID in a file.
-        ps ax | grep '/[p]ython ./airshipd' | awk '{print $1}' > $APID
         ;;
     'stop')
         # Terminate airshipd.
@@ -47,8 +38,9 @@ case "$1" in
         rm -f $SPID
         ;;
     'status')
-        ps ax | grep [s]tationd
-        ps ax | grep [a]irshipd
+        ps -p `cat $SPID`
+        ps -p `cat $APID`
+        [ -f $APID ] && [ -f $SPID ]
         ;;
     *)
         echo "USAGE: $0 {start|stop|status}"
