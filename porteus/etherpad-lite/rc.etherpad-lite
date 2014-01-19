@@ -12,7 +12,7 @@
 # TODO:
 
 # Variables
-USER="etherpad"
+USER="etherpad-lite"
 HOMEDIR="/opt/etherpad-lite"
 PID=/var/run/etherpad-lite.pid
 DESCRIPTOR="etherpad-lite.service"
