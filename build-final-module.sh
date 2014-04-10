@@ -97,7 +97,7 @@ fi # end if $CLEAN_FAKE_ROOT
 
 echo "Creating database and web server content directories."
 mkdir -p ${FAKE_ROOT}/srv/httpd/htdocs
-if_def $HTTP_PLACEHOLDER ${BUILD_HOME}/Byzantium/http_placeholder.sh # conditionally run the script at arg 2
+if_def "$HTTP_PLACEHOLDER" ${BUILD_HOME}/Byzantium/http_placeholder.sh # conditionally run the script at arg 2
 mkdir -p ${FAKE_ROOT}/srv/httpd/cgi-bin
 mkdir -p ${FAKE_ROOT}/srv/httpd/databases
 cd ${FAKE_ROOT}/srv
