@@ -189,7 +189,7 @@ cp etherpad-lite/etherpad-lite.service ${FAKE_ROOT}/etc/avahi/inactive
 cp sudo/etc/sudoers ${FAKE_ROOT}/etc
 chown root:root ${FAKE_ROOT}/etc/sudoers
 chmod 0440 ${FAKE_ROOT}/etc/sudoers
-cp avahi/etc/avahi/avahi-daemon.conf ${FAKE_ROOT}/etc/avahi
+#cp avahi/etc/avahi/avahi-daemon.conf ${FAKE_ROOT}/etc/avahi
 cp etc/profile ${FAKE_ROOT}/etc
 
 # Install our custom avahi-dnsconfd.action script.
