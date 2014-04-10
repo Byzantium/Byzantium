@@ -107,16 +107,16 @@ ln -s httpd www || echo -n
 echo "Creating directories for the traffic graphs."
 mkdir -p ${FAKE_ROOT}/srv/controlpanel/graphs
 
-echo "Copying control panel's HTML templates into place."
-cp -rv $BUILD_HOME/Byzantium/control_panel/srv/controlpanel/* ${FAKE_ROOT}/srv/controlpanel
+#echo "Copying control panel's HTML templates into place."
+#cp -rv $BUILD_HOME/Byzantium/control_panel/srv/controlpanel/* ${FAKE_ROOT}/srv/controlpanel
 
-echo "Installing control panel config files."
-mkdir -p ${FAKE_ROOT}/etc/controlpanel
-cp $BUILD_HOME/Byzantium/control_panel/etc/controlpanel/* ${FAKE_ROOT}/etc/controlpanel
+#echo "Installing control panel config files."
+#mkdir -p ${FAKE_ROOT}/etc/controlpanel
+#cp $BUILD_HOME/Byzantium/control_panel/etc/controlpanel/* ${FAKE_ROOT}/etc/controlpanel
 
-echo "Installing control panel's SQLite databases and schemas."
-mkdir -p ${FAKE_ROOT}/var/db/controlpanel
-cp -rv $BUILD_HOME/Byzantium/control_panel/var/db/controlpanel/* ${FAKE_ROOT}/var/db/controlpanel
+#echo "Installing control panel's SQLite databases and schemas."
+#mkdir -p ${FAKE_ROOT}/var/db/controlpanel
+#cp -rv $BUILD_HOME/Byzantium/control_panel/var/db/controlpanel/* ${FAKE_ROOT}/var/db/controlpanel
 
 # Create the xdg directory tree and populate it with our wicd disabler.
 echo "Creating desktop environment autostart directories."
