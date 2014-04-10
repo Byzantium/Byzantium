@@ -119,11 +119,11 @@ mkdir -p ${FAKE_ROOT}/srv/controlpanel/graphs
 #cp -rv $BUILD_HOME/Byzantium/control_panel/var/db/controlpanel/* ${FAKE_ROOT}/var/db/controlpanel
 
 # Create the xdg directory tree and populate it with our wicd disabler.
-echo "Creating desktop environment autostart directories."
-mkdir -p ${FAKE_ROOT}/etc/xdg/autostart/
-mkdir -p ${FAKE_ROOT}/usr/share/autostart/
-cp -rv $BUILD_HOME/Byzantium/porteus/etc/xdg/autostart/wicd-tray.desktop ${FAKE_ROOT}/etc/xdg/autostart
-cp -rv $BUILD_HOME/Byzantium/porteus/usr/share/autostart/wicd-tray.desktop ${FAKE_ROOT}/usr/share/autostart
+#echo "Creating desktop environment autostart directories."
+#mkdir -p ${FAKE_ROOT}/etc/xdg/autostart/
+#mkdir -p ${FAKE_ROOT}/usr/share/autostart/
+#cp -rv $BUILD_HOME/Byzantium/porteus/etc/xdg/autostart/wicd-tray.desktop ${FAKE_ROOT}/etc/xdg/autostart
+#cp -rv $BUILD_HOME/Byzantium/porteus/usr/share/autostart/wicd-tray.desktop ${FAKE_ROOT}/usr/share/autostart
 
 cd $BUILD_HOME/Byzantium/scripts
 
