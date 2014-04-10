@@ -181,7 +181,7 @@ chmod 0755 ${FAKE_ROOT}/home/guest/.trinity/Autostart/
 # Why aren't these in their modules?
 echo "Installing custom configuration files and initscripts for services."
 cp -rv apache/etc/httpd/* ${FAKE_ROOT}/etc/httpd
-cp babel/babeld.conf ${FAKE_ROOT}/etc
+#cp babel/babeld.conf ${FAKE_ROOT}/etc
 cp dnsmasq/dnsmasq.conf ${FAKE_ROOT}/etc
 cp etherpad-lite/rc.etherpad-lite ${FAKE_ROOT}/etc/rc.d
 cp etherpad-lite/settings.json ${FAKE_ROOT}/opt/etherpad-lite
