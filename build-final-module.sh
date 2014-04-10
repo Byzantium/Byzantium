@@ -249,7 +249,7 @@ cp captive-portal.sh ${FAKE_ROOT}/usr/local/sbin
 cp mop_up_dead_clients.py ${FAKE_ROOT}/usr/local/sbin
 cp fake_dns.py ${FAKE_ROOT}/usr/local/sbin
 cp etc/captiveportal/captiveportal.conf ${FAKE_ROOT}/etc/captiveportal/
-cp srv/captiveportal/* ${FAKE_ROOT}/srv/captiveportal/
+cp -r srv/captiveportal/* ${FAKE_ROOT}/srv/captiveportal/
 
 # Directory ownership sanity for ~guest.
 echo "Confirming ownership of guest user's home directory."
