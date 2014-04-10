@@ -18,7 +18,7 @@ OUTPUT=${OUTPUT:-/tmp}
 CLEAN_FAKE_ROOT=true
 
 # set true to run http_placeholder.sh to add the web service placeholder pages
-HTTP_PLACEHOLDER=true
+#HTTP_PLACEHOLDER=true
 
 if_def(){
 # if $1 is defined include $2 inline (execute it's contents in the
