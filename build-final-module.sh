@@ -78,7 +78,7 @@ if $CLEAN_FAKE_ROOT ;then
 
 # Unpack all of the .xzm packages into the fakeroot to populate it with the
 # libraries and executables under the hood of Byzantium.
-    for i in `cat required_packages.txt` ; do
+    for i in $(cat required_packages.txt | grep -v '^#') ; do
         echo "Now installing $i to ${FAKE_ROOT}..."
         xzm2dir $BUILD_HOME/byzantium/$i ${FAKE_ROOT}
         echo "Done."
