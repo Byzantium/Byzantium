@@ -23,7 +23,7 @@ CLEAN_FAKE_ROOT=true
 if_def(){
 # if $1 is defined include $2 inline (execute it's contents in the
 # current scope)
-if [ -n $1 ] ;then
+if [ -n "$1" ] ;then
 	. $2
 fi
 }
