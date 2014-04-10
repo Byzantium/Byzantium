@@ -136,7 +136,7 @@ chmod +x ${FAKE_ROOT}/etc/rc.d/rc.*
 mkdir -p ${FAKE_ROOT}/etc/avahi/inactive
 
 # Configure libnss to reference mDNS for resolution in addition to DNS.
-cp ${FAKE_ROOT}/etc/nsswitch.conf-mdns ${FAKE_ROOT}/etc/nsswitch.conf
+#cp ${FAKE_ROOT}/etc/nsswitch.conf-mdns ${FAKE_ROOT}/etc/nsswitch.conf
 
 # This stuff probably belongs in the controlpanel package.
 echo "Installing rrdtool shell script."
