@@ -140,6 +140,7 @@ mkdir -p ${FAKE_ROOT}/etc/avahi/inactive
 
 # This stuff probably belongs in the controlpanel package.
 echo "Installing rrdtool shell script."
+mkdir -p ${FAKE_ROOT}/usr/local/bin
 cp traffic_stats.sh ${FAKE_ROOT}/usr/local/bin
 
 echo "Installing the control panel."
