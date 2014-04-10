@@ -129,7 +129,7 @@ cd $BUILD_HOME/Byzantium/scripts
 
 # Could these be placed in a module?
 echo "Installing custom initscripts."
-cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.inet1 rc.M rc.services ${FAKE_ROOT}/etc/rc.d
+cp rc.local rc.mysqld rc.ssl rc.setup_mysql rc.M rc.services ${FAKE_ROOT}/etc/rc.d
 chmod +x ${FAKE_ROOT}/etc/rc.d/rc.*
 
 # Set up mDNS service descriptor repository.
