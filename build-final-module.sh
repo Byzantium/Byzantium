@@ -212,7 +212,7 @@ cp mysql/my.cnf ${FAKE_ROOT}/etc
 cp ngircd/ngircd.conf ${FAKE_ROOT}/etc
 cp ngircd/ngircd.service ${FAKE_ROOT}/etc/avahi/inactive
 cp ngircd/rc.ngircd ${FAKE_ROOT}/etc/rc.d
-cp php/etc/httpd/php.ini ${FAKE_ROOT}/etc/httpd
+#cp php/etc/httpd/php.ini ${FAKE_ROOT}/etc/httpd
 
 # This should be a module
 echo "Installing qwebirc configuration file and initscript."
