@@ -89,8 +89,9 @@ if len(wireless):
     # chipsets are pokey (coughAtheroscough) and silently reset themselves if
     # you try to configure them too rapidly, meaning that they drop out of
     # ad-hoc mode.
-    break_flag = False
-    while True:
+    success = False
+    for try_num in range(3):
+        print "Attempting to configure the wireless interface. Try:", try_num
         # Configure the wireless chipset.
         command = ['/sbin/iwconfig', interface, 'mode', 'ad-hoc']
         subprocess.Popen(command)
@@ -145,9 +146,12 @@ if len(wireless):
         # "Victory is mine!"
         #     --Stewie, _Family Guy_
         if Mode and Essid and Bssid and Frequency:
+            success = True
             break
         else:
             print "Failed to setup the interface properly. Retrying..."
+    if not success:
+        sys.exit(1)
 
     # Turn up the interface.
     command = ['/sbin/ifconfig', interface, 'up']
