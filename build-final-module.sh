@@ -193,7 +193,7 @@ chmod 0440 ${FAKE_ROOT}/etc/sudoers
 cp etc/profile ${FAKE_ROOT}/etc
 
 # Install our custom avahi-dnsconfd.action script.
-cp avahi/etc/avahi/avahi-dnsconfd.action ${FAKE_ROOT}/etc/avahi
+#cp avahi/etc/avahi/avahi-dnsconfd.action ${FAKE_ROOT}/etc/avahi
 
 # Add the custom passwd and group files.
 echo "Installing custom system configuration files."
