@@ -230,8 +230,8 @@ cp databases/* ${FAKE_ROOT}/srv/httpd/databases
 echo "Customizing desktop for guest user."
 mkdir -p ${FAKE_ROOT}/home/guest/Desktop
 #cp porteus/home/guest/Desktop/Control\ Panel.desktop ${FAKE_ROOT}/home/guest/Desktop
-mkdir -p ${FAKE_ROOT}/usr/share/pixmaps/porteus
-cp byzantium-icon.png ${FAKE_ROOT}/usr/share/pixmaps/porteus
+#mkdir -p ${FAKE_ROOT}/usr/share/pixmaps/porteus
+#cp byzantium-icon.png ${FAKE_ROOT}/usr/share/pixmaps/porteus
 
 # Create the runtime directory for ngircd because its package doesn't.
 echo "Setting up directories for ngircd."
