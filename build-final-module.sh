@@ -168,7 +168,7 @@ chmod 0755 ${FAKE_ROOT}/etc/rc.d/rc.avahiclient
 
 # Add the custom Firefox configuration.
 echo "Installing Mozilla configs for the guest user."
-cd ../porteus
+cd ../packages
 mkdir -p ${FAKE_ROOT}/home/guest/.mozilla/firefox/c3pp43bg.default
 cp home/guest/.mozilla/firefox/c3pp43bg.default/prefs.js ${FAKE_ROOT}/home/guest/.mozilla/firefox/c3pp43bg.default
 
