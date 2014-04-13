@@ -168,21 +168,21 @@ chmod 0755 ${FAKE_ROOT}/etc/rc.d/rc.avahiclient
 
 # Add the custom Firefox configuration.
 echo "Installing Mozilla configs for the guest user."
-cd ../packages
+cd ..
 mkdir -p ${FAKE_ROOT}/home/guest/.mozilla/firefox/c3pp43bg.default
 cp home/guest/.mozilla/firefox/c3pp43bg.default/prefs.js ${FAKE_ROOT}/home/guest/.mozilla/firefox/c3pp43bg.default
 
 # Create the KDE Autostart directory and copy the success/failure testing
 # script into it.
 mkdir -p ${FAKE_ROOT}/home/guest/.trinity/Autostart
-cp ../verify_operation.sh ${FAKE_ROOT}/home/guest/.trinity/Autostart/
+cp verify_operation.sh ${FAKE_ROOT}/home/guest/.trinity/Autostart/
 chmod 0755 ${FAKE_ROOT}/home/guest/.trinity/Autostart/
 
 # Why aren't these in their modules?
 echo "Installing custom configuration files and initscripts for services."
 cp -rv apache/etc/httpd/* ${FAKE_ROOT}/etc/httpd
 #cp babel/babeld.conf ${FAKE_ROOT}/etc
-cp dnsmasq/dnsmasq.conf ${FAKE_ROOT}/etc
+cp packages/dnsmasq/dnsmasq.conf ${FAKE_ROOT}/etc
 cp etherpad-lite/rc.etherpad-lite ${FAKE_ROOT}/etc/rc.d
 cp etherpad-lite/settings.json ${FAKE_ROOT}/opt/etherpad-lite
 cp etherpad-lite/etherpad-lite.service ${FAKE_ROOT}/etc/avahi/inactive
@@ -209,9 +209,9 @@ chmod 0600 ${FAKE_ROOT}/etc/shadow
 # These belong in modules!
 echo "Installing config files for MySQL, ngircd, and PHP."
 cp mysql/my.cnf ${FAKE_ROOT}/etc
-cp ngircd/ngircd.conf ${FAKE_ROOT}/etc
-cp ngircd/ngircd.service ${FAKE_ROOT}/etc/avahi/inactive
-cp ngircd/rc.ngircd ${FAKE_ROOT}/etc/rc.d
+cp packages/ngircd/ngircd.conf ${FAKE_ROOT}/etc
+cp packages/ngircd/ngircd.service ${FAKE_ROOT}/etc/avahi/inactive
+cp packages/ngircd/rc.ngircd ${FAKE_ROOT}/etc/rc.d
 #cp php/etc/httpd/php.ini ${FAKE_ROOT}/etc/httpd
 
 # This should be a module
@@ -223,7 +223,6 @@ cp qwebirc/qwebirc.service ${FAKE_ROOT}/etc/avahi/inactive
 
 # Install the database files.
 echo "Installing database files."
-cd ..
 cp databases/* ${FAKE_ROOT}/srv/httpd/databases
 
 # Add our custom desktop stuff.
