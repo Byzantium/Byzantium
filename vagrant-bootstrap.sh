@@ -9,5 +9,5 @@ EOF
 ln -sf /root/.profile /root/.bashrc
 
 pushd /root
-svn co http://svn.virtadpt.net/byzantium
+svn co http://svn.virtadpt.net/byzantium/v0.5b/i386/ byzantium
 popd
