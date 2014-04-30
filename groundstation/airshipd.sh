@@ -3,7 +3,7 @@
 # stationd.sh - Tiny shell script that starts stationd.
 # By: The Doctor
 
-flags=""
+flags="--host 0.0.0.0"
 
 # Make sure we are where we need to be.
 cd /opt/groundstation
