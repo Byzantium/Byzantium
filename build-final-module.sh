@@ -174,9 +174,9 @@ cp home/guest/.mozilla/firefox/c3pp43bg.default/prefs.js ${FAKE_ROOT}/home/guest
 
 # Create the KDE Autostart directory and copy the success/failure testing
 # script into it.
-mkdir -p ${FAKE_ROOT}/home/guest/.trinity/Autostart
-cp verify_operation.sh ${FAKE_ROOT}/home/guest/.trinity/Autostart/
-chmod 0755 ${FAKE_ROOT}/home/guest/.trinity/Autostart/
+mkdir -p ${FAKE_ROOT}/home/guest/.config/autostart
+cp verify_operation.sh ${FAKE_ROOT}/home/guest/.config/autostart/
+chmod 0755 ${FAKE_ROOT}/home/guest/.config/autostart/
 
 # Why aren't these in their modules?
 echo "Installing custom configuration files and initscripts for services."
@@ -189,11 +189,14 @@ cp etherpad-lite/etherpad-lite.service ${FAKE_ROOT}/etc/avahi/inactive
 cp sudo/etc/sudoers ${FAKE_ROOT}/etc
 chown root:root ${FAKE_ROOT}/etc/sudoers
 chmod 0440 ${FAKE_ROOT}/etc/sudoers
-#cp avahi/etc/avahi/avahi-daemon.conf ${FAKE_ROOT}/etc/avahi
+
+# MOOF MOOF MOOF
+cp packages/avahi/etc/avahi/avahi-daemon.conf ${FAKE_ROOT}/etc/avahi
 cp etc/profile ${FAKE_ROOT}/etc
 
 # Install our custom avahi-dnsconfd.action script.
-#cp avahi/etc/avahi/avahi-dnsconfd.action ${FAKE_ROOT}/etc/avahi
+# MOOF MOOF MOOF
+cp packages/ifplugd/etc/avahi/avahi-dnsconfd.action ${FAKE_ROOT}/etc/avahi
 
 # Add the custom passwd and group files.
 echo "Installing custom system configuration files."
@@ -212,7 +215,7 @@ cp mysql/my.cnf ${FAKE_ROOT}/etc
 cp packages/ngircd/ngircd.conf ${FAKE_ROOT}/etc
 cp packages/ngircd/ngircd.service ${FAKE_ROOT}/etc/avahi/inactive
 cp packages/ngircd/rc.ngircd ${FAKE_ROOT}/etc/rc.d
-#cp php/etc/httpd/php.ini ${FAKE_ROOT}/etc/httpd
+cp packages/php/php.ini ${FAKE_ROOT}/etc/httpd
 
 # This should be a module
 echo "Installing qwebirc configuration file and initscript."
