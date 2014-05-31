@@ -2,8 +2,12 @@
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
 	<name replace-wildcards="yes">Etherpad-Lite running on %h</name>
+    <service>
+        <type>__byz._tcp</type>
+        <port></port>
+    </service>
 	<service>
-		<type>_etherpad.__byz__._tcp</type>
+		<type>_etherpad._tcp</type>
 		<port>9001</port>
 	</service>
 </service-group>

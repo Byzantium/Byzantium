@@ -15,7 +15,7 @@ import _utils
 conf = _utils.Config()
 logging = _utils.get_logging()
 
-SERVICE_TYPE = '__byz__._tcp'
+SERVICE_TYPE = '__byz._tcp'
 
 timeout  = 5
 resolved = []

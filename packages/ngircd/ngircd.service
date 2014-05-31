@@ -3,11 +3,15 @@
 <service-group>
 	<name replace-wildcards="yes">IRC server running on %h.</name>
 	<service>
-		<type>_irc.__byz__._tcp</type>
+		<type>__byz._tcp</type>
+		<port></port>
+	</service>
+	<service>
+		<type>_irc._tcp</type>
 		<port>6667</port>
 	</service>
 	<service>
-		<type>_ircs.__byz__._tcp</type>
+		<type>_ircs._tcp</type>
 		<port>6697</port>
 	</service>
 </service-group>
