@@ -17,7 +17,7 @@
 
 # This utility is less of a hack, but it's far from perfect.
 
-# By: The Doctor [412/724/301/703] [ZS|Media] <drwho at virtadpt dot net>
+# By: The Doctor [412/724/301/703][ZS] <drwho at virtadpt dot net>
 # License: GPLv3
 
 # Imports
@@ -74,89 +74,102 @@ for i in interfaces:
 
 # Find unused IP addresses to configure this node's interfaces with.
 if len(wireless):
+    success = False
     interface = wireless[0]
     print "Attempting to configure interface %s." % interface
 
-    # Turn down the interface.
-    command = ['/sbin/ifconfig', interface, 'down']
-    subprocess.Popen(command)
-    time.sleep(5)
-
-    # Set wireless parameters on the interface.  Do this by going into a loop
-    # that tests the configuration for correctness and starts the procedure
-    # over if it didn't take the first time.
-    # We wait a few seconds between iwconfig operations because some wireless
-    # chipsets are pokey (coughAtheroscough) and silently reset themselves if
-    # you try to configure them too rapidly, meaning that they drop out of
-    # ad-hoc mode.
-    success = False
-    for try_num in range(3):
-        print "Attempting to configure the wireless interface. Try:", try_num
-        # Configure the wireless chipset.
-        command = ['/sbin/iwconfig', interface, 'mode', 'ad-hoc']
-        subprocess.Popen(command)
-        time.sleep(5)
-        command = ['/sbin/iwconfig', interface, 'essid', essid]
-        subprocess.Popen(command)
-        time.sleep(5)
-        command = ['/sbin/iwconfig', interface, 'ap', bssid]
-        subprocess.Popen(command)
-        time.sleep(5)
-        command = ['/sbin/iwconfig', interface, 'channel', channel]
-        subprocess.Popen(command)
-        time.sleep(5)
-
-        # Capture the interface's current settings.
-        command = ['/sbin/iwconfig', interface]
-        configuration = ''
-        output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
-        configuration = output.readlines()
-
-        # Test the interface's current configuration.  Go back to the top of
-        # the configuration loop and try again if it's not what we expect.
-        Mode = False
-        Essid = False
-        Bssid = False
-        Frequency = False
-        for line in configuration:
-            # Ad-hoc mode?
-            match = re.search('Mode:([\w-]+)', line)
-            if match and match.group(1) == 'Ad-Hoc':
-                print "Mode is correct."
-                Mode = True
-
-            # Correct ESSID?
-            match = re.search('ESSID:"([\w]+)"', line)
-            if match and match.group(1) == essid:
-                print "ESSID is correct."
-                Essid = True
-
-            # Correct BSSID?
-            match = re.search('Cell: (([\dA-F][\dA-F]:){5}[\dA-F][\dA-F])', line)
-            if match and match.group(1) == bssid:
-                print "BSSID is correct."
-                Bssid = True
-
-            # Correct frequency (because iwconfig doesn't report channels)?
-            match = re.search('Frequency:([\d.]+)', line)
-            if match and match.group(1) == frequency:
-                print "Channel is correct."
-                Frequency = True
-
-        # "Victory is mine!"
-        #     --Stewie, _Family Guy_
-        if Mode and Essid and Bssid and Frequency:
-            success = True
+    # Try to configure the wireless interface in both states (down and up)
+    # because the wireless chipsets of different manufacturers seem to do it
+    # differently.
+    for state in ['down', 'up']:
+        # Test to see if we've been through this loop successfully already.
+        # If so, bounce.
+        if success:
             break
-        else:
-            print "Failed to setup the interface properly. Retrying..."
+
+        # Flip the interface.
+        print "Setting wireless interface %s to %s." % (interface, state)
+        command = ['/sbin/ifconfig', interface, state]
+        subprocess.Popen(command)
+        time.sleep(5)
+
+        # Set wireless parameters on the interface.  Do this by going into a
+        # loop that tests the configuration for correctness and starts the
+        # procedure over if it didn't take the first time.
+        # We wait a few seconds between iwconfig operations because some
+        # wireless chipsets are pokey (coughAtheroscough) and silently reset
+        # themselves if you try to configure them too rapidly, and they drop
+        # out of ad-hoc mode.
+        for try_num in range(3):
+            print "Attempting to configure the wireless interface. Try:", try_num
+            # Configure the wireless chipset.
+            command = ['/sbin/iwconfig', interface, 'mode', 'ad-hoc']
+            subprocess.Popen(command)
+            time.sleep(5)
+            command = ['/sbin/iwconfig', interface, 'essid', essid]
+            subprocess.Popen(command)
+            time.sleep(5)
+            command = ['/sbin/iwconfig', interface, 'ap', bssid]
+            subprocess.Popen(command)
+            time.sleep(5)
+            command = ['/sbin/iwconfig', interface, 'channel', channel]
+            subprocess.Popen(command)
+            time.sleep(5)
+
+            # Capture the interface's current settings.
+            command = ['/sbin/iwconfig', interface]
+            configuration = ''
+            output = subprocess.Popen(command, stdout=subprocess.PIPE).stdout
+            configuration = output.readlines()
+
+            # Test the interface's current configuration.  Go back to the top of
+            # the configuration loop and try again if it's not what we expect.
+            Mode = False
+            Essid = False
+            Bssid = False
+            Frequency = False
+            for line in configuration:
+                # Ad-hoc mode?
+                match = re.search('Mode:([\w-]+)', line)
+                if match and match.group(1) == 'Ad-Hoc':
+                    print "Mode is correct."
+                    Mode = True
+
+                # Correct ESSID?
+                match = re.search('ESSID:"([\w]+)"', line)
+                if match and match.group(1) == essid:
+                    print "ESSID is correct."
+                    Essid = True
+
+                # Correct BSSID?
+                match = re.search('Cell: (([\dA-F][\dA-F]:){5}[\dA-F][\dA-F])', line)
+                if match and match.group(1) == bssid:
+                    print "BSSID is correct."
+                    Bssid = True
+
+                # Correct frequency (because iwconfig doesn't report channels)?
+                match = re.search('Frequency:([\d.]+)', line)
+                if match and match.group(1) == frequency:
+                    print "Channel is correct."
+                    Frequency = True
+
+            # "Victory is mine!"
+            #     --Stewie, _Family Guy_
+            if Mode and Essid and Bssid and Frequency:
+                print "Wireless interface %s has been successfully configured." % interface
+                success = True
+                break
+            else:
+                print "Failed to setup the interface properly. Retrying..."
     if not success:
         sys.exit(1)
 
-    # Turn up the interface.
-    command = ['/sbin/ifconfig', interface, 'up']
-    subprocess.Popen(command)
-    time.sleep(5)
+    # Turn up the interface if it's not already.
+    if state != 'up':
+        print "Turning interface %s up." % interface
+        command = ['/sbin/ifconfig', interface, 'up']
+        subprocess.Popen(command)
+        time.sleep(5)
 
     # Start with the mesh interface.
     ip_in_use = 1
