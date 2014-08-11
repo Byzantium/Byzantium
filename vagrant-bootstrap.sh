@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Used by vagrant inside the VM
+# This IS NOT a startup script for vagrant development
 
 ln -sf /vagrant /root/Byzantium
 
