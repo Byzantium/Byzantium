@@ -105,12 +105,14 @@ nameserver_start() {
         for n in $AHCP_NAMESERVER; do
             info="${info}nameserver $n$nl"
         done
-        if [ -x /sbin/resolvconf ]; then
-            echo -n "$info" | /sbin/resolvconf -a "$first_if"
-        else
-            mv /etc/resolv.conf /etc/resolv.conf.orig
-            echo -n "$info" > /etc/resolv.conf
-        fi
+		if [ -n "$info" ] ;then
+			if [ -x /sbin/resolvconf ]; then
+				echo -n "$info" | /sbin/resolvconf -a "$first_if"
+			else
+				mv /etc/resolv.conf /etc/resolv.conf.orig
+				echo -n "$info" > /etc/resolv.conf
+			fi
+		fi
     fi
 }
 
